@@ -4,6 +4,8 @@
 
 **Règle** : ces dépendances **ne bloquent aucun développement prouvable**. Elles bloquent en revanche toute prétention de validation correspondante. Une hypothèse `UNVALIDATED` le reste tant que sa dépendance n'est pas levée.
 
+**Règle de propriété** : chaque dépendance porte une **fonction responsable**, même lorsque la personne n'est pas encore désignée. Une dépendance sans propriétaire n'est suivie par personne et finit par disparaître du radar.
+
 Dernière mise à jour : 1er août 2026.
 
 ---

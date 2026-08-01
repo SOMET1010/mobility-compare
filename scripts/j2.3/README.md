@@ -57,6 +57,21 @@ preuve obtenue.
 Les bornes de plausibilite sont **larges** : elles detectent une aberration
 franche, elles ne valident pas une valeur precise.
 
+## STATUT DE LIVRAISON
+
+| Element                           | Statut                                         |
+| --------------------------------- | ---------------------------------------------- |
+| Logique de verdict et de rapport  | **VALIDE** — 39 tests                          |
+| Orchestration Bash `run-proof.sh` | **NON EXECUTEE** — syntaxe verifiee uniquement |
+| Couche I/O de `verify.mjs`        | **NON EPROUVEE** contre un serveur reel        |
+| Preuve d integration OSRM         | **EN ATTENTE**                                 |
+
+Ces deux reserves n'invalident pas le protocole. Elles empechent de confondre
+la validation de sa LOGIQUE avec la validation de son EXECUTION.
+
+Condition de cloture de J2 : une execution de `run-proof.sh` sur une machine
+Docker, avec rapport final **PASS**.
+
 ## Etat de la preuve du protocole lui-meme
 
 La logique de verdict et de rapport est couverte par 39 tests
