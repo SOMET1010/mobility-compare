@@ -113,6 +113,29 @@ describe('Detecteur de secrets — qualification en quatre niveaux', () => {
     expect(report, report.join('\n')).toEqual([]);
   });
 
+  it('les exceptions sont des empreintes exactes, sans joker ni prefixe', () => {
+    for (const exception of HISTORICAL_EXCEPTIONS) {
+      // Un joker transformerait l'exception en exclusion generale.
+      // Le suffixe « ... » n'en est pas un : c'est le format de rapport du
+      // scanner, qui tronque toujours l'extrait. La correspondance reste une
+      // egalite stricte (Set.has), jamais une expression reguliere.
+      expect(exception.excerpt).not.toMatch(/[*?[\]^$+|]/);
+      expect(exception.excerpt.length).toBeGreaterThan(12);
+      expect(exception.commit).toMatch(/^[0-9a-f]{7,40}$/);
+      expect(exception.reason.length).toBeGreaterThan(40);
+    }
+  });
+
+  it("une occurrence voisine d'une exception n'est PAS couverte", () => {
+    const known = new Set(HISTORICAL_EXCEPTIONS.map((e) => e.excerpt));
+    // Meme famille, empreinte differente : doit rester bloquante.
+    const neighbour = scanForSecrets(['sb', 'secret', 'Z9y8X7w6V5u4T3s2'].join('_')).filter(
+      isBlocking,
+    );
+    expect(neighbour.length).toBeGreaterThan(0);
+    expect(neighbour.every((f) => !known.has(f.excerpt))).toBe(true);
+  });
+
   it('chaque exception historique est encore presente et donc toujours utile', () => {
     let diff = '';
     try {
