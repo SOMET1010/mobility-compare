@@ -11,7 +11,7 @@ OSRM tourne comme **service autonome sur une VM Linux dédiée compatible Docker
 
 **Le frontend n'appelle jamais OSRM directement.** L'accès passe par notre couche de services, avec authentification, quotas, délais d'expiration et journalisation sans données sensibles.
 
-Conséquence sur le code : `VITE_ROUTING_BASE_URL` ne devra **pas** pointer vers OSRM mais vers notre couche de services. Le commentaire actuel de `.env.example` sera corrigé lors de J2.3 — il décrit une intention antérieure à cette décision.
+Conséquence sur le code : `VITE_ROUTING_BASE_URL` pointe vers notre couche de services, **jamais** vers OSRM. Corrigé en J2.2 dans `.env.example`, `env-registry.js`, `env.ts` et `vite-env.d.ts`.
 
 ```
 Navigateur → couche de services (auth, quotas, journalisation) → OSRM (VM privée)

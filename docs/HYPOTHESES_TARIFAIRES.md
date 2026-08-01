@@ -34,37 +34,54 @@ S4 = S3 + fraisFixes
 
 **Impact si faux** : sous-estimation des trajets aéroport en période majorée.
 
-### H3 — Les majorations se composent par **multiplication**
+### H3 — Composition des majorations — **POLITIQUE INJECTABLE, `UNVALIDATED`**
+
+Ce n'est plus une constante du moteur mais une politique portée par la grille, avec deux modes :
+
+| Mode                                 | Formule            |
+| ------------------------------------ | ------------------ |
+| `MULTIPLICATIVE` (défaut provisoire) | horaire × zone     |
+| `MAX`                                | max(horaire, zone) |
+
+Le statut `UNVALIDATED` est **exposé dans le résultat** (`multiplier.compositionStatus`) et non enfoui.
+
+**Pourquoi ce défaut** : deux causes de rareté indépendantes se cumulent plausiblement. Un trajet nocturne vers l'aéroport est plus difficile à pourvoir qu'un trajet nocturne ordinaire.
+
+**Impact si faux** : surestimation quand plusieurs majorations coïncident. Reste l'hypothèse la plus incertaine. Les deux modes sont testés et donnent des prix mesurablement différents — le choix n'est pas neutre.
+
+### H4 — Plafond de majoration — **BORNE TECHNIQUE PROVISOIRE**
 
 ```
-M = majorationHoraire × majorationZone
+M = min(M, maxTotalMultiplier)    défaut provisoire : 3, configurable par grille
 ```
 
-**Alternative écartée** : retenir le maximum des deux.
+**Ce n'est pas une règle réglementaire.** Aucune source officielle fixant un plafond n'a été versée au dossier. La valeur de 3 est arbitraire et sert uniquement à empêcher la composition de diverger sans limite.
 
-**Pourquoi** : deux causes de rareté indépendantes se cumulent réellement. Un trajet nocturne vers l'aéroport est plus difficile à pourvoir qu'un trajet nocturne ordinaire.
+Le message d'écrêtage le dit explicitement : _« borne technique provisoire, aucune source réglementaire versée au dossier »_.
 
-**Impact si faux** : surestimation quand plusieurs majorations coïncident. C'est l'hypothèse la plus incertaine des six.
+**Au dépassement, le moteur écrête et trace** — il ne déclare pas d'absence. L'absence reste réservée aux cas où le calcul est réellement impossible : données invalides, expirées ou insuffisantes. Le résultat expose :
 
-### H4 — Un plafond de majoration est **toujours** appliqué
+| Champ                  | Contenu                          |
+| ---------------------- | -------------------------------- |
+| `multiplier.raw`       | majoration brute, avant écrêtage |
+| `multiplier.applied`   | majoration retenue               |
+| `multiplier.capped`    | `true`                           |
+| `multiplier.capReason` | raison du plafonnement           |
 
-```
-M = min(M, maxTotalMultiplier)    défaut : 3
-```
+_Note de contexte, sans valeur de justification_ : la presse ivoirienne a rapporté en mai 2026 qu'un recadrage des plateformes sur la tarification dynamique serait en préparation. Il s'agit d'une source secondaire, non officielle, qui **ne fonde aucune décision d'architecture**. Elle est mentionnée ici comme veille, non comme référence.
 
-**Pourquoi** : sans plafond, la composition multiplicative peut diverger. Ce n'est pas seulement une prudence technique — la DGTTC prépare un recadrage des plateformes sur la tarification dynamique, particulièrement critiquée en saison des pluies (CDC §2). Un comparateur qui afficherait des majorations non bornées sans le signaler manquerait son objet.
+### H5 — Assiette de la taxe — **POLITIQUE INJECTABLE, `UNVALIDATED`**
 
-Le plafonnement est **visible** : `multiplierCapped` est exposé et la trace le mentionne.
+L'assiette n'est pas tranchée. Les deux options sont modélisées et testées séparément :
 
-### H5 — La taxe s'applique sur le total, frais fixes inclus
+| Mode                                   | Assiette                             | Formule                      |
+| -------------------------------------- | ------------------------------------ | ---------------------------- |
+| `METER_ONLY`                           | compteur seul, frais fixes exclus    | `S3 × taux`, ajouté au total |
+| `TOTAL_BEFORE_TAX` (défaut provisoire) | total avant taxe, frais fixes inclus | `S4 × taux`                  |
 
-```
-S5 = S4 × (1 + taxRate)
-```
+L'écart est réel : sur un trajet avec 1 000 FCFA de frais fixes et 4 % de taxe, les deux politiques diffèrent de 40 FCFA. La trace nomme l'assiette employée.
 
-**Pourquoi** : la taxe de 4 % introduite en octobre 2024 porte sur le prix de la course. En l'absence de texte accessible précisant l'assiette, le total est retenu.
-
-**À vérifier** : l'assiette exacte, et si les frais fixes en sont exclus. `À DÉFINIR`.
+**À vérifier** : texte de l'annexe fiscale ou DGTTC. `À DÉFINIR`.
 
 ### H6 — Arrondi au multiple de 5 FCFA, au plus proche
 
@@ -110,9 +127,16 @@ Aujourd'hui le moteur écrête et le signale. Trois options :
 
 L'option 2 est la plus honnête si l'écart devient important. **Ton arbitrage.**
 
-### D. Taxi compteur : même moteur ?
+### D. Taxi compteur — **tranché : deux estimations séparées**
 
-Le taxi compteur a un tarif réglementé mais **négocié en pratique** à Abidjan. Le moteur peut le représenter, mais faut-il afficher le tarif officiel, le prix réellement pratiqué, ou les deux ? Afficher un tarif officiel que personne n'applique serait trompeur ; afficher un prix négocié qui n'a pas de base légale l'est autrement.
+Le moteur **ne fabrique aucun « prix négocié »**. Toute grille porte une base :
+
+| Base         | Condition                                                                             |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `REGULATORY` | grille officielle vérifiée — `sourceRef` **obligatoire**, la validation rejette sinon |
+| `OBSERVED`   | échantillon terrain suffisant                                                         |
+
+Les deux valeurs ne sont jamais fusionnées : aucune fonction du moteur ne les combine, et le résultat porte toujours sa base. Reste à arbitrer la **présentation** : afficher les deux côte à côte, ou n'en montrer qu'une selon le contexte.
 
 ### E. Granularité des zones de majoration
 
