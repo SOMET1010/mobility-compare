@@ -50,3 +50,6 @@ supabase/.branches/
 # Divers
 .cache/
 .turbo/
+
+# TypeScript incremental
+*.tsbuildinfo
