@@ -53,3 +53,5 @@ supabase/.branches/
 
 # TypeScript incremental
 *.tsbuildinfo
+scripts/j2.3/.work/
+scripts/j2.3/rapports/
