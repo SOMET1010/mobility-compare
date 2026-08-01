@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error module JavaScript pur, partagé avec les scripts Node
 import {
   checkRouteResponse,
   checkEnvironment,
@@ -21,8 +20,27 @@ import {
 
 const REQUEST = { origin: YOPOUGON, destination: PLATEAU };
 
+/**
+ * Faits collectés par l'orchestration J2.3. Les champs qui peuvent
+ * légitimement être absents — Docker non installé, graphe non construit,
+ * mesures de performance non relevées — sont explicitement nullables. C'est
+ * exactement ce que la logique de verdict doit savoir refuser : le typage
+ * reflète honnêtement les cas que les tests ci-dessous font échouer.
+ */
+type ProofFacts = {
+  dockerVersion: string | null;
+  endpoint: string;
+  serviceReached: boolean;
+  httpStatus: number;
+  graphSizeBytes: number;
+  osmExtractSha256: string | null;
+  prepareDurationSeconds: number | null;
+  loadDurationSeconds: number | null;
+  residentMemoryBytes: number | null;
+};
+
 /** Environnement nominal : tous les faits attendus sont présents. */
-const HEALTHY_FACTS = {
+const HEALTHY_FACTS: ProofFacts = {
   dockerVersion: 'Docker version 27.0.0',
   endpoint: 'http://localhost:5000',
   serviceReached: true,
