@@ -21,4 +21,10 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Primitives shadcn/ui copiees telles quelles. On ne les modifie pas :
+    // toute divergence compliquerait une mise a jour depuis l'amont.
+    files: ['src/components/ui/**/*.tsx'],
+    rules: { '@typescript-eslint/no-empty-object-type': 'off' },
+  },
 );
