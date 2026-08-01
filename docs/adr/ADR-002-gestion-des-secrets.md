@@ -25,7 +25,10 @@ meme en-tete. Seule la signature complete discrimine.
 
 1. **Aucun secret ne porte le prefixe `VITE_`.** Sans exception.
 2. Front : cle **publishable** (`sb_publishable_...`).
-3. Serveur : cle **secret** (`sb_secret_...`), stockee dans les secrets Supabase.
+3. Serveur : cle **secret** (`sb_secret_...`), stockee dans le gestionnaire de
+   secrets de l'hebergeur qui execute le traitement — secrets Supabase pour une
+   Edge Function, gestionnaire de la plateforme pour tout autre hebergement.
+   Un secret ne se declare pas la ou il n'est pas lu.
 4. `.env.example` ne contient aucune valeur renseignee.
 5. Un test d'architecture fait echouer la CI sur tout motif de secret derriere `VITE_`.
 

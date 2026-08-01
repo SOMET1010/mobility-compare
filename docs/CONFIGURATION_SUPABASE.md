@@ -79,13 +79,21 @@ Si tu colles par erreur une clé `sb_secret_...`, l'application refuse de démar
 
 ### C. Déclarer les secrets serveur
 
-Dans les secrets Supabase (Edge Functions), **jamais** dans `.env.local` :
+`SUPABASE_SECRET_KEY` se stocke **là où s'exécute le traitement qui l'utilise**, et nulle part ailleurs :
 
-```
-SUPABASE_SECRET_KEY=<clé sb_secret_...>
-```
+| Où tourne le traitement                           | Où stocker la clé                                                 |
+| ------------------------------------------------- | ----------------------------------------------------------------- |
+| Edge Function Supabase                            | Secrets Supabase                                                  |
+| Autre hébergeur (VM, conteneur, fonction managée) | Gestionnaire de secrets de **cet** hébergeur                      |
+| Script local d'exploitation                       | Variable d'environnement de la session, jamais un fichier commité |
 
-Les autres secrets (`OTP_HASH_PEPPER`, identifiants SMS) viendront avec le module d'authentification.
+La placer dans les secrets Supabase « par défaut » n'a de sens que si une Edge Function la lit. Un secret déclaré à un endroit qui ne l'utilise pas est une surface d'exposition sans contrepartie.
+
+Ce point n'est pas théorique : l'orchestration OTP est prévue en Edge Function (spec OTP §9), mais OSRM tournera sur une VM dédiée. Les deux n'ont pas le même magasin de secrets.
+
+**Dans tous les cas, et quel que soit l'hébergeur : jamais exposée au frontend, jamais préfixée `VITE_`, jamais dans le dépôt.**
+
+Les autres secrets (`OTP_HASH_PEPPER`, identifiants SMS) suivront la même règle, au moment du module d'authentification.
 
 ### D. Migrer NOLI — projet distinct, même méthode
 
