@@ -70,4 +70,31 @@ describe('mode démonstration — passe par les moteurs réels', () => {
     expect(modes).toEqual(['GBAKA', 'TAXI', 'VTC', 'WORO']);
     for (const m of modes) expect(MODE_META[m]).toBeDefined();
   });
+
+  it('propose huit corridors d’exemple', () => {
+    expect(CORRIDORS).toHaveLength(8);
+  });
+});
+
+describe('mode démonstration — le critère de tri change le classement', () => {
+  it('tri par prix : ordre croissant du prix, sans badge « meilleur rapport »', () => {
+    const cmp = getComparison('cocody-plateau', 'PRICE')!;
+    const prices = cmp.ranking.ranked.map((r) => r.sortValue);
+    const sorted = [...prices].sort((a, b) => a - b);
+    expect(prices).toEqual(sorted);
+    // BEST_VALUE n'a de sens qu'avec une valeur du temps : absent hors compromis.
+    expect(cmp.ranking.badges.some((b) => b.code === 'BEST_VALUE')).toBe(false);
+  });
+
+  it('tri par durée : ordre croissant de la durée', () => {
+    const cmp = getComparison('cocody-plateau', 'DURATION')!;
+    const durs = cmp.ranking.ranked.map((r) => r.sortValue);
+    const sorted = [...durs].sort((a, b) => a - b);
+    expect(durs).toEqual(sorted);
+  });
+
+  it('compromis : émet bien le badge « meilleur rapport »', () => {
+    const cmp = getComparison('cocody-plateau', 'PRICE_TIME')!;
+    expect(cmp.ranking.badges.some((b) => b.code === 'BEST_VALUE')).toBe(true);
+  });
 });

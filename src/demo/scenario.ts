@@ -147,6 +147,76 @@ export const CORRIDORS: readonly DemoCorridor[] = [
       { mode: 'GBAKA', providerId: 'op-gbaka-demo', durationMin: 40, waitMin: 12, flatFare: 400 },
     ],
   },
+  {
+    id: 'abobo-plateau',
+    from: 'Abobo',
+    to: 'Plateau',
+    km: 15.4,
+    legs: [
+      { mode: 'VTC', providerId: 'op-vtc-demo', durationMin: 34 },
+      { mode: 'TAXI', providerId: 'op-taxi-demo', durationMin: 38 },
+      { mode: 'WORO', providerId: 'op-woro-demo', durationMin: 58, waitMin: 7, flatFare: 400 },
+      { mode: 'GBAKA', providerId: 'op-gbaka-demo', durationMin: 68, waitMin: 12, flatFare: 300 },
+    ],
+  },
+  {
+    id: 'treichville-cocody',
+    from: 'Treichville',
+    to: 'Cocody',
+    km: 7.8,
+    legs: [
+      { mode: 'VTC', providerId: 'op-vtc-demo', durationMin: 19 },
+      { mode: 'TAXI', providerId: 'op-taxi-demo', durationMin: 22 },
+      { mode: 'WORO', providerId: 'op-woro-demo', durationMin: 35, waitMin: 5, flatFare: 300 },
+      { mode: 'GBAKA', providerId: 'op-gbaka-demo', durationMin: 42, waitMin: 8, flatFare: 250 },
+    ],
+  },
+  {
+    id: 'koumassi-adjame',
+    from: 'Koumassi',
+    to: 'Adjamé',
+    km: 13.5,
+    legs: [
+      { mode: 'VTC', providerId: 'op-vtc-demo', durationMin: 30 },
+      { mode: 'TAXI', providerId: 'op-taxi-demo', durationMin: 34 },
+      { mode: 'WORO', providerId: 'op-woro-demo', durationMin: 55, waitMin: 6, flatFare: 400 },
+      { mode: 'GBAKA', providerId: 'op-gbaka-demo', durationMin: 64, waitMin: 11, flatFare: 350 },
+    ],
+  },
+  {
+    id: 'portbouet-plateau',
+    from: 'Port-Bouët',
+    to: 'Plateau',
+    km: 16.8,
+    legs: [
+      {
+        mode: 'VTC',
+        providerId: 'op-vtc-demo',
+        durationMin: 26,
+        fixedFees: [{ code: 'TOLL', label: 'Péage pont (exemple)', amount: 500 }],
+      },
+      {
+        mode: 'TAXI',
+        providerId: 'op-taxi-demo',
+        durationMin: 30,
+        fixedFees: [{ code: 'TOLL', label: 'Péage pont (exemple)', amount: 500 }],
+      },
+      { mode: 'WORO', providerId: 'op-woro-demo', durationMin: 60, waitMin: 8, flatFare: 500 },
+      { mode: 'GBAKA', providerId: 'op-gbaka-demo', durationMin: 72, waitMin: 14, flatFare: 400 },
+    ],
+  },
+  {
+    id: 'riviera-yopougon',
+    from: 'Riviera',
+    to: 'Yopougon',
+    km: 22.0,
+    legs: [
+      { mode: 'VTC', providerId: 'op-vtc-demo', durationMin: 40 },
+      { mode: 'TAXI', providerId: 'op-taxi-demo', durationMin: 45 },
+      { mode: 'WORO', providerId: 'op-woro-demo', durationMin: 85, waitMin: 9, flatFare: 600 },
+      { mode: 'GBAKA', providerId: 'op-gbaka-demo', durationMin: 95, waitMin: 15, flatFare: 500 },
+    ],
+  },
 ];
 
 const DEMO_INSTANT = new Date('2026-08-01T08:42:00Z');
@@ -200,10 +270,20 @@ function buildGrid(leg: Leg): FareGrid {
   return result.grid;
 }
 
+/** Critère de tri proposé à l'usager. */
+export type DemoCriterion = 'PRICE' | 'DURATION' | 'PRICE_TIME';
+
+export const CRITERIA: readonly { readonly code: DemoCriterion; readonly label: string }[] = [
+  { code: 'PRICE', label: 'Moins cher' },
+  { code: 'DURATION', label: 'Plus rapide' },
+  { code: 'PRICE_TIME', label: 'Meilleur compromis' },
+];
+
 export interface DemoComparison {
   readonly corridor: DemoCorridor;
   readonly options: readonly RankableOption[];
   readonly ranking: RankingResult;
+  readonly criterion: DemoCriterion;
   /** Valeur du temps (exemple) employée pour « meilleur rapport ». */
   readonly timeValueXofPerMinute: number;
 }
@@ -212,7 +292,10 @@ export interface DemoComparison {
  * Construit la comparaison d'un corridor en passant par les moteurs réels.
  * `getComparison(id)` est la couture : une implémentation réelle la remplacera.
  */
-export function getComparison(corridorId: string): DemoComparison | null {
+export function getComparison(
+  corridorId: string,
+  criterion: DemoCriterion = 'PRICE_TIME',
+): DemoComparison | null {
   const corridor = CORRIDORS.find((c) => c.id === corridorId);
   if (!corridor) return null;
 
@@ -241,10 +324,18 @@ export function getComparison(corridorId: string): DemoComparison | null {
     };
   });
 
-  const ranking = rankOptions(options, {
-    criterion: 'PRICE_TIME',
-    timeValueXofPerMinute: DEMO_TIME_VALUE_XOF_PER_MIN,
-  });
+  const ranking = rankOptions(
+    options,
+    criterion === 'PRICE_TIME'
+      ? { criterion, timeValueXofPerMinute: DEMO_TIME_VALUE_XOF_PER_MIN }
+      : { criterion },
+  );
 
-  return { corridor, options, ranking, timeValueXofPerMinute: DEMO_TIME_VALUE_XOF_PER_MIN };
+  return {
+    corridor,
+    options,
+    ranking,
+    criterion,
+    timeValueXofPerMinute: DEMO_TIME_VALUE_XOF_PER_MIN,
+  };
 }
