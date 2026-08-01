@@ -16,6 +16,46 @@
 
 import { z } from 'zod';
 
+/**
+ * POLITIQUES DE CALCUL — INJECTABLES, JAMAIS ENFOUIES
+ * Chaque politique porte un statut. `UNVALIDATED` signifie qu'aucun releve
+ * terrain ni source officielle ne la confirme : c'est une hypothese de
+ * travail, et le resultat la mentionne.
+ */
+export const policyStatusSchema = z.enum(['UNVALIDATED', 'VALIDATED']);
+export type PolicyStatus = z.infer<typeof policyStatusSchema>;
+
+/**
+ * Composition des majorations.
+ *   MULTIPLICATIVE  horaire x zone — deux causes de rarete se cumulent
+ *   MAX             max(horaire, zone) — une seule cause domine
+ * Aucun mode n'est confirme. Cf. HYPOTHESE H3.
+ */
+export const multiplierCompositionSchema = z.object({
+  mode: z.enum(['MULTIPLICATIVE', 'MAX']),
+  status: policyStatusSchema,
+});
+
+/**
+ * Assiette de la taxe.
+ *   METER_ONLY        taxe sur le seul prix au compteur, frais fixes exclus
+ *   TOTAL_BEFORE_TAX  taxe sur le total avant taxe, frais fixes inclus
+ * L'assiette reelle n'est pas etablie. Cf. HYPOTHESE H5.
+ */
+export const taxBaseSchema = z.object({
+  mode: z.enum(['METER_ONLY', 'TOTAL_BEFORE_TAX']),
+  status: policyStatusSchema,
+});
+
+/**
+ * Base d'une estimation. Les deux ne sont JAMAIS fusionnees.
+ *   REGULATORY  grille officielle verifiee, avec reference de source
+ *   OBSERVED    echantillon terrain suffisant
+ * Le moteur ne fabrique aucun « prix negocie » intermediaire.
+ */
+export const fareBasisSchema = z.enum(['REGULATORY', 'OBSERVED']);
+export type FareBasis = z.infer<typeof fareBasisSchema>;
+
 /** Entier positif ou nul, en XOF. */
 const amount = z.number().int().nonnegative();
 
@@ -75,14 +115,32 @@ export const fareGridSchema = z
     fixedFees: z.array(fixedFeeSchema).default([]),
 
     /**
-     * Plafond du multiplicateur total. Garde-fou explicite contre une
-     * majoration non bornee — la tarification dynamique fait l'objet d'un
-     * recadrage annonce par la DGTTC (CDC §2).
+     * BORNE TECHNIQUE PROVISOIRE, configurable par grille.
+     * Empeche la composition des majorations de diverger sans limite.
+     *
+     * Ce n'est PAS une regle reglementaire : aucune source officielle
+     * fixant un plafond n'a ete versee au dossier. La valeur par defaut
+     * de 3 est arbitraire et devra etre remplacee par une borne mesuree
+     * ou par une regle sourcee. Cf. HYPOTHESE H4.
      */
     maxTotalMultiplier: z.number().min(1).default(3),
 
-    /** Taxe sur le prix de la course. 0.04 = 4 %. Voir HYPOTHESE H5. */
+    /** Taxe sur le prix de la course. 0.04 = 4 %. Assiette : cf. `policies`. */
     taxRate: z.number().min(0).max(1).default(0),
+
+    /** Politiques de calcul. Injectables par grille, jamais codees en dur. */
+    policies: z.object({
+      multiplierComposition: multiplierCompositionSchema,
+      taxBase: taxBaseSchema,
+    }),
+
+    /**
+     * Base de l'estimation produite par cette grille.
+     * `REGULATORY` exige une reference de source verifiee.
+     */
+    basis: fareBasisSchema,
+    /** Reference de la source. Obligatoire pour une grille REGULATORY. */
+    sourceRef: z.string().nullable().default(null),
 
     roundingStep: z.number().int().positive().default(5),
     roundingMode: z.enum(['nearest', 'up', 'down']).default('nearest'),
@@ -110,7 +168,15 @@ export const fareGridSchema = z
       return new Set(zones).size === zones.length;
     },
     { message: 'Deux majorations visent la meme zone' },
-  );
+  )
+  .refine((grid) => grid.basis !== 'REGULATORY' || (grid.sourceRef?.length ?? 0) > 0, {
+    message:
+      'Une grille REGULATORY exige une reference de source verifiee : sans elle, ' +
+      'elle ne peut pas se declarer reglementaire',
+  })
+  .refine((grid) => grid.taxRate === 0 || grid.policies.taxBase !== undefined, {
+    message: 'Une taxe non nulle exige une assiette explicite',
+  });
 
 export type FareGrid = z.infer<typeof fareGridSchema>;
 export type TimeWindow = z.infer<typeof timeWindowSchema>;
