@@ -126,7 +126,7 @@ Avant tout commit, les cinq doivent passer :
 ```bash
 npm run typecheck
 npm run lint
-npm test               # 232 tests
+npm test               # 234 tests
 npm run build          # enchaîne prebuild → build → postbuild
 git status --porcelain # doit être vide
 ```

@@ -74,7 +74,16 @@ Les deux options sont implémentées et testées. Il ne manque que la réponse.
 | **Responsable**           | Patrick SOMET                                                 |
 | **Source attendue**       | Environnement autorisant le téléchargement des navigateurs    |
 | **Critère d'acceptation** | `npx playwright install chromium && npm run test:e2e` au vert |
-| **Statut**                | OUVERTE                                                       |
+| **Statut**                | **LEVÉE (2026-08-01)**                                        |
+
+**Résolution (2026-08-01)** : les deux smoke tests (`tests/e2e/smoke.spec.ts` —
+chargement du shell sans erreur console ; absence de secret dans le bundle servi)
+**passent**. Ils sont désormais exécutés à chaque push par le job `e2e` de la CI
+GitHub Actions (`.github/workflows/ci.yml`), avec installation déterministe du
+navigateur. Deux défauts révélés au premier passage réel ont été corrigés côté
+produit **sans modifier les tests** : favicon absent (404 console) et littéral du
+préfixe de détection `sb_secret_` présent dans le bundle (désormais assemblé à
+l'exécution). Ceci ne concerne pas DEP-001 (preuve OSRM), qui reste ouverte.
 
 ---
 

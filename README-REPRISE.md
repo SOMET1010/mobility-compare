@@ -22,16 +22,19 @@ C'est délibéré. Le socle est posé, la construction métier commence à J2.
 
 Voir `docs/INVENTAIRE_REPRISE_NOLI.md` pour la traçabilité complète de la reprise.
 
-### Contrôle obligatoire en attente
+### Contrôle Playwright — exécuté et au vert (2026-08-01)
 
-Les tests Playwright sont écrits et configurés mais **n'ont jamais été exécutés** : le téléchargement des navigateurs échoue dans l'environnement de construction, dont le réseau est restreint.
-
-**Ce contrôle est obligatoire avant la validation du premier parcours navigateur.** Il ne rouvre pas J1.3 : le socle est validé. Mais aucun parcours utilisateur ne peut être déclaré fonctionnel tant que cette preuve n'a pas été obtenue.
+Les deux smoke tests (`tests/e2e/smoke.spec.ts`) ont été exécutés et **passent** : chargement du shell sans erreur console, et absence de secret dans le bundle servi. Ils sont désormais rejoués à chaque push par le job `e2e` de la CI (`.github/workflows/ci.yml`). **DEP-005 est levée.**
 
 ```bash
-npx playwright install chromium
+npx playwright install chromium   # ou navigateur pré-installé de l'environnement
 npm run test:e2e
 ```
+
+### État au 2026-08-01
+
+- **CI GitHub Actions : verte** — jobs `quality` (secrets, typecheck, lint, tests d'architecture, 234 tests unitaires, build) et `e2e` (2 smoke tests).
+- **J2 — preuve d'intégration OSRM réelle : INCONCLUSIVE**, dépendance externe **DEP-001 indisponible** (extrait OSM et image OSRM inaccessibles depuis l'environnement). Le verrou J2 reste fermé. **Aucun rapport OSRM ne doit être généré sans mesure réelle.**
 
 ---
 
