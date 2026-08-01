@@ -28,7 +28,7 @@
 import type { Estimation, TraceStep } from '@/domain/result';
 import { roundTo, xof, type Xof } from '../money';
 import { abidjanHour, abidjanWeekday, type Clock } from '../clock';
-import { windowCovers, type FareGrid } from './grid';
+import { windowCovers, type FareBasis, type FareGrid, type PolicyStatus } from './grid';
 
 /** Trajet mesure, tel que fourni par la couche de routage. */
 export interface TripMeasurement {
@@ -42,17 +42,38 @@ export interface TripMeasurement {
   readonly routingProvider: string;
 }
 
+/** Detail du plafonnement, expose meme lorsqu'il ne joue pas. */
+export interface MultiplierOutcome {
+  /** Majoration issue de la composition, avant tout ecretage. */
+  readonly raw: number;
+  /** Majoration effectivement retenue. */
+  readonly applied: number;
+  readonly capped: boolean;
+  /** Raison de l'ecretage, `null` si non plafonne. */
+  readonly capReason: string | null;
+  /** Mode de composition employe et son statut de validation. */
+  readonly compositionMode: 'MULTIPLICATIVE' | 'MAX';
+  readonly compositionStatus: PolicyStatus;
+}
+
 export interface FareResult {
   readonly amount: Xof;
   readonly currency: 'XOF';
   readonly gridVersion: string;
   readonly providerId: string;
-  /** Multiplicateur effectivement applique, apres plafonnement. */
-  readonly appliedMultiplier: number;
+  /**
+   * Base de l'estimation. Une valeur REGULATORY et une valeur OBSERVED ne
+   * doivent jamais etre fusionnees : elles n'ont pas le meme statut.
+   */
+  readonly basis: FareBasis;
+  readonly multiplier: MultiplierOutcome;
   /** Vrai si le plancher a pris le pas sur le calcul au compteur. */
   readonly minimumApplied: boolean;
-  /** Vrai si le plafond a ecrete la majoration. */
-  readonly multiplierCapped: boolean;
+  /** Politiques appliquees et leur statut, pour lecture par l'appelant. */
+  readonly policiesApplied: {
+    readonly multiplierComposition: PolicyStatus;
+    readonly taxBase: PolicyStatus;
+  };
 }
 
 export interface FareInput {
@@ -130,25 +151,43 @@ export function computeFare(input: FareInput, clock: Clock): Estimation<FareResu
 
   const tripZones = trip.zoneIds ?? [];
   const activeZones = grid.zoneSurcharges.filter((z) => tripZones.includes(z.zoneId));
-  // H3 : les majorations se composent par multiplication.
-  const zoneMultiplier = activeZones.reduce((acc, z) => acc * z.multiplier, 1);
 
-  const rawMultiplier = timeMultiplier * zoneMultiplier;
-  const appliedMultiplier = Math.min(rawMultiplier, grid.maxTotalMultiplier);
-  const multiplierCapped = rawMultiplier > grid.maxTotalMultiplier;
+  // La composition est une POLITIQUE portee par la grille (H3), pas une
+  // constante du moteur. Aucun mode n'est confirme par releve terrain.
+  const compositionMode = grid.policies.multiplierComposition.mode;
+  const zoneMultipliers = activeZones.map((z) => z.multiplier);
+  const rawMultiplier =
+    compositionMode === 'MAX'
+      ? Math.max(timeMultiplier, ...zoneMultipliers, 1)
+      : zoneMultipliers.reduce((acc, m) => acc * m, timeMultiplier);
+
+  const capped = rawMultiplier > grid.maxTotalMultiplier;
+  const appliedMultiplier = capped ? grid.maxTotalMultiplier : rawMultiplier;
+
+  const multiplier: MultiplierOutcome = {
+    raw: rawMultiplier,
+    applied: appliedMultiplier,
+    capped,
+    capReason: capped
+      ? `Borne technique provisoire x${grid.maxTotalMultiplier} : aucune source reglementaire versee au dossier`
+      : null,
+    compositionMode,
+    compositionStatus: grid.policies.multiplierComposition.status,
+  };
 
   const s2 = s1 * appliedMultiplier;
 
-  if (appliedMultiplier !== 1) {
+  if (appliedMultiplier !== 1 || capped) {
     const causes = [
       activeWindow ? `${activeWindow.label} x${timeMultiplier}` : null,
       ...activeZones.map((z) => `${z.label} x${z.multiplier}`),
     ].filter(Boolean);
+    const modeLabel = compositionMode === 'MAX' ? 'max' : 'produit';
     steps.push({
       label: 'Majoration',
-      formula: multiplierCapped
-        ? `${causes.join(' + ')} = x${rawMultiplier.toFixed(2)}, plafonne a x${grid.maxTotalMultiplier}`
-        : `${causes.join(' + ')} = x${appliedMultiplier.toFixed(2)}`,
+      formula:
+        `${causes.join(' + ')} (${modeLabel}) = brute x${rawMultiplier.toFixed(2)}` +
+        (capped ? `, retenue x${appliedMultiplier.toFixed(2)} — ${multiplier.capReason}` : ''),
       amount: Math.round(s2),
     });
   }
@@ -171,12 +210,17 @@ export function computeFare(input: FareInput, clock: Clock): Estimation<FareResu
     steps.push({ label: fee.label, formula: `${fee.amount} FCFA`, amount: fee.amount });
   }
 
-  // --- S5 : taxe (H5) --------------------------------------------------------
-  const s5 = s4 * (1 + grid.taxRate);
+  // --- S5 : taxe, assiette selon la politique de la grille (H5) --------------
+  const taxMode = grid.policies.taxBase.mode;
+  const taxableBase = taxMode === 'METER_ONLY' ? s3 : s4;
+  const taxAmount = taxableBase * grid.taxRate;
+  const s5 = s4 + taxAmount;
   if (grid.taxRate > 0) {
+    const baseLabel =
+      taxMode === 'METER_ONLY' ? 'compteur seul, hors frais fixes' : 'total avant taxe';
     steps.push({
       label: 'Taxe',
-      formula: `${(grid.taxRate * 100).toFixed(1)} % de ${Math.round(s4)} FCFA`,
+      formula: `${(grid.taxRate * 100).toFixed(1)} % de ${Math.round(taxableBase)} FCFA (${baseLabel})`,
       amount: Math.round(s5),
     });
   }
@@ -196,9 +240,13 @@ export function computeFare(input: FareInput, clock: Clock): Estimation<FareResu
       currency: 'XOF',
       gridVersion: grid.version,
       providerId: grid.providerId,
-      appliedMultiplier,
+      basis: grid.basis,
+      multiplier,
       minimumApplied,
-      multiplierCapped,
+      policiesApplied: {
+        multiplierComposition: grid.policies.multiplierComposition.status,
+        taxBase: grid.policies.taxBase.status,
+      },
     },
     trace: {
       steps,
