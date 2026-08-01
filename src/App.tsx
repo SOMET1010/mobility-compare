@@ -1,45 +1,33 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { PRODUCT, IS_BRAND_PENDING } from '@/config/product';
-import { IS_BACKEND_CONFIGURED } from '@/config/env';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { createQueryClient } from '@/lib/queryClient';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import Home from '@/pages/Home';
+import DemoPage from '@/pages/DemoPage';
 
 const queryClient = createQueryClient();
 
 /**
- * Shell applicatif du jalon J1.3.
- * Aucune fonctionnalite metier : le socle technique est branche, rien de plus.
- * L'ecran dit la verite sur l'etat du systeme plutot que de simuler un produit.
+ * Shell applicatif.
+ *   /       accueil honnête — dit l'état réel du système (aucun métier prouvé)
+ *   /demo   mode Démonstration — parcours complet à données 100 % fictives
+ *
+ * La démonstration ne fabrique aucune donnée dans le domaine : elle alimente
+ * les moteurs réels (tarification, classement) avec des valeurs explicitement
+ * marquées SIMULATION.
  */
 export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 p-6">
-          <Card>
-            <CardHeader>
-              <CardTitle data-testid="product-name">{PRODUCT.displayName}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>
-                Comparateur de mobilite multimodale — {PRODUCT.scope.city},{' '}
-                {PRODUCT.scope.countryName}.
-              </p>
-              <p className="text-muted-foreground">
-                Socle technique initialise. Aucune fonctionnalite n&apos;est encore disponible.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {IS_BRAND_PENDING && <Badge variant="outline">Marque : ADR-001</Badge>}
-                <Badge variant={IS_BACKEND_CONFIGURED ? 'default' : 'outline'}>
-                  {IS_BACKEND_CONFIGURED ? 'Backend configure' : 'Backend non configure'}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/demo" element={<DemoPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
         <Toaster />
       </QueryClientProvider>
     </ErrorBoundary>
