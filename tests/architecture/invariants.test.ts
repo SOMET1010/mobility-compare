@@ -44,37 +44,9 @@ describe('ADR-001 — le nom de travail est confine', () => {
   });
 });
 
-describe('Securite — aucun secret expose au client', () => {
-  const FORBIDDEN = [
-    'VITE_SUPABASE_SERVICE',
-    'VITE_SUPABASE_SECRET',
-    'VITE_SERVICE_ROLE',
-    'VITE_SMS_',
-    'VITE_OTP_',
-    'service_role',
-  ];
-
-  it('aucune variable VITE_ ne porte un secret dans src/', () => {
-    const offenders: string[] = [];
-    for (const file of sourceFiles()) {
-      const content = readFileSync(file, 'utf8');
-      for (const needle of FORBIDDEN) {
-        if (content.includes(needle)) offenders.push(`${file} -> ${needle}`);
-      }
-    }
-    expect(offenders, offenders.join('\n')).toEqual([]);
-  });
-
-  it(".env.example ne contient aucune valeur renseignee apres un '='", () => {
-    const content = readFileSync(join(ROOT, '.env.example'), 'utf8');
-    const filled = content
-      .split('\n')
-      .map((line) => line.split('#')[0]!.trim()) // les commentaires ne sont pas des valeurs
-      .filter((line) => /^[A-Z][A-Z0-9_]*=.+/.test(line))
-      .filter((line) => !line.endsWith('=development'));
-    expect(filled, `Valeurs presentes : ${filled.join(' | ')}`).toEqual([]);
-  });
-});
+// Le controle des secrets est assure par env-separation.test.ts (porte
+// prebuild) et secrets.test.ts (detecteur qualifie). Le controle naif qui
+// figurait ici produisait des faux positifs sur les fichiers declaratifs.
 
 describe('Invariant I3 — le classement naturel ignore le sponsoring', () => {
   it('aucun fichier de src/domain/ranking ne reference le sponsoring', () => {
