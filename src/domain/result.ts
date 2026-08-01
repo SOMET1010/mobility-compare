@@ -30,7 +30,18 @@ export interface Absent {
 
 export type Estimation<T> = Available<T> | Absent;
 
+/** Une etape de calcul, restituable telle quelle a l'usager. */
+export interface TraceStep {
+  readonly label: string;
+  /** Formule litterale, avec les valeurs reellement utilisees. */
+  readonly formula: string;
+  /** Montant cumule apres cette etape, en XOF. */
+  readonly amount: number;
+}
+
 export interface CalculationTrace {
+  /** Detail pas a pas. Un prix affiche doit toujours pouvoir etre explique. */
+  readonly steps: readonly TraceStep[];
   readonly pricingModelVersion: string | null;
   readonly routingProvider: string | null;
   readonly distanceMeters: number | null;
