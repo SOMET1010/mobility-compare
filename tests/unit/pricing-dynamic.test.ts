@@ -31,6 +31,12 @@ function referenceGrid(overrides: Partial<FareGrid> = {}): FareGrid {
     taxRate: 0,
     roundingStep: 5,
     roundingMode: 'nearest',
+    policies: {
+      multiplierComposition: { mode: 'MULTIPLICATIVE', status: 'UNVALIDATED' },
+      taxBase: { mode: 'TOTAL_BEFORE_TAX', status: 'UNVALIDATED' },
+    },
+    basis: 'OBSERVED',
+    sourceRef: null,
     validFrom: new Date('2026-01-01T00:00:00Z'),
     validTo: null,
     ...overrides,
@@ -167,7 +173,7 @@ describe('majorations', () => {
     // 3100 x 1.5 = 4650
     if (result.available) {
       expect(result.value.amount).toBe(4650);
-      expect(result.value.appliedMultiplier).toBe(1.5);
+      expect(result.value.multiplier.applied).toBe(1.5);
     }
   });
 
@@ -176,7 +182,7 @@ describe('majorations', () => {
       { grid: nightGrid, trip: trip(), departureAt: new Date('2026-08-02T03:00:00Z') },
       CLOCK,
     );
-    if (result.available) expect(result.value.appliedMultiplier).toBe(1.5);
+    if (result.available) expect(result.value.multiplier.applied).toBe(1.5);
   });
 
   it("n'applique aucune majoration a 14 h", () => {
@@ -184,7 +190,7 @@ describe('majorations', () => {
       { grid: nightGrid, trip: trip(), departureAt: new Date('2026-08-01T14:00:00Z') },
       CLOCK,
     );
-    if (result.available) expect(result.value.appliedMultiplier).toBe(1);
+    if (result.available) expect(result.value.multiplier.applied).toBe(1);
   });
 
   it('respecte la restriction par jour de la semaine', () => {
@@ -200,8 +206,8 @@ describe('majorations', () => {
       { grid: weekendGrid, trip: trip(), departureAt: new Date('2026-08-03T14:00:00Z') },
       CLOCK,
     );
-    if (saturday.available) expect(saturday.value.appliedMultiplier).toBe(2);
-    if (monday.available) expect(monday.value.appliedMultiplier).toBe(1);
+    if (saturday.available) expect(saturday.value.multiplier.applied).toBe(2);
+    if (monday.available) expect(monday.value.multiplier.applied).toBe(1);
   });
 
   it('compose majoration horaire et geographique par multiplication (H3)', () => {
@@ -218,7 +224,7 @@ describe('majorations', () => {
       CLOCK,
     );
     // 1.5 x 1.2 = 1.8
-    if (result.available) expect(result.value.appliedMultiplier).toBeCloseTo(1.8, 5);
+    if (result.available) expect(result.value.multiplier.applied).toBeCloseTo(1.8, 5);
   });
 
   it('ecrete au plafond et le signale explicitement', () => {
@@ -236,8 +242,8 @@ describe('majorations', () => {
       CLOCK,
     );
     if (result.available) {
-      expect(result.value.appliedMultiplier).toBe(2);
-      expect(result.value.multiplierCapped).toBe(true);
+      expect(result.value.multiplier.applied).toBe(2);
+      expect(result.value.multiplier.capped).toBe(true);
     }
   });
 
@@ -246,7 +252,7 @@ describe('majorations', () => {
       zoneSurcharges: [{ zoneId: 'AEROPORT', label: 'Aeroport', multiplier: 1.5 }],
     });
     const result = computeFare({ grid, trip: trip({ zoneIds: ['PLATEAU'] }) }, CLOCK);
-    if (result.available) expect(result.value.appliedMultiplier).toBe(1);
+    if (result.available) expect(result.value.multiplier.applied).toBe(1);
   });
 });
 
@@ -378,8 +384,8 @@ describe('determinisme', () => {
     const night = computeFare({ grid, trip: trip() }, fixedClock(new Date('2026-08-01T23:00:00Z')));
     const day = computeFare({ grid, trip: trip() }, fixedClock(new Date('2026-08-01T14:00:00Z')));
     if (night.available && day.available) {
-      expect(night.value.appliedMultiplier).toBe(1.5);
-      expect(day.value.appliedMultiplier).toBe(1);
+      expect(night.value.multiplier.applied).toBe(1.5);
+      expect(day.value.multiplier.applied).toBe(1);
     }
   });
 
@@ -426,7 +432,7 @@ describe('tracabilite — invariant I2', () => {
     if (!result.available) throw new Error('resultat attendu disponible');
     const step = result.trace.steps.find((s) => s.label === 'Majoration');
     expect(step?.formula).toContain('Nuit');
-    expect(step?.formula).toContain('x1.5');
+    expect(step?.formula).toContain('x1.50');
   });
 
   it("mentionne le plafonnement lorsqu'il s'applique", () => {
@@ -440,7 +446,7 @@ describe('tracabilite — invariant I2', () => {
     );
     if (!result.available) throw new Error('resultat attendu disponible');
     const step = result.trace.steps.find((s) => s.label === 'Majoration');
-    expect(step?.formula).toContain('plafonne');
+    expect(step?.formula).toContain('Borne technique provisoire');
   });
 
   it('porte la version de grille et le fournisseur de routage', () => {
@@ -479,5 +485,155 @@ describe('neutralite commerciale — invariant I3', () => {
     if (result.valid) {
       expect((result.grid as unknown as Record<string, unknown>)['sponsorBoost']).toBeUndefined();
     }
+  });
+});
+
+// =============================================================================
+describe('politiques injectables — decisions J2.2', () => {
+  const grid = (mode: 'MULTIPLICATIVE' | 'MAX') =>
+    referenceGrid({
+      policies: {
+        multiplierComposition: { mode, status: 'UNVALIDATED' },
+        taxBase: { mode: 'TOTAL_BEFORE_TAX', status: 'UNVALIDATED' },
+      },
+      timeWindows: [{ label: 'Nuit', fromHour: 22, toHour: 5, weekdays: [], multiplier: 1.5 }],
+      zoneSurcharges: [{ zoneId: 'Z1', label: 'Zone 1', multiplier: 1.2 }],
+    });
+
+  const nightAirport = {
+    trip: trip({ zoneIds: ['Z1'] }),
+    departureAt: new Date('2026-08-01T23:00:00Z'),
+  };
+
+  it('compose par produit sous la politique MULTIPLICATIVE', () => {
+    const result = computeFare({ grid: grid('MULTIPLICATIVE'), ...nightAirport }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.multiplier.raw).toBeCloseTo(1.8, 5);
+    expect(result.value.multiplier.compositionMode).toBe('MULTIPLICATIVE');
+  });
+
+  it('retient le maximum sous la politique MAX', () => {
+    const result = computeFare({ grid: grid('MAX'), ...nightAirport }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.multiplier.raw).toBe(1.5);
+    expect(result.value.multiplier.compositionMode).toBe('MAX');
+  });
+
+  it('les deux politiques donnent des prix differents : le choix compte', () => {
+    const a = computeFare({ grid: grid('MULTIPLICATIVE'), ...nightAirport }, CLOCK);
+    const b = computeFare({ grid: grid('MAX'), ...nightAirport }, CLOCK);
+    if (!a.available || !b.available) throw new Error('resultats attendus');
+    expect(a.value.amount).not.toBe(b.value.amount);
+  });
+
+  it('expose le statut UNVALIDATED de la composition', () => {
+    const result = computeFare({ grid: grid('MULTIPLICATIVE'), ...nightAirport }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.multiplier.compositionStatus).toBe('UNVALIDATED');
+    expect(result.value.policiesApplied.multiplierComposition).toBe('UNVALIDATED');
+  });
+});
+
+describe('assiette de la taxe — les deux politiques', () => {
+  const withTax = (mode: 'METER_ONLY' | 'TOTAL_BEFORE_TAX') =>
+    referenceGrid({
+      taxRate: 0.04,
+      fixedFees: [{ code: 'PEAGE', label: 'Peage', amount: 1000 }],
+      policies: {
+        multiplierComposition: { mode: 'MULTIPLICATIVE', status: 'UNVALIDATED' },
+        taxBase: { mode, status: 'UNVALIDATED' },
+      },
+    });
+
+  it('METER_ONLY : la taxe porte sur le compteur seul', () => {
+    // compteur 3100 -> taxe 124 ; total = 3100 + 1000 + 124 = 4224 -> 4225
+    const result = computeFare({ grid: withTax('METER_ONLY'), trip: trip() }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.amount).toBe(4225);
+  });
+
+  it('TOTAL_BEFORE_TAX : la taxe porte sur le total frais fixes inclus', () => {
+    // (3100 + 1000) x 1.04 = 4264 -> 4265
+    const result = computeFare({ grid: withTax('TOTAL_BEFORE_TAX'), trip: trip() }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.amount).toBe(4265);
+  });
+
+  it("la trace nomme l'assiette employee", () => {
+    const meter = computeFare({ grid: withTax('METER_ONLY'), trip: trip() }, CLOCK);
+    const total = computeFare({ grid: withTax('TOTAL_BEFORE_TAX'), trip: trip() }, CLOCK);
+    if (!meter.available || !total.available) throw new Error('resultats attendus');
+    expect(meter.trace.steps.find((s) => s.label === 'Taxe')?.formula).toContain('compteur seul');
+    expect(total.trace.steps.find((s) => s.label === 'Taxe')?.formula).toContain(
+      'total avant taxe',
+    );
+  });
+});
+
+describe('plafonnement — ecretage trace, jamais une absence', () => {
+  const capped = referenceGrid({
+    maxTotalMultiplier: 2,
+    timeWindows: [{ label: 'Pointe', fromHour: 17, toHour: 20, weekdays: [], multiplier: 3.5 }],
+  });
+  const at = { trip: trip(), departureAt: new Date('2026-08-01T18:00:00Z') };
+
+  it('produit un resultat disponible malgre le depassement', () => {
+    const result = computeFare({ grid: capped, ...at }, CLOCK);
+    expect(result.available).toBe(true);
+  });
+
+  it('expose majoration brute, majoration retenue, capped et raison', () => {
+    const result = computeFare({ grid: capped, ...at }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.multiplier.raw).toBe(3.5);
+    expect(result.value.multiplier.applied).toBe(2);
+    expect(result.value.multiplier.capped).toBe(true);
+    expect(result.value.multiplier.capReason).toContain('Borne technique provisoire');
+  });
+
+  it('ne presente pas le plafond comme une regle reglementaire', () => {
+    const result = computeFare({ grid: capped, ...at }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.multiplier.capReason).toContain('aucune source reglementaire');
+  });
+
+  it('capReason est nul lorsque le plafond ne joue pas', () => {
+    const result = computeFare({ grid: referenceGrid(), trip: trip() }, CLOCK);
+    if (!result.available) throw new Error('resultat attendu');
+    expect(result.value.multiplier.capped).toBe(false);
+    expect(result.value.multiplier.capReason).toBeNull();
+  });
+});
+
+describe('base d estimation — reglementaire et observee jamais fusionnees', () => {
+  it('une grille REGULATORY sans reference de source est rejetee', () => {
+    const result = validateFareGrid({ ...referenceGrid(), basis: 'REGULATORY', sourceRef: null });
+    expect(result.valid).toBe(false);
+    if (!result.valid) expect(result.errors.join()).toContain('source verifiee');
+  });
+
+  it('une grille REGULATORY avec source est acceptee', () => {
+    const result = validateFareGrid({
+      ...referenceGrid(),
+      basis: 'REGULATORY',
+      sourceRef: 'arrete-fictif-2026-01',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('le resultat porte sa base et ne la melange jamais', () => {
+    const observed = computeFare(
+      { grid: referenceGrid({ basis: 'OBSERVED' }), trip: trip() },
+      CLOCK,
+    );
+    const regulatory = computeFare(
+      { grid: referenceGrid({ basis: 'REGULATORY', sourceRef: 'arrete-fictif' }), trip: trip() },
+      CLOCK,
+    );
+    if (!observed.available || !regulatory.available) throw new Error('resultats attendus');
+    expect(observed.value.basis).toBe('OBSERVED');
+    expect(regulatory.value.basis).toBe('REGULATORY');
+    // Aucune API ne permet de combiner les deux : ce sont deux resultats distincts.
+    expect(observed.value.basis).not.toBe(regulatory.value.basis);
   });
 });
