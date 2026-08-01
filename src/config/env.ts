@@ -40,6 +40,7 @@ const publishableKeySchema = z
 const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().url().optional(),
   VITE_SUPABASE_PUBLISHABLE_KEY: publishableKeySchema.optional(),
+  /** Couche de services de routage. Jamais l'URL d'OSRM. */
   VITE_ROUTING_BASE_URL: z.string().url().optional(),
   VITE_SENTRY_DSN: z.string().optional(),
   VITE_SENTRY_ENABLE_DEV: z.enum(['true', 'false']).optional(),

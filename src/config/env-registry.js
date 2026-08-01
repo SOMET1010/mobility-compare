@@ -33,7 +33,8 @@ export const CLIENT_VARIABLES = [
   {
     name: 'VITE_ROUTING_BASE_URL',
     required: false,
-    description: "URL du service de routage. Aucun identifiant : l'accès est contrôlé côté service.",
+    description:
+      "URL de NOTRE couche de services de routage, jamais celle d'OSRM. OSRM tourne sur une VM privée, non joignable depuis le navigateur.",
   },
   {
     name: 'VITE_SENTRY_DSN',
