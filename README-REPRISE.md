@@ -33,7 +33,7 @@ npm run test:e2e
 
 ### État au 2026-08-01
 
-- **CI GitHub Actions : verte** — jobs `quality` (secrets, typecheck, lint, tests d'architecture, 234 tests unitaires, build) et `e2e` (2 smoke tests). Run de référence : https://github.com/SOMET1010/mobility-compare/actions/runs/30700139594
+- **CI GitHub Actions : verte** — jobs `quality` (secrets, typecheck, lint, tests d'architecture, 234 tests unitaires, build) et `e2e` (2 smoke tests). Dernier run vert : https://github.com/SOMET1010/mobility-compare/actions/runs/30701320777 (commit `6ec870b`). État courant de tous les runs : https://github.com/SOMET1010/mobility-compare/actions/workflows/ci.yml?query=branch%3Amain
 - **J2 — preuve d'intégration OSRM réelle : INCONCLUSIVE**, dépendance externe **DEP-001 indisponible** (extrait OSM et image OSRM inaccessibles depuis l'environnement). Le verrou J2 reste fermé. **Aucun rapport OSRM ne doit être généré sans mesure réelle.**
 
 ---
