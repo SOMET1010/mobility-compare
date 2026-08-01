@@ -17,7 +17,11 @@
     "test:arch": "vitest run tests/architecture",
     "prepare": "husky",
     "test:e2e": "playwright test",
-    "test:unit": "vitest run tests/unit"
+    "test:unit": "vitest run tests/unit",
+    "prebuild": "node scripts/check-client-secrets.mjs",
+    "postbuild": "node scripts/check-bundle.mjs",
+    "check:secrets": "node scripts/check-client-secrets.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.11",
