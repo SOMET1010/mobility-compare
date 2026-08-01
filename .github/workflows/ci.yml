@@ -11,6 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Historique complet requis : tests/architecture/secrets.test.ts
+          # scanne « git log -p --all » pour vérifier que chaque exception
+          # historique du détecteur de secrets correspond encore à une occurrence
+          # réelle. Le checkout par défaut est shallow (depth 1) : il prive ce
+          # contrôle de l'historique et le fait échouer à tort. On ne desserre
+          # pas le contrôle — on lui fournit les données qu'il inspecte.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
