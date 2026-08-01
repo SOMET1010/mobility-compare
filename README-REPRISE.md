@@ -1,7 +1,7 @@
 # README-REPRISE — Comparateur de Mobilité Abidjan
 
 **Nom de travail** : MobilityCompare — **provisoire**, voir `docs/adr/ADR-001`.
-**État** : jalon J1.3 terminé. Dépôt initialisé, architecture posée, socle technique repris de NOLI. **Aucune fonctionnalité métier implémentée.**
+**État** : jalon J1.4 terminé. Dépôt initialisé, architecture posée, socle technique repris de NOLI. **Aucune fonctionnalité métier implémentée.**
 **Date** : 1er août 2026
 
 Ce document est la source de vérité pour reprendre le projet. Il n'y a aucune dépendance à une session de travail antérieure.
@@ -18,7 +18,16 @@ C'est délibéré. Le socle est posé, la construction métier commence à J2.
 
 Voir `docs/INVENTAIRE_REPRISE_NOLI.md` pour la traçabilité complète de la reprise.
 
-**Réserve** : les tests Playwright sont écrits et configurés mais **n'ont pas été exécutés** — le téléchargement des navigateurs a échoué dans l'environnement de construction. À lancer au premier `npx playwright install chromium && npm run test:e2e`.
+### Contrôle obligatoire en attente
+
+Les tests Playwright sont écrits et configurés mais **n'ont jamais été exécutés** : le téléchargement des navigateurs échoue dans l'environnement de construction, dont le réseau est restreint.
+
+**Ce contrôle est obligatoire avant la validation du premier parcours navigateur.** Il ne rouvre pas J1.3 : le socle est validé. Mais aucun parcours utilisateur ne peut être déclaré fonctionnel tant que cette preuve n'a pas été obtenue.
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
 
 ---
 

@@ -16,6 +16,8 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm ci
+      - name: Controle des secrets client (porte pre-build)
+        run: npm run check:secrets
       - name: Typecheck
         run: npm run typecheck
       - name: Lint
@@ -24,5 +26,5 @@ jobs:
         run: npm run test:arch
       - name: Tests
         run: npm test
-      - name: Build
+      - name: Build (enchaine prebuild et postbuild)
         run: npm run build
