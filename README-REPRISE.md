@@ -1,7 +1,7 @@
 # README-REPRISE — Comparateur de Mobilité Abidjan
 
 **Nom de travail** : MobilityCompare — **provisoire**, voir `docs/adr/ADR-001`.
-**État** : jalon J1 étape 2. Dépôt initialisé, architecture posée. **Aucune fonctionnalité implémentée.**
+**État** : jalon J1.3 terminé. Dépôt initialisé, architecture posée, socle technique repris de NOLI. **Aucune fonctionnalité métier implémentée.**
 **Date** : 1er août 2026
 
 Ce document est la source de vérité pour reprendre le projet. Il n'y a aucune dépendance à une session de travail antérieure.
@@ -10,11 +10,15 @@ Ce document est la source de vérité pour reprendre le projet. Il n'y a aucune 
 
 ## 1. Ce qui existe et ce qui n'existe pas
 
-**Existe** : arborescence, outillage (TypeScript, Vite, Tailwind, ESLint, Prettier, Husky, commitlint, Vitest), configuration d'identité produit centralisée, contrats `RoutingProvider` et `SmsProvider`, type `Estimation` matérialisant l'invariant d'absence honnête, tests d'architecture, pipeline CI.
+**Existe** : arborescence, outillage complet, identité produit centralisée, contrats `RoutingProvider` et `SmsProvider`, type `Estimation` (absence honnête), 16 composants shadcn, thème neutre, logger avec masquage des données sensibles, taxonomie d'erreurs, monitoring Sentry filtré, ErrorBoundary, guards de routes, configuration TanStack Query, primitives Zod, validation d'environnement, 49 tests, pipeline CI.
 
-**N'existe pas** : aucune interface, aucun moteur de calcul, aucune migration, aucun composant UI, aucune connexion à Supabase, aucun adaptateur de fournisseur. Les dossiers correspondants contiennent un `README.md` décrivant leur rôle et leurs contraintes.
+**N'existe pas** : aucun moteur de calcul, aucune migration, aucun écran métier, aucune connexion à Supabase, aucun adaptateur de fournisseur. Les dossiers correspondants contiennent un `README.md` décrivant leur rôle et leurs contraintes.
 
-C'est délibéré. Le socle est posé, la construction commence à J2.
+C'est délibéré. Le socle est posé, la construction métier commence à J2.
+
+Voir `docs/INVENTAIRE_REPRISE_NOLI.md` pour la traçabilité complète de la reprise.
+
+**Réserve** : les tests Playwright sont écrits et configurés mais **n'ont pas été exécutés** — le téléchargement des navigateurs a échoué dans l'environnement de construction. À lancer au premier `npx playwright install chromium && npm run test:e2e`.
 
 ---
 
