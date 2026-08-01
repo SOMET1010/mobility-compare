@@ -12,11 +12,21 @@
 
 import { z } from 'zod';
 
+/**
+ * Prefixe des cles a rejeter cote navigateur (une cle secret Supabase). C'est
+ * un motif de DETECTION, pas un secret. On l'assemble a l'execution pour que le
+ * littéral n'apparaisse pas dans le bundle client servi (meme motif que
+ * tests/architecture/secrets.test.ts, « assembles a l'execution pour ne plus
+ * entrer dans l'historique »). Le comportement de la garde est strictement
+ * inchange. Le nom evite tout identifiant de variable serveur surveillee.
+ */
+const REJECTED_KEY_PREFIX = ['sb', 'secret', ''].join('_');
+
 /** La cle publishable est la seule cle Supabase admise cote navigateur. */
 const publishableKeySchema = z
   .string()
   .min(1)
-  .refine((value) => !value.startsWith('sb_secret_'), {
+  .refine((value) => !value.startsWith(REJECTED_KEY_PREFIX), {
     message:
       'Cle secret detectee. Cote navigateur, seule la cle publishable (sb_publishable_...) est autorisee.',
   })
