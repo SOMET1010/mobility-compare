@@ -1,7 +1,7 @@
 # README-REPRISE — Comparateur de Mobilité Abidjan
 
 **Nom de travail** : MobilityCompare — **provisoire**, voir `docs/adr/ADR-001`.
-**État** : jalon J1.4 terminé. Dépôt initialisé, architecture posée, socle technique repris de NOLI. **Aucune fonctionnalité métier implémentée.**
+**État** : J1 clôturé sous réserves, J2.1 et J2.2 validés, J2 en attente de preuve d'intégration OSRM réelle. Dépôt initialisé, architecture posée, socle technique repris de NOLI. **Aucune fonctionnalité métier implémentée.**
 **Date** : 1er août 2026
 
 Ce document est la source de vérité pour reprendre le projet. Il n'y a aucune dépendance à une session de travail antérieure.
@@ -157,6 +157,10 @@ Front → clé **publishable** (`sb_publishable_...`). Serveur → clé **secret
 | ------- | -------------------------------------------------- | ----------- |
 | ADR-001 | Nom commercial et Sender ID                        | **Ouverte** |
 | ADR-002 | Gestion des secrets et migration des clés Supabase | Acceptée    |
+
+Dépendances externes bloquantes : `docs/REGISTRE_DEPENDANCES_EXTERNES.md` — 8 dépendances suivies, avec responsable, source attendue et critère d'acceptation.
+
+Protocole de levée du verrou J2 : `./scripts/j2.3/run-proof.sh` (voir `scripts/j2.3/README.md`).
 
 Autres points non tranchés, hors ADR :
 
