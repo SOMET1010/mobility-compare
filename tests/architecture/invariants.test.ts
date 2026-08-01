@@ -48,6 +48,43 @@ describe('ADR-001 — le nom de travail est confine', () => {
 // prebuild) et secrets.test.ts (detecteur qualifie). Le controle naif qui
 // figurait ici produisait des faux positifs sur les fichiers declaratifs.
 
+/**
+ * Retire commentaires et chaines litterales.
+ * Un commentaire qui INTERDIT un levier commercial doit pouvoir le nommer :
+ * c'est le code executable qui est controle, pas la documentation.
+ */
+function codeOnly(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/\/\/.*$/gm, ' ')
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''")
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+    .replace(/`(?:[^`\\]|\\.)*`/g, '``');
+}
+
+describe('Invariant I3 — aucun levier commercial dans le domaine', () => {
+  const COMMERCIAL_TERMS = /sponsor|monetization|advertis|promo|discount|commission|partnerBoost/i;
+
+  it('codeOnly neutralise commentaires et chaines', () => {
+    expect(codeOnly('// sponsorBoost\nconst a = 1;')).not.toMatch(COMMERCIAL_TERMS);
+    expect(codeOnly('const x = "promo";')).not.toMatch(COMMERCIAL_TERMS);
+    expect(codeOnly('const sponsorBoost = 1;')).toMatch(COMMERCIAL_TERMS);
+  });
+
+  it('le moteur tarifaire ne connait aucun levier commercial', () => {
+    let files: string[] = [];
+    try {
+      files = walk(join(ROOT, 'src', 'domain', 'pricing'));
+    } catch {
+      files = [];
+    }
+    const offenders = files
+      .filter((f) => ['.ts', '.tsx'].includes(extname(f)))
+      .filter((f) => COMMERCIAL_TERMS.test(codeOnly(readFileSync(f, 'utf8'))));
+    expect(offenders, `Prix influencable : ${offenders.join(', ')}`).toEqual([]);
+  });
+});
+
 describe('Invariant I3 — le classement naturel ignore le sponsoring', () => {
   it('aucun fichier de src/domain/ranking ne reference le sponsoring', () => {
     let files: string[] = [];
@@ -57,8 +94,8 @@ describe('Invariant I3 — le classement naturel ignore le sponsoring', () => {
       files = [];
     }
     const offenders = files
-      .filter((f) => ['.ts', '.tsx'].includes(extname(f))) // la doc peut nommer la regle
-      .filter((f) => /sponsor|monetization|advertis/i.test(readFileSync(f, 'utf8')));
+      .filter((f) => ['.ts', '.tsx'].includes(extname(f)))
+      .filter((f) => /sponsor|monetization|advertis/i.test(codeOnly(readFileSync(f, 'utf8'))));
     expect(offenders, `Biais de classement possible : ${offenders.join(', ')}`).toEqual([]);
   });
 });
