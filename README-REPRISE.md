@@ -8,6 +8,10 @@ Ce document est la source de vérité pour reprendre le projet. Il n'y a aucune 
 
 ---
 
+> **Agent automatisé** : lis `CLAUDE.md` à la racine avant toute modification.
+> Il fixe les règles du dépôt, les invariants, ce qui exige un arbitrage et ce
+> qui ne constitue pas une preuve.
+
 ## 1. Ce qui existe et ce qui n'existe pas
 
 **Existe** : arborescence, outillage complet, identité produit centralisée, contrats `RoutingProvider` et `SmsProvider`, type `Estimation` (absence honnête), 16 composants shadcn, thème neutre, logger avec masquage des données sensibles, taxonomie d'erreurs, monitoring Sentry filtré, ErrorBoundary, guards de routes, configuration TanStack Query, primitives Zod, validation d'environnement, 49 tests, pipeline CI.
