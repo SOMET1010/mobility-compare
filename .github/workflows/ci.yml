@@ -36,3 +36,42 @@ jobs:
         run: npm test
       - name: Build (enchaine prebuild et postbuild)
         run: npm run build
+
+  e2e:
+    # Smoke tests Playwright : chargement du shell sans erreur console + absence
+    # de secret dans le bundle servi. Aucune dependance a OSRM ni a DEP-001 :
+    # ces tests ne chargent que le shell, qui n'appelle aucun service de routage.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - name: Version de Playwright (cle de cache)
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache des navigateurs Playwright
+        # Cache fiable : la cle est liee a la version exacte de Playwright, donc
+        # une montee de version invalide le cache. `playwright install` reste
+        # lance ensuite et devient un no-op en cas de restauration complete.
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - name: Installer Chromium (deterministe)
+        run: npx playwright install --with-deps chromium
+      - name: Smoke tests e2e (build + preview + attente + 2 tests)
+        # Le webServer de playwright.config.ts construit puis sert l'application
+        # et attend explicitement http://localhost:4173 avant d'executer.
+        run: npm run test:e2e
+      - name: Conserver traces, captures et rapport — en cas d'echec uniquement
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

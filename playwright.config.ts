@@ -11,10 +11,14 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
-  reporter: process.env['CI'] ? 'github' : 'list',
+  reporter: process.env['CI'] ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: 'http://localhost:4173',
+    // Diagnostics conserves UNIQUEMENT en cas d'echec : aucune trace, capture
+    // ou video sur un run vert. L'upload CI est lui aussi conditionne a l'echec.
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
   projects: [{ name: 'mobile-chrome', use: { ...devices['Pixel 5'] } }],
   webServer: {
