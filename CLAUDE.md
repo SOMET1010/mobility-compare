@@ -102,7 +102,7 @@ scripts/
 tests/
   architecture/  invariants, secrets, dépendances, séparation client/serveur
   unit/          logique métier
-  e2e/           Playwright — JAMAIS EXÉCUTÉ
+  e2e/           Playwright — EXÉCUTÉ (local + CI), 2 smoke tests verts
   fixtures/      données figées, NON PROBANTES
 
 docs/
