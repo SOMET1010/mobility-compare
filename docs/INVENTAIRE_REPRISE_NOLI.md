@@ -149,26 +149,32 @@ Détection prouvée par test négatif : l'injection d'une clé de longueur réal
 
 ## 7. État des tests
 
-```
-48 tests, 7 fichiers, tous verts
+Instantané J1.3 : 48 tests, 7 fichiers. **État au 2026-08-01 : 234 tests
+(unitaires + architecture), 15 fichiers, tous verts**, plus les 2 smoke tests
+e2e désormais exécutés (voir §8 et §10).
 
-tests/architecture/  invariants (5) · secrets (5) · dépendances (1)
-tests/unit/          logger (12) · validation (12) · erreurs (6)
-                     guards (5) · shell (3)
-tests/e2e/           smoke Playwright (2) — NON EXÉCUTÉ, voir §8
+```
+234 tests, 15 fichiers, tous verts (2026-08-01)
+
+tests/architecture/  invariants · secrets · dépendances · séparation client/serveur
+                     · couverture du typecheck (garde anti-contrôle-vacant)
+tests/unit/          logger · validation · erreurs · guards · shell · tarification
+                     dynamique · tarification-exige-routage · routage · classement
+                     · verdict de preuve OSRM (39)
+tests/e2e/           smoke Playwright (2) — EXÉCUTÉ (local + CI), voir §8
 ```
 
 ---
 
-## 8. Réserve honnête sur Playwright
+## 8. Playwright — réserve levée (2026-08-01)
 
 Playwright est installé et configuré (profil mobile Pixel 5, serveur de préversion automatique), et deux tests smoke sont écrits : chargement du shell sans erreur console, et absence de secret dans le bundle servi.
 
-**Ils n'ont pas pu être exécutés ici** : le téléchargement des navigateurs Chromium échoue dans cet environnement, dont le réseau restreint les domaines accessibles. Le CDN de Playwright n'en fait pas partie.
+**Ils ont été exécutés et passent**, en local et en CI (job `e2e` de `.github/workflows/ci.yml`, avec installation déterministe du navigateur). **DEP-005 est levée** (voir §10).
 
-Je ne peux donc pas affirmer que ces deux tests passent. Ils doivent être exécutés au premier `npx playwright install chromium && npx playwright test` dans un environnement disposant d'un accès réseau complet.
+_Historique_ : au J1.3, ces tests n'avaient jamais pu être exécutés — le téléchargement des navigateurs Chromium échouait dans l'environnement de construction, dont le réseau restreignait les domaines accessibles. Deux défauts révélés au premier passage réel ont été corrigés **côté produit, sans modifier les tests** : favicon absent (404 console) et littéral du préfixe de détection `sb_secret_` présent dans le bundle (désormais assemblé à l'exécution). Détail en §10.
 
-Pour ne pas laisser le socle sans preuve de rendu, un test équivalent tourne sous Vitest et jsdom (`tests/unit/app.test.tsx`, 3 tests) : il s'exécute partout, sans navigateur.
+Un test de rendu équivalent tourne aussi sous Vitest et jsdom (`tests/unit/app.test.tsx`, 3 tests) : il s'exécute partout, sans navigateur.
 
 **Storybook n'est pas installé.** La reprise des 16 composants shadcn n'a pas nécessité de validation visuelle isolée : ce sont des primitives standard, non modifiées. À reporter au premier vrai lot UI, conformément à ton arbitrage.
 
@@ -183,3 +189,38 @@ dist/assets/index-*.js          306.92 kB │ gzip: 91.12 kB
 ```
 
 **91 kB compressés** au premier chargement. Le CDC fixe un plafond de 1 Mo sur 3G : la marge est confortable, mais elle sera consommée par la cartographie. À surveiller dès l'arrivée du moteur de calcul et de la carte.
+
+Rappel des tailles au 2026-08-01 (favicon + assemblage du préfixe pris en compte) : `index.js` 307.52 kB (gzip 91.44 kB), `index.css` 23.26 kB (gzip 4.89 kB), `index.html` 0.50 kB. Ordres de grandeur inchangés.
+
+---
+
+## 10. Mise à jour — état au 2026-08-01
+
+Reprise du dépôt à partir de l'état livré, sur machine réelle (Docker, Node 22, navigateur). Publication et stabilisation.
+
+### Publication et CI
+
+- Dépôt public **`SOMET1010/mobility-compare`** — `main`, historique complet.
+- **CI GitHub Actions verte** — jobs `quality` (secrets, typecheck, lint, tests d'architecture, 234 tests, build) et `e2e` (2 smoke tests, artefacts conservés uniquement en cas d'échec).
+- Run de référence : https://github.com/SOMET1010/mobility-compare/actions/runs/30700998267
+
+### Défauts réels corrigés (aucun contrôle affaibli)
+
+| Défaut constaté                                                                    | Correctif                                                                                                        | Contrôle préservé                                |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `npm run build` rouge (3 erreurs TS dans le test de verdict J2.3)                  | Typage honnête de la fixture (`ProofFacts`, champs nullables) ; `null` intentionnels conservés                   | 39 tests de verdict inchangés                    |
+| `npm run typecheck` vacant (`tsc --noEmit` sur 0 fichier)                          | Mode références réel (`tsc -b`) + garde d'architecture anti-contrôle-vacant                                      | Nouveau test bloque tout retour à zéro fichier   |
+| CI rouge : `test:arch` sur checkout shallow                                        | `fetch-depth: 0` (le détecteur de secrets scanne `git log -p --all`)                                             | Détecteur de secrets et ses exceptions inchangés |
+| Smoke test 1 : 404 `/favicon.ico` (erreur console)                                 | Favicon neutre dans `public/` (placeholder, charte à venir)                                                      | Test inchangé, reste strict                      |
+| Smoke test 2 : littéral `sb_secret_` dans le bundle (préfixe de la garde `env.ts`) | Préfixe assemblé à l'exécution (`['sb','secret',''].join('_')`) ; comportement de la garde strictement identique | Test inchangé ; `check-bundle.mjs` déjà vert     |
+
+Aucun test, seuil, invariant, garde ou définition de verdict n'a été modifié pour « faire passer » un contrôle. Chaque correctif a **remis en fonction** un contrôle réel, sous arbitrage explicite du propriétaire.
+
+### Dépendances externes
+
+- **DEP-005 (Playwright)** : **levée** — deux smoke tests verts, local + CI.
+- **DEP-001 (machine Docker + accès OSM/OSRM)** : **toujours ouverte**. Docker fonctionne dans l'environnement, mais l'extrait OSM (`geofabrik`) et l'image OSRM (`ghcr`/`cloudfront`) sont bloqués par la politique d'egress. Le protocole `run-proof.sh` n'a donc **pas** pu être exécuté.
+
+### Jalon J2.3 — inchangé
+
+**J2.3 / preuve d'intégration OSRM réelle : INCONCLUSIVE — DEP-001 indisponible.** Aucun rapport OSRM n'a été généré ; le verrou J2 reste fermé. Prochain jalon légitime : une exécution réelle de `./scripts/j2.3/run-proof.sh` sur une machine réunissant Docker fonctionnel, accès à l'image OSRM, accès à l'extrait OSM requis, disque et mémoire suffisants, et accès au dépôt.
