@@ -14,7 +14,9 @@ test("l'application se charge et affiche le shell", async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByTestId('product-name')).toBeVisible();
-  await expect(page.getByText(/Abidjan/)).toBeVisible();
+  // La vitrine cite Abidjan plusieurs fois : on vérifie la présence du
+  // périmètre (première occurrence), pas son unicité.
+  await expect(page.getByText(/Abidjan/).first()).toBeVisible();
   expect(consoleErrors, `Erreurs console : ${consoleErrors.join(' | ')}`).toEqual([]);
 });
 
