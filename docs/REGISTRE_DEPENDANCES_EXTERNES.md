@@ -95,7 +95,7 @@ l'exécution). Ceci ne concerne pas DEP-001 (preuve OSRM), qui reste ouverte.
 | **Responsable**           | Patrick SOMET                                                                                              |
 | **Source attendue**       | Dashboard Supabase                                                                                         |
 | **Critère d'acceptation** | Clés publishable et secret créées ; PostGIS activée ; build et tests au vert avec configuration renseignée |
-| **Statut**                | OUVERTE                                                                                                    |
+| **Statut**                | **LEVÉE** (15 août 2026)                                                                                   |
 
 Procédure détaillée : `docs/CONFIGURATION_SUPABASE.md` §3.
 
@@ -176,7 +176,7 @@ L'assistant actuel est guidé : intentions et réponses préécrites, exécutée
 | 003 | Assiette de la taxe         | À désigner  | H5                   |
 | 004 | Relevés terrain             | À désigner  | H3, H4, confiance    |
 | 005 | Playwright                  | Patrick     | Parcours navigateur  |
-| 006 | Clés Supabase, PostGIS      | Patrick     | J1.5, J1.6, géo      |
+| 006 | Clés Supabase, PostGIS      | Patrick     | **Levée 15/08/2026** |
 | 007 | Nom commercial              | Patrick     | Sender ID, domaine   |
 | 008 | Fournisseurs SMS            | À désigner  | Choix, budget OTP    |
 | 009 | Trafic temps réel           | À désigner  | Durées ajustées      |
