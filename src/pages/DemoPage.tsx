@@ -544,15 +544,6 @@ export default function DemoPage() {
               </span>
             </div>
 
-            {fromCommune && toCommune && (
-              <figure className="mb-4 overflow-hidden rounded-2xl border">
-                <StreetMap from={fromCommune} to={toCommune} />
-                <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
-                  Fond © OpenStreetMap · tracé direct, sans calcul d’itinéraire (DEP-001)
-                </figcaption>
-              </figure>
-            )}
-
             {/* Sélecteur de critère */}
             <div
               className="mb-3 flex gap-1 rounded-xl bg-muted p-1"
@@ -576,33 +567,6 @@ export default function DemoPage() {
                 </button>
               ))}
             </div>
-            {criterion === 'PRICE_TIME' && (
-              <p className="mb-3 text-[11px] text-muted-foreground">
-                Valeur du temps : {cmp.timeValueXofPerMinute} FCFA/min (exemple).
-              </p>
-            )}
-
-            {/* Conditions du moment : météo réelle, trafic type */}
-            <div className="mb-3">
-              <Conditions />
-            </div>
-
-            <div className="mb-4">
-              <ConfidenceNote />
-              {obsCounts && obsCounts.total > 0 && (
-                <p className="mt-2 flex items-start gap-1.5 text-[11.5px] font-medium leading-snug text-[#5C6B2E]">
-                  <span aria-hidden="true">🌱</span>
-                  <span>
-                    {obsCounts.total} observation{obsCounts.total > 1 ? 's' : ''} réelle
-                    {obsCounts.total > 1 ? 's' : ''} déjà collectée
-                    {obsCounts.total > 1 ? 's' : ''} et modérée{obsCounts.total > 1 ? 's' : ''}
-                    {obsCounts.pair > 0 ? ` — dont ${obsCounts.pair} sur ce trajet` : ''}. Les prix
-                    affichés restent des exemples tant que la grille n'est pas recalibrée.
-                  </span>
-                </p>
-              )}
-            </div>
-
             {/* Pourquoi le n°1 */}
             {cmp.ranking.ranked[0] && (
               <div
@@ -738,11 +702,6 @@ export default function DemoPage() {
                 );
               })()}
             </div>
-            <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
-              Ordre d’affichage : VTC d’abord (périmètre prioritaire V1). Les positions et badges
-              restent calculés par le classement neutre sur tous les modes — l’ordre éditorial ne
-              les modifie pas (invariant I3).
-            </p>
 
             {cmp.ranking.excluded.map((e) => (
               <div
@@ -777,10 +736,50 @@ export default function DemoPage() {
               </Button>
             </div>
 
-            <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
-              Badges « moins cher / plus rapide / meilleur rapport » calculés par un classement{' '}
-              <b>neutre</b> — aucun levier commercial (invariant I3).
-            </p>
+            {fromCommune && toCommune && (
+              <figure className="mt-4 overflow-hidden rounded-2xl border">
+                <StreetMap from={fromCommune} to={toCommune} />
+                <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
+                  Fond © OpenStreetMap · tracé direct, sans calcul d’itinéraire (DEP-001)
+                </figcaption>
+              </figure>
+            )}
+
+            <div className="mt-3">
+              <Conditions />
+            </div>
+
+            <details className="group mt-3 rounded-xl border bg-card">
+              <summary className="cursor-pointer select-none px-4 py-3 text-[13px] font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">
+                ⓘ Comprendre ces chiffres — exemples, observations, neutralité
+              </summary>
+              <div className="space-y-3 px-4 pb-4">
+                <ConfidenceNote />
+                {obsCounts && obsCounts.total > 0 && (
+                  <p className="flex items-start gap-1.5 text-[11.5px] font-medium leading-snug text-[#5C6B2E]">
+                    <span aria-hidden="true">🌱</span>
+                    <span>
+                      {obsCounts.total} observation{obsCounts.total > 1 ? 's' : ''} réelle
+                      {obsCounts.total > 1 ? 's' : ''} déjà collectée
+                      {obsCounts.total > 1 ? 's' : ''} et modérée{obsCounts.total > 1 ? 's' : ''}
+                      {obsCounts.pair > 0 ? ` — dont ${obsCounts.pair} sur ce trajet` : ''}.
+                    </span>
+                  </p>
+                )}
+                {criterion === 'PRICE_TIME' && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Valeur du temps : {cmp.timeValueXofPerMinute} FCFA/min (exemple).
+                  </p>
+                )}
+                <p className="text-[11px] leading-snug text-muted-foreground">
+                  Ordre d’affichage : VTC d’abord (périmètre prioritaire V1). Les positions et
+                  badges « moins cher / plus rapide / meilleur rapport » restent calculés par un
+                  classement <b>neutre</b> sur tous les modes — aucun levier commercial, l’ordre
+                  éditorial ne les modifie pas (invariant I3).
+                </p>
+              </div>
+            </details>
+
             <Button variant="ghost" size="sm" className="mt-1" onClick={() => setView('search')}>
               ← Changer de trajet
             </Button>
