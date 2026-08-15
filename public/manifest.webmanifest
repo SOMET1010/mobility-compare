@@ -1,0 +1,19 @@
+{
+  "name": "MobilityCompare (identité provisoire)",
+  "short_name": "MobilityCompare",
+  "description": "Comparateur neutre de mobilités urbaines — Abidjan. Nom et identité provisoires (ADR-001 / DEP-007).",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F4F6F5",
+  "theme_color": "#0E1B1F",
+  "icons": [
+    {
+      "src": "/icon-app.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

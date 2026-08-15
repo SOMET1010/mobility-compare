@@ -45,6 +45,22 @@
     --ring: 0 0% 12%;
 
     --radius: 0.5rem;
+
+    /**
+     * IDENTITE PROVISOIRE — palette « Voies qui convergent » (variante A).
+     * Enregistree ici pour reference ; elle NE remplace PAS les tokens shadcn
+     * ci-dessus, qui restent neutres et a fort contraste (plein soleil).
+     * Regles d'usage (contrastes WCAG mesures sur la planche de revue) :
+     *   - Encre #0E1B1F / Papier #F4F6F5 = 16.19:1  -> texte OK
+     *   - Soleil #E8920A / Encre        =  8.26:1  -> texte OK (fond sombre)
+     *   - Soleil #E8920A / Papier       =  2.26:1  -> INSUFFISANT : logo/aplats seulement, jamais texte sur fond clair
+     *   - Lagune #0F8B8D / Papier       =  3.80:1  -> logo & grands titres seulement
+     * Provisoire jusqu'a la marque definitive (ADR-001 / DEP-007).
+     */
+    --brand-ink: #0e1b1f;
+    --brand-paper: #f4f6f5;
+    --brand-sun: #e8920a;
+    --brand-lagoon: #0f8b8d;
   }
 
   .dark {
