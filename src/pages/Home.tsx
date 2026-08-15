@@ -21,12 +21,28 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
  */
 const HERO_IMAGE: string | null = null;
 
+/** Accents multicolores des stats (comme la maquette), accordés à la palette. */
 type StatIcon = 'route' | 'shield' | 'eye' | 'people';
-const STATS: { value: string; label: string; icon: StatIcon }[] = [
-  { value: '4', label: 'modes comparés sur un même trajet', icon: 'route' },
-  { value: '0', label: 'sponsor, promo ou commission dans le classement', icon: 'shield' },
-  { value: '100 %', label: 'du calcul de prix visible, étape par étape', icon: 'eye' },
-  { value: 'Neutre', label: 'méthodologie équitable et transparente', icon: 'people' },
+const STATS: { value: string; label: string; icon: StatIcon; tint: string }[] = [
+  { value: '4', label: 'modes comparés sur un même trajet', icon: 'route', tint: '#5C6B2E' },
+  {
+    value: '0',
+    label: 'sponsor, promo ou commission dans le classement',
+    icon: 'shield',
+    tint: '#B9722A',
+  },
+  {
+    value: '100 %',
+    label: 'du calcul de prix visible, étape par étape',
+    icon: 'eye',
+    tint: '#3F8F8B',
+  },
+  {
+    value: 'Neutre',
+    label: 'méthodologie équitable et transparente',
+    icon: 'people',
+    tint: '#7C6BA8',
+  },
 ];
 
 const STAT_ICONS: Record<StatIcon, JSX.Element> = {
@@ -226,7 +242,13 @@ export default function Home() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
             {STATS.map((s) => (
               <div key={s.label} className="flex items-center gap-3 px-5 py-6">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                <span
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                  style={{
+                    backgroundColor: `color-mix(in oklab, ${s.tint} 16%, transparent)`,
+                    color: s.tint,
+                  }}
+                >
                   {STAT_ICONS[s.icon]}
                 </span>
                 <div>
