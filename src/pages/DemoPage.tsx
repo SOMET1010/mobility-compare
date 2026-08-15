@@ -16,6 +16,8 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { Wordmark } from '@/components/BrandMark';
+import { Assistant } from '@/components/Assistant';
+import { Conditions } from '@/components/Conditions';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
@@ -409,6 +411,11 @@ export default function DemoPage() {
               </p>
             )}
 
+            {/* Conditions du moment : météo réelle, trafic type */}
+            <div className="mb-3">
+              <Conditions />
+            </div>
+
             <div className="mb-4">
               <ConfidenceNote />
             </div>
@@ -551,6 +558,7 @@ export default function DemoPage() {
           />
         )}
       </main>
+      <Assistant />
     </div>
   );
 }

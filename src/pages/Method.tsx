@@ -39,6 +39,16 @@ const OPEN_DEPS: { code: string; title: string; body: string }[] = [
     title: 'Relevés de terrain',
     body: 'Sans observation réelle, l’indice de confiance reste à 0. Les relevés le feront monter.',
   },
+  {
+    code: 'DEP-008',
+    title: 'Trafic en temps réel',
+    body: 'Le niveau de circulation affiché est un profil horaire type, simulé. Une source de trafic mesuré le remplacera et ajustera les durées.',
+  },
+  {
+    code: 'DEP-009',
+    title: 'Assistant IA',
+    body: 'L’assistant actuel est guidé : réponses préécrites, calculées sur l’appareil. Un assistant IA serveur exigera un hébergement et une charte d’usage.',
+  },
 ];
 
 export default function Method() {
