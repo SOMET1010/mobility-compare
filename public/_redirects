@@ -1,0 +1,5 @@
+# Repli SPA pour hebergement statique (Cloudflare Pages / Netlify).
+# Tout chemin inconnu (ex. /demo en acces direct ou rechargement) renvoie
+# index.html avec un statut 200 : le routeur cote client prend le relais.
+# Aucune donnee reelle, aucun secret. Build de DEMONSTRATION uniquement.
+/*    /index.html   200
