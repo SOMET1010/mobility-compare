@@ -13,11 +13,82 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 
 /* --------------------------------------------------------------- contenu */
 
-const PILLARS: { value: string; label: string }[] = [
-  { value: '4', label: 'modes comparés sur un même trajet' },
-  { value: '0', label: 'sponsor, promo ou commission dans le classement' },
-  { value: '100 %', label: 'du calcul de prix visible, étape par étape' },
+/**
+ * Photo de hero (libre de droits, optimisée < 250 Ko). Reste `null` tant
+ * qu'aucune image n'est déposée : le visuel de repli (dégradé + skyline
+ * stylisée) évite tout 404. Pour l'activer : déposer `public/hero-abidjan.webp`
+ * puis mettre `HERO_IMAGE = '/hero-abidjan.webp'`.
+ */
+const HERO_IMAGE: string | null = null;
+
+type StatIcon = 'route' | 'shield' | 'eye' | 'people';
+const STATS: { value: string; label: string; icon: StatIcon }[] = [
+  { value: '4', label: 'modes comparés sur un même trajet', icon: 'route' },
+  { value: '0', label: 'sponsor, promo ou commission dans le classement', icon: 'shield' },
+  { value: '100 %', label: 'du calcul de prix visible, étape par étape', icon: 'eye' },
+  { value: 'Neutre', label: 'méthodologie équitable et transparente', icon: 'people' },
 ];
+
+const STAT_ICONS: Record<StatIcon, JSX.Element> = {
+  route: (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="6" cy="19" r="2" />
+      <circle cx="18" cy="5" r="2" />
+      <path d="M8 19h6a3 3 0 0 0 3-3V8M6 17V9a3 3 0 0 1 3-3h5" />
+    </svg>
+  ),
+  shield: (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  ),
+  eye: (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </svg>
+  ),
+  people: (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <path d="M16 3.5a3 3 0 0 1 0 5.8M21 20c0-2.5-1.5-4.7-3.7-5.6" />
+    </svg>
+  ),
+};
 
 const MODES: { icon: GlyphShape; name: string; note: string }[] = [
   { icon: 'vtc', name: 'VTC', note: 'Réservé, porte-à-porte' },
@@ -95,50 +166,75 @@ export default function Home() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-[#26301C] text-white">
-        <HeroBackdrop />
-        <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
-            Côte d’Ivoire · Mobilité urbaine
-          </p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            Comparez tous vos trajets urbains.
-            <br />
-            <span className="text-white/60">En toute neutralité.</span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
-            {PRODUCT.displayName} met le VTC, le taxi compteur, le woro-woro et le gbaka sur un même
-            écran — prix, temps et meilleur compromis. À Abidjan aujourd’hui, en Côte d’Ivoire
-            demain.
-          </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              to="/demo"
-              className="inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-3.5 text-base font-semibold text-[#26301C] shadow-lg shadow-black/20 transition hover:brightness-105"
-            >
-              Voir la démonstration →
-            </Link>
-            <a
-              href="#comment"
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3.5 text-base font-semibold text-white/90 transition hover:bg-white/5"
-            >
-              Comment ça marche
-            </a>
+      {/* HERO (clair, composition inspirée de la maquette) */}
+      <section className="border-b bg-background">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-2 lg:gap-14">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {PRODUCT.scope.countryName} · Mobilité urbaine
+            </span>
+            <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+              Comparez tous vos trajets urbains. <span className="text-primary">En toute</span>{' '}
+              <span className="text-[#B9722A]">neutralité.</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              {PRODUCT.displayName} met le VTC, le taxi compteur, le woro-woro et le gbaka sur un
+              même écran — prix, temps et meilleur compromis. À Abidjan aujourd’hui, en Côte
+              d’Ivoire demain.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                to="/demo"
+                className="inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105"
+              >
+                Voir la démonstration →
+              </Link>
+              <a
+                href="#comment"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 text-base font-semibold transition hover:bg-muted"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Comment ça marche
+              </a>
+            </div>
+            <p className="mt-6 inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4 text-primary"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              Aperçu de démonstration — données 100 % simulées, aucun prix ou itinéraire réel.
+            </p>
           </div>
-          <p className="mt-6 inline-flex items-center gap-2 text-xs text-white/50">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#B9722A]" />
-            Aperçu de démonstration — données 100 % simulées, aucun prix ou itinéraire réel.
-          </p>
+
+          <HeroVisual />
         </div>
 
-        {/* Bandeau piliers (faits réels sur le produit, pas des statistiques inventées) */}
-        <div className="relative border-t border-white/10">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            {PILLARS.map((p) => (
-              <div key={p.label} className="px-5 py-6">
-                <div className="text-3xl font-extrabold text-white">{p.value}</div>
-                <div className="mt-1 text-sm text-white/60">{p.label}</div>
+        {/* Barre de stats (faits réels sur le produit) */}
+        <div className="border-t">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
+            {STATS.map((s) => (
+              <div key={s.label} className="flex items-center gap-3 px-5 py-6">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                  {STAT_ICONS[s.icon]}
+                </span>
+                <div>
+                  <div className="text-2xl font-extrabold leading-none">{s.value}</div>
+                  <div className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                    {s.label}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -312,47 +408,91 @@ export default function Home() {
   );
 }
 
-/* Fond du hero : réseau de voies qui convergent (identité), abstrait. */
-function HeroBackdrop() {
+/**
+ * Visuel du hero : cadre « carte postale » d'Abidjan. Par défaut, un dégradé de
+ * ciel + une skyline/pont stylisés (aucune dépendance externe, léger — CDC 3G).
+ * Si `HERO_IMAGE` est défini, la photo (libre de droits, optimisée) le remplace.
+ * Des pastilles de mode évoquent la comparaison multimodale.
+ */
+function HeroVisual() {
+  const badges: { shape: GlyphShape; x: string; y: string; color: string }[] = [
+    { shape: 'vtc', x: '16%', y: '24%', color: '#B9722A' },
+    { shape: 'gbaka', x: '52%', y: '14%', color: '#5C6B2E' },
+    { shape: 'taxi', x: '82%', y: '30%', color: '#B9722A' },
+    { shape: 'woro', x: '70%', y: '60%', color: '#5C6B2E' },
+  ];
   return (
-    <svg
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13]"
-      viewBox="0 0 800 500"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      <defs>
-        <radialGradient id="hub" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#B9722A" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#B9722A" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <g stroke="#C3D18F" strokeWidth="1.4" fill="none">
-        <path d="M120 40 L560 250" />
-        <path d="M40 200 L560 250" />
-        <path d="M80 420 L560 250" />
-        <path d="M320 470 L560 250" />
-        <path d="M760 60 L560 250" />
-        <path d="M780 300 L560 250" />
-        <path d="M700 440 L560 250" />
-        <path d="M440 20 L560 250" />
-      </g>
-      <g fill="#C3D18F">
-        {[
-          [120, 40],
-          [40, 200],
-          [80, 420],
-          [320, 470],
-          [760, 60],
-          [780, 300],
-          [700, 440],
-          [440, 20],
-        ].map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r="3.5" />
-        ))}
-      </g>
-      <circle cx="560" cy="250" r="60" fill="url(#hub)" />
-      <circle cx="560" cy="250" r="7" fill="#B9722A" />
-    </svg>
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border shadow-xl">
+      {/* Repli visuel (dégradé + skyline) — remplacé par la photo si fournie */}
+      <svg
+        viewBox="0 0 400 300"
+        className="absolute inset-0 h-full w-full"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2A3A46" />
+            <stop offset="55%" stopColor="#C98A3C" />
+            <stop offset="100%" stopColor="#E3B872" />
+          </linearGradient>
+          <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2E6E70" />
+            <stop offset="100%" stopColor="#1D4E52" />
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="400" height="300" fill="url(#sky)" />
+        <circle cx="300" cy="90" r="26" fill="#F4E3B0" opacity="0.85" />
+        {/* Skyline */}
+        <g fill="#26301C" opacity="0.92">
+          <rect x="20" y="150" width="22" height="60" />
+          <rect x="48" y="130" width="16" height="80" />
+          <rect x="70" y="160" width="26" height="50" />
+          <rect x="104" y="120" width="18" height="90" />
+          <rect x="128" y="145" width="20" height="65" />
+          <path d="M300 210 V120 l10 -14 l10 14 V210 z" />
+          <rect x="330" y="150" width="18" height="60" />
+          <rect x="354" y="135" width="22" height="75" />
+        </g>
+        {/* Pont à haubans */}
+        <g stroke="#26301C" strokeWidth="2" opacity="0.85" fill="none">
+          <path d="M170 210 L210 150 L250 210" />
+          <path
+            d="M210 150 L182 205 M210 150 L196 205 M210 150 L224 205 M210 150 L238 205"
+            strokeWidth="1"
+          />
+        </g>
+        {/* Lagune */}
+        <rect x="0" y="210" width="400" height="90" fill="url(#water)" />
+        <g stroke="#5FA6A4" strokeWidth="1.2" opacity="0.5">
+          <line x1="30" y1="235" x2="120" y2="235" />
+          <line x1="60" y1="255" x2="180" y2="255" />
+          <line x1="240" y1="245" x2="360" y2="245" />
+        </g>
+      </svg>
+
+      {HERO_IMAGE && (
+        <img
+          src={HERO_IMAGE}
+          alt="Abidjan"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+
+      {/* Pastilles de mode */}
+      {badges.map((b) => (
+        <span
+          key={b.shape}
+          className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white/80 bg-white/90 shadow-lg"
+          style={{ left: b.x, top: b.y, color: b.color }}
+        >
+          <ModeGlyph shape={b.shape} className="h-6 w-6" />
+        </span>
+      ))}
+
+      <span className="absolute bottom-2 right-3 rounded-full bg-black/35 px-2 py-0.5 text-[9px] font-medium text-white/90">
+        Visuel provisoire
+      </span>
+    </div>
   );
 }
