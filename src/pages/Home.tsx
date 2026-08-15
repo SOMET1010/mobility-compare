@@ -166,6 +166,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader
         links={[
+          { to: '/observatoire', label: 'Observatoire' },
           { to: '/methode', label: 'Méthode' },
           { to: '/partenaires', label: 'Partenaires' },
           { to: '/compte', label: 'Compte' },

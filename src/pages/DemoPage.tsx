@@ -32,6 +32,11 @@ import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { submitContribution } from '@/features/contributions/submit';
 import { fetchApprovedCounts, type ObservationCounts } from '@/features/contributions/stats';
 import { fetchPairAggregates, type ObservedAggregate } from '@/features/contributions/aggregate';
+import {
+  AGREMENT_LABEL,
+  fetchPublishedOperators,
+  type Operator,
+} from '@/features/operators/operators';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
@@ -219,6 +224,18 @@ export default function DemoPage() {
     () => comparePair(fromId, toId, criterion),
     [fromId, toId, criterion],
   );
+
+  // Opérateurs publiés (invariant I4 — lus en base, jamais en dur).
+  const [operators, setOperators] = useState<Operator[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchPublishedOperators().then((ops) => {
+      if (!cancelled) setOperators(ops);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Observations réelles approuvées (RLS) — null si backend absent : rien n'est affiché.
   const [obsCounts, setObsCounts] = useState<ObservationCounts | null>(null);
@@ -717,6 +734,7 @@ export default function DemoPage() {
             badgesByOption={badgesByOption}
             criterion={criterion}
             observed={observed}
+            operators={operators}
             onBack={() => setView('results')}
           />
         )}
@@ -775,6 +793,7 @@ function DetailView({
   badgesByOption,
   criterion,
   observed,
+  operators,
   onBack,
 }: {
   comparison: DemoComparison;
@@ -782,12 +801,14 @@ function DetailView({
   badgesByOption: Map<string, BadgeCode[]>;
   criterion: DemoCriterion;
   observed: Partial<Record<DemoMode, ObservedAggregate>> | null;
+  operators: Operator[] | null;
   onBack: () => void;
 }) {
   const ranked = cmp.ranking.ranked.find((r) => r.option.optionId === optionId);
   if (!ranked) return null;
   const o = ranked.option;
   const agg = observed?.[o.mode];
+  const modeOperators = operators?.filter((op) => op.mode === o.mode) ?? [];
   const m = MODE_META[o.mode];
   const price = fareAmount(o);
   const codes = badgesByOption.get(o.optionId) ?? [];
@@ -881,6 +902,39 @@ function DetailView({
           </>
         )}
       </dl>
+      {modeOperators.length > 0 && (
+        <div className="my-3 rounded-xl border bg-card p-4">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            Opérateurs (invariant I4 — statut vérifié, daté, sourcé)
+          </div>
+          <ul className="mt-2 space-y-1.5">
+            {modeOperators.map((op) => (
+              <li key={op.id} className="flex items-center justify-between gap-2 text-sm">
+                <span className="font-semibold">{op.label}</span>
+                <span
+                  className={
+                    'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ' +
+                    (op.agrement_status === 'AGREE'
+                      ? 'bg-[#5C6B2E]/12 text-[#5C6B2E]'
+                      : 'bg-muted text-muted-foreground')
+                  }
+                >
+                  {AGREMENT_LABEL[op.agrement_status]}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
+            Statuts lus en base, vérifiés le{' '}
+            {modeOperators[0]?.status_verified_at
+              ? new Date(modeOperators[0].status_verified_at).toLocaleDateString('fr-FR')
+              : '—'}{' '}
+            ({modeOperators[0]?.status_source ?? 'source à renseigner'}). Usage nominatif descriptif
+            — aucune affiliation.
+          </p>
+        </div>
+      )}
+
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
         Empreinte carbone : <b>estimation indicative</b> (facteurs génériques par passager ×
         distance simulée). Ordre de grandeur, non mesuré à Abidjan — les modes partagés émettent

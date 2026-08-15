@@ -9,6 +9,7 @@ import Partners from '@/pages/Partners';
 import Method from '@/pages/Method';
 import AccountPage from '@/pages/AccountPage';
 import Terms from '@/pages/Terms';
+import Observatory from '@/pages/Observatory';
 
 const queryClient = createQueryClient();
 
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/methode" element={<Method />} />
             <Route path="/compte" element={<AccountPage />} />
             <Route path="/conditions" element={<Terms />} />
+            <Route path="/observatoire" element={<Observatory />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
