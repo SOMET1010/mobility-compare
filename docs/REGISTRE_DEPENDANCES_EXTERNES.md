@@ -127,6 +127,46 @@ Le délai administratif du Sender ID court **à partir de la décision de marque
 
 ---
 
+## DEP-009 — Source de trafic en temps réel
+
+|                           |                                                                  |
+| ------------------------- | ---------------------------------------------------------------- |
+| **Bloque**                | Remplacement du profil horaire type ; ajustement des durées      |
+| **Responsable**           | `À DÉSIGNER`                                                     |
+| **Source attendue**       | Fournisseur de données trafic (ou observations terrain agrégées) |
+| **Critère d'acceptation** | Une mesure datée remplace le profil simulé, avec source citée    |
+| **Statut**                | OUVERTE                                                          |
+
+En attendant, l'UI affiche un profil horaire type d'Abidjan, étiqueté « simulé », qui n'ajuste pas les durées.
+
+---
+
+## DEP-010 — Assistant IA serveur
+
+|                           |                                                                     |
+| ------------------------- | ------------------------------------------------------------------- |
+| **Bloque**                | Remplacement de l'assistant guidé par une IA conversationnelle      |
+| **Responsable**           | `À DÉSIGNER`                                                        |
+| **Source attendue**       | Hébergement backend + budget d'inférence + charte d'usage           |
+| **Critère d'acceptation** | Réponses générées côté serveur, journalisées sans données sensibles |
+| **Statut**                | OUVERTE                                                             |
+
+L'assistant actuel est guidé : intentions et réponses préécrites, exécutées sur l'appareil, sans réseau.
+
+---
+
+## DEP-011 — Revue juridique des CGU
+
+|                           |                                                                |
+| ------------------------- | -------------------------------------------------------------- |
+| **Bloque**                | Passage des CGU de « provisoires » à opposables                |
+| **Responsable**           | `À DÉSIGNER` (juriste ivoirien)                                |
+| **Source attendue**       | Revue au regard de la loi n° 2013-450 (ARTCI) et du décret VTC |
+| **Critère d'acceptation** | CGU validées, datées, mention « provisoire » retirée           |
+| **Statut**                | OUVERTE                                                        |
+
+---
+
 ## Synthèse
 
 | #   | Dépendance                  | Responsable | Bloque               |
@@ -139,5 +179,8 @@ Le délai administratif du Sender ID court **à partir de la décision de marque
 | 006 | Clés Supabase, PostGIS      | Patrick     | J1.5, J1.6, géo      |
 | 007 | Nom commercial              | Patrick     | Sender ID, domaine   |
 | 008 | Fournisseurs SMS            | À désigner  | Choix, budget OTP    |
+| 009 | Trafic temps réel           | À désigner  | Durées ajustées      |
+| 010 | Assistant IA serveur        | À désigner  | IA conversationnelle |
+| 011 | Revue juridique CGU         | À désigner  | CGU opposables       |
 
 Quatre dépendances attendent la désignation d'un responsable. Ce sont aussi les quatre les plus longues à lever.

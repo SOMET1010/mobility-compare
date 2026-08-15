@@ -160,6 +160,7 @@ export default function Home() {
         links={[
           { to: '/methode', label: 'Méthode' },
           { to: '/partenaires', label: 'Partenaires' },
+          { to: '/compte', label: 'Compte' },
         ]}
       />
 
@@ -431,6 +432,12 @@ export default function Home() {
             </span>
             <span className="rounded-full border px-2.5 py-1 font-medium">Identité provisoire</span>
             <span className="rounded-full border px-2.5 py-1 font-medium">Données simulées</span>
+            <Link
+              to="/conditions"
+              className="rounded-full border px-2.5 py-1 font-medium underline-offset-2 transition hover:text-foreground hover:underline"
+            >
+              Conditions d'utilisation
+            </Link>
           </div>
         </div>
         <div className="mx-auto max-w-6xl px-5 pb-10 text-[11px] leading-relaxed text-muted-foreground">

@@ -5,7 +5,7 @@ import { COMMUNES } from './scenario';
  *
  * Honnêteté : ce n'est PAS une IA. Les réponses sont préécrites et le
  * raisonnement est un jeu de règles lisible ci-dessous. Un assistant IA
- * serveur est une dépendance ouverte (DEP-009). L'UI l'affiche clairement.
+ * serveur est une dépendance ouverte (DEP-010). L'UI l'affiche clairement.
  */
 
 export type AssistantIntent =
@@ -32,7 +32,7 @@ export interface AssistantReply {
 }
 
 export const ASSISTANT_DISCLAIMER =
-  'Assistant guidé : réponses préécrites, calculées sur votre appareil — aucune IA serveur (DEP-009).';
+  'Assistant guidé : réponses préécrites, calculées sur votre appareil — aucune IA serveur (DEP-010).';
 
 /** Normalise pour la détection : minuscules, sans accents ni ponctuation. */
 export function normalize(s: string): string {
@@ -105,7 +105,7 @@ export function answer(input: string): AssistantReply {
   if (has(t, 'trafic', 'embouteillage', 'bouchon', 'circulation')) {
     return {
       intent: 'traffic',
-      text: 'Le comparateur affiche un niveau de circulation type selon l’heure (pointes 6h30–9h30 et 16h30–20h). C’est un profil simulé, honnêtement étiqueté — la mesure temps réel est une dépendance ouverte (DEP-008).',
+      text: 'Le comparateur affiche un niveau de circulation type selon l’heure (pointes 6h30–9h30 et 16h30–20h). C’est un profil simulé, honnêtement étiqueté — la mesure temps réel est une dépendance ouverte (DEP-009).',
       actions: [{ label: 'Ouvrir le comparateur', to: '/demo' }],
     };
   }

@@ -68,8 +68,8 @@ frais fixes, taxe), le classement, les badges neutres (`CHEAPEST`, `FASTEST`,
 | Brique        | Statut de la donnée                                                              | Garde-fou                                                        |
 | ------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Météo Abidjan | **RÉELLE** — Open-Meteo (sans clé), interrogée depuis le navigateur du visiteur  | Badge « Réel » ; en cas d'échec réseau, absence honnête          |
-| Circulation   | **Simulée** — profil horaire type (pointes 6h30–9h30 et 16h30–20h), déterministe | Badge « Profil type », mention DEP-008 ; n'ajuste pas les durées |
-| Assistant     | **Guidé** — intentions et réponses préécrites, calculées sur l'appareil          | Bandeau permanent « aucune IA serveur (DEP-009) »                |
+| Circulation   | **Simulée** — profil horaire type (pointes 6h30–9h30 et 16h30–20h), déterministe | Badge « Profil type », mention DEP-009 ; n'ajuste pas les durées |
+| Assistant     | **Guidé** — intentions et réponses préécrites, calculées sur l'appareil          | Bandeau permanent « aucune IA serveur (DEP-010) »                |
 
 L'assistant (`src/demo/assistant.ts`) sait : détecter deux communes dans une
 phrase et proposer la comparaison correspondante, expliquer les modes, les prix,

@@ -17,6 +17,8 @@ import {
 } from '@/demo/scenario';
 import { Wordmark } from '@/components/BrandMark';
 import { Assistant } from '@/components/Assistant';
+import { OnboardingOverlay } from '@/components/OnboardingOverlay';
+import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
 import { Conditions } from '@/components/Conditions';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
@@ -175,6 +177,9 @@ export default function DemoPage() {
   const deepLinked = isCommune(urlFrom) && isCommune(urlTo) && urlFrom !== urlTo;
 
   const [section, setSection] = useState<Section>('app');
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => typeof window !== 'undefined' && !hasSeenOnboarding(window.localStorage),
+  );
   const [fromId, setFromId] = useState<string>(deepLinked ? urlFrom : 'cocody');
   const [toId, setToId] = useState<string>(deepLinked ? urlTo : 'plateau');
   const [criterion, setCriterion] = useState<DemoCriterion>(asCrit(params.get('tri')));
@@ -559,6 +564,14 @@ export default function DemoPage() {
         )}
       </main>
       <Assistant />
+      {showOnboarding && (
+        <OnboardingOverlay
+          onDone={() => {
+            markOnboardingSeen(window.localStorage);
+            setShowOnboarding(false);
+          }}
+        />
+      )}
     </div>
   );
 }

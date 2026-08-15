@@ -3,7 +3,7 @@
  *
  * Doctrine « zéro donnée inventée » :
  * - Le TRAFIC est un profil horaire TYPE d'Abidjan, simulé et déterministe —
- *   étiqueté comme tel partout (pas de mesure temps réel : DEP-008).
+ *   étiqueté comme tel partout (pas de mesure temps réel : DEP-009).
  * - La MÉTÉO est RÉELLE : Open-Meteo (service public, sans clé), interrogé
  *   depuis le navigateur du visiteur. En cas d'échec réseau, absence honnête.
  */
@@ -20,12 +20,12 @@ export interface TrafficEstimate {
 }
 
 export const TRAFFIC_DISCLAIMER =
-  'Profil horaire type, simulé — aucune mesure de trafic en temps réel (DEP-008).';
+  'Profil horaire type, simulé — aucune mesure de trafic en temps réel (DEP-009).';
 
 /**
  * Niveau de circulation TYPE selon l'heure locale d'Abidjan.
  * Modèle assumé simpliste (pointes matin/soir, creux de nuit), déterministe
- * pour être testable. Il n'ajuste PAS les durées affichées (DEP-001/DEP-008).
+ * pour être testable. Il n'ajuste PAS les durées affichées (DEP-001/DEP-009).
  */
 export function estimateTraffic(now: Date): TrafficEstimate {
   const m = now.getHours() * 60 + now.getMinutes();

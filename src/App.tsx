@@ -7,6 +7,8 @@ import Home from '@/pages/Home';
 import DemoPage from '@/pages/DemoPage';
 import Partners from '@/pages/Partners';
 import Method from '@/pages/Method';
+import AccountPage from '@/pages/AccountPage';
+import Terms from '@/pages/Terms';
 
 const queryClient = createQueryClient();
 
@@ -29,6 +31,8 @@ export default function App() {
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/partenaires" element={<Partners />} />
             <Route path="/methode" element={<Method />} />
+            <Route path="/compte" element={<AccountPage />} />
+            <Route path="/conditions" element={<Terms />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
