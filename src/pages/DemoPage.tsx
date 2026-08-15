@@ -31,6 +31,7 @@ import { Conditions } from '@/components/Conditions';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { submitContribution } from '@/features/contributions/submit';
 import { fetchApprovedCounts, type ObservationCounts } from '@/features/contributions/stats';
+import { fetchPairAggregates, type ObservedAggregate } from '@/features/contributions/aggregate';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
@@ -221,11 +222,18 @@ export default function DemoPage() {
 
   // Observations réelles approuvées (RLS) — null si backend absent : rien n'est affiché.
   const [obsCounts, setObsCounts] = useState<ObservationCounts | null>(null);
+  const [observed, setObserved] = useState<Partial<Record<DemoMode, ObservedAggregate>> | null>(
+    null,
+  );
   useEffect(() => {
     let cancelled = false;
     setObsCounts(null);
+    setObserved(null);
     fetchApprovedCounts(fromId, toId).then((c) => {
       if (!cancelled) setObsCounts(c);
+    });
+    fetchPairAggregates(fromId, toId).then((a) => {
+      if (!cancelled) setObserved(a);
     });
     return () => {
       cancelled = true;
@@ -583,7 +591,7 @@ export default function DemoPage() {
                     type="button"
                     onClick={() => openDetail(r.option.optionId)}
                     className={
-                      'flex w-full items-center gap-3.5 rounded-2xl border bg-card p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                      'flex w-full flex-wrap items-center gap-3.5 rounded-2xl border bg-card p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
                       (winner ? 'ring-1' : 'hover:border-foreground/30')
                     }
                     style={
@@ -624,6 +632,27 @@ export default function DemoPage() {
                       </span>
                     </span>
                     <Chevron />
+                    {(() => {
+                      const agg = observed?.[r.option.mode];
+                      if (!agg || agg.count === 0) return null;
+                      return (
+                        <span className="-mt-1 block basis-full border-t pt-1.5 text-[10.5px] font-medium leading-snug text-[#5C6B2E]">
+                          {agg.medianXof !== null ? (
+                            <>
+                              🌱 Observé sur ce trajet : ~
+                              <b className="tabular-nums">{fmt(agg.medianXof)} FCFA</b> (médiane de{' '}
+                              {agg.count} relevés modérés)
+                            </>
+                          ) : (
+                            <>
+                              🌱 {agg.count} relevé{agg.count > 1 ? 's' : ''} réel
+                              {agg.count > 1 ? 's' : ''} sur ce trajet — médiane affichée à partir
+                              de 5
+                            </>
+                          )}
+                        </span>
+                      );
+                    })()}
                   </button>
                 );
               })}
@@ -687,6 +716,7 @@ export default function DemoPage() {
             optionId={optionId}
             badgesByOption={badgesByOption}
             criterion={criterion}
+            observed={observed}
             onBack={() => setView('results')}
           />
         )}
@@ -744,17 +774,20 @@ function DetailView({
   optionId,
   badgesByOption,
   criterion,
+  observed,
   onBack,
 }: {
   comparison: DemoComparison;
   optionId: string;
   badgesByOption: Map<string, BadgeCode[]>;
   criterion: DemoCriterion;
+  observed: Partial<Record<DemoMode, ObservedAggregate>> | null;
   onBack: () => void;
 }) {
   const ranked = cmp.ranking.ranked.find((r) => r.option.optionId === optionId);
   if (!ranked) return null;
   const o = ranked.option;
+  const agg = observed?.[o.mode];
   const m = MODE_META[o.mode];
   const price = fareAmount(o);
   const codes = badgesByOption.get(o.optionId) ?? [];
@@ -837,6 +870,16 @@ function DetailView({
         <dd className="text-right font-semibold tabular-nums">
           ≈ {fmtCo2(estimateCo2Grams(o.mode, cmp.corridor.km))} CO₂
         </dd>
+        {agg && agg.count > 0 && (
+          <>
+            <dt className="text-muted-foreground">Prix observé (réel)</dt>
+            <dd className="text-right font-semibold tabular-nums text-[#5C6B2E]">
+              {agg.medianXof !== null
+                ? `~${fmt(agg.medianXof)} FCFA · ${agg.count} relevés`
+                : `${agg.count} relevé${agg.count > 1 ? 's' : ''} (médiane dès 5)`}
+            </dd>
+          </>
+        )}
       </dl>
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
         Empreinte carbone : <b>estimation indicative</b> (facteurs génériques par passager ×
