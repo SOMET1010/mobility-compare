@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -163,18 +163,57 @@ const QUICK_TRIPS: { from: string; to: string }[] = [
   { from: 'marcory', to: 'plateau' },
 ];
 
+const KNOWN = new Set(COMMUNES.map((c) => c.id));
+const KNOWN_CRIT = new Set(CRITERIA.map((c) => c.code));
+const isCommune = (v: string | null): v is string => v !== null && KNOWN.has(v);
+const asCrit = (v: string | null): DemoCriterion =>
+  v && KNOWN_CRIT.has(v as DemoCriterion) ? (v as DemoCriterion) : 'PRICE_TIME';
+
 export default function DemoPage() {
+  const [params, setParams] = useSearchParams();
+  const urlFrom = params.get('de');
+  const urlTo = params.get('a');
+  const deepLinked = isCommune(urlFrom) && isCommune(urlTo) && urlFrom !== urlTo;
+
   const [section, setSection] = useState<Section>('app');
-  const [fromId, setFromId] = useState<string>('cocody');
-  const [toId, setToId] = useState<string>('plateau');
-  const [criterion, setCriterion] = useState<DemoCriterion>('PRICE_TIME');
-  const [view, setView] = useState<View>('search');
+  const [fromId, setFromId] = useState<string>(deepLinked ? urlFrom : 'cocody');
+  const [toId, setToId] = useState<string>(deepLinked ? urlTo : 'plateau');
+  const [criterion, setCriterion] = useState<DemoCriterion>(asCrit(params.get('tri')));
+  const [view, setView] = useState<View>(deepLinked ? 'results' : 'search');
   const [optionId, setOptionId] = useState<string | null>(null);
 
   const cmp: DemoComparison | null = useMemo(
     () => comparePair(fromId, toId, criterion),
     [fromId, toId, criterion],
   );
+
+  /** Reflète le trajet dans l'URL (lien partageable / rechargeable). */
+  function syncUrl(from: string, to: string, crit: DemoCriterion) {
+    setParams({ de: from, a: to, tri: crit }, { replace: true });
+  }
+
+  function showResults(from: string, to: string, crit: DemoCriterion) {
+    setFromId(from);
+    setToId(to);
+    setCriterion(crit);
+    setView('results');
+    syncUrl(from, to, crit);
+  }
+
+  function pickCriterion(crit: DemoCriterion) {
+    setCriterion(crit);
+    if (view === 'results' || view === 'detail') syncUrl(fromId, toId, crit);
+  }
+
+  async function share() {
+    const url = `${window.location.origin}/demo?de=${fromId}&a=${toId}&tri=${criterion}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('Lien copié', { description: `${fromId} → ${toId} · ${url}` });
+    } catch {
+      toast('Lien du trajet', { description: url });
+    }
+  }
 
   function swap() {
     setFromId(toId);
@@ -284,7 +323,7 @@ export default function DemoPage() {
             <Button
               className="mt-4 h-12 w-full text-base"
               disabled={fromId === toId}
-              onClick={() => setView('results')}
+              onClick={() => showResults(fromId, toId, criterion)}
             >
               Comparer les modes →
             </Button>
@@ -301,11 +340,7 @@ export default function DemoPage() {
                   <button
                     key={`${t.from}-${t.to}`}
                     type="button"
-                    onClick={() => {
-                      setFromId(t.from);
-                      setToId(t.to);
-                      setView('results');
-                    }}
+                    onClick={() => showResults(t.from, t.to, criterion)}
                     className="rounded-full border bg-card px-3 py-1.5 text-[12.5px] font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {from.name} → {to.name}
@@ -348,7 +383,7 @@ export default function DemoPage() {
                 <button
                   key={cr.code}
                   type="button"
-                  onClick={() => setCriterion(cr.code)}
+                  onClick={() => pickCriterion(cr.code)}
                   aria-pressed={criterion === cr.code}
                   className={
                     'flex-1 rounded-lg px-2 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
@@ -458,9 +493,29 @@ export default function DemoPage() {
               </div>
             ))}
 
-            <Button variant="outline" className="mt-5 w-full" onClick={() => setView('contribute')}>
-              + Contribuer un tarif (simulation)
-            </Button>
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => setView('contribute')}>
+                + Contribuer un tarif
+              </Button>
+              <Button variant="outline" onClick={share}>
+                <svg
+                  viewBox="0 0 24 24"
+                  className="mr-1.5 h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+                </svg>
+                Partager
+              </Button>
+            </div>
 
             <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
               Badges « moins cher / plus rapide / meilleur rapport » calculés par un classement{' '}
