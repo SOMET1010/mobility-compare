@@ -21,27 +21,27 @@ Les autres variantes explorées (B « multimodal » à points de mode colorés,
 C « point de décision » à halo) sont écartées pour l'usage courant ; elles restent
 consultables dans la planche de revue archivée hors dépôt.
 
-## Palette
+## Palette (crème & vert olive — tons terre)
 
-| Rôle                       | Nom    | Hex       |
-| -------------------------- | ------ | --------- |
-| Fond sombre / texte        | Encre  | `#0E1B1F` |
-| Fond clair                 | Papier | `#F4F6F5` |
-| Accent / point de décision | Soleil | `#E8920A` |
-| Accent secondaire          | Lagune | `#0F8B8D` |
+| Rôle                | Nom            | Hex       |
+| ------------------- | -------------- | --------- |
+| Fond sombre / texte | Encre          | `#26301C` |
+| Fond clair          | Crème (Papier) | `#F3EEDF` |
+| Primaire            | Olive          | `#5C6B2E` |
+| Accent / logo       | Ocre           | `#B9722A` |
 
 ### Contrastes (WCAG, mesurés) et règles d'usage
 
-| Paire           | Ratio   | Usage autorisé                                                                 |
-| --------------- | ------- | ------------------------------------------------------------------------------ |
-| Encre / Papier  | 16.19:1 | Texte ✓                                                                        |
-| Soleil / Encre  | 8.26:1  | Texte ✓ (sur fond sombre)                                                      |
-| Soleil / Papier | 2.26:1  | **Insuffisant** — logo / aplats uniquement, **jamais** de texte sur fond clair |
-| Lagune / Papier | 3.80:1  | Logo & grands titres uniquement                                                |
+| Paire         | Ratio   | Usage autorisé                                         |
+| ------------- | ------- | ------------------------------------------------------ |
+| Encre / Crème | 11.90:1 | Texte ✓ (jusqu'à AAA)                                  |
+| Olive / Crème | 5.03:1  | Texte ✓ (AA)                                           |
+| Ocre / Crème  | 3.29:1  | Grands titres, logo, aplats — **pas de texte courant** |
+| Blanc / Ocre  | 3.82:1  | Texte de bouton (gras) sur aplat ocre                  |
 
 Contrainte produit : contrastes élevés, l'application est utilisée en plein soleil
-sur des écrans de faible qualité. La règle « Soleil jamais en texte sur fond clair »
-est un garde-fou d'accessibilité, pas une préférence esthétique.
+sur des écrans de faible qualité. Règle : l'ocre ne porte pas de texte courant sur
+fond clair — réservé aux grands titres, au logo et aux boutons (texte gras).
 
 ## Fichiers concernés
 

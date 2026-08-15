@@ -3,10 +3,10 @@
     IDENTITE PROVISOIRE — piste « Voies qui convergent », variante A (convergence radiale).
     Six voies symetriques convergent vers un point de decision unique : aucun mode
     ni operateur n'est privilegie (doctrine de neutralite). Provisoire jusqu'a ADR-001 / DEP-007.
-    Le trait suit la couleur du navigateur (clair/sombre) ; le point central est « Soleil » #E8920A.
+    Le trait suit la couleur du navigateur (clair/sombre) ; le point central est « Soleil » #B9722A.
   -->
   <style>
-    .stroke { stroke: #0E1B1F; stroke-width: 3; stroke-linecap: round; fill: none; }
+    .stroke { stroke: #26301C; stroke-width: 3; stroke-linecap: round; fill: none; }
     @media (prefers-color-scheme: dark) { .stroke { stroke: #EAF1EE; } }
   </style>
   <g class="stroke">
@@ -17,5 +17,5 @@
     <line x1="6.7" y1="34"  x2="17.5" y2="27.5"/>
     <line x1="6.7" y1="14"  x2="17.5" y2="20.5"/>
   </g>
-  <circle cx="24" cy="24" r="4.2" fill="#E8920A"/>
+  <circle cx="24" cy="24" r="4.2" fill="#B9722A"/>
 </svg>

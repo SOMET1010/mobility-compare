@@ -2,12 +2,12 @@
   <!--
     IDENTITE PROVISOIRE — icone d'application (mobile / PWA), variante A.
     Marque « maskable » : le motif tient dans la zone de securite centrale (~60 %),
-    fond Encre #0E1B1F, trait Papier #F4F6F5, point de decision Soleil #E8920A.
+    fond Encre #26301C, trait Papier #F3EEDF, point de decision Soleil #B9722A.
     Provisoire jusqu'a ADR-001 / DEP-007.
   -->
-  <rect x="0" y="0" width="48" height="48" rx="10" fill="#0E1B1F"/>
+  <rect x="0" y="0" width="48" height="48" rx="10" fill="#26301C"/>
   <g transform="translate(24 24) scale(0.62) translate(-24 -24)">
-    <g fill="none" stroke="#F4F6F5" stroke-width="3" stroke-linecap="round">
+    <g fill="none" stroke="#F3EEDF" stroke-width="3" stroke-linecap="round">
       <line x1="24" y1="4"    x2="24"   y2="17"/>
       <line x1="41.3" y1="14" x2="30.5" y2="20.5"/>
       <line x1="41.3" y1="34" x2="30.5" y2="27.5"/>
@@ -15,6 +15,6 @@
       <line x1="6.7" y1="34"  x2="17.5" y2="27.5"/>
       <line x1="6.7" y1="14"  x2="17.5" y2="20.5"/>
     </g>
-    <circle cx="24" cy="24" r="4.2" fill="#E8920A"/>
+    <circle cx="24" cy="24" r="4.2" fill="#B9722A"/>
   </g>
 </svg>
