@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,14 @@ import { Wordmark } from '@/components/BrandMark';
 import { Assistant } from '@/components/Assistant';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
+import {
+  loadFavorites,
+  loadRecents,
+  pushRecent,
+  toggleFavorite,
+  tripKey,
+  type SavedTrip,
+} from '@/features/trips/savedTrips';
 import { Conditions } from '@/components/Conditions';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
@@ -185,6 +193,23 @@ export default function DemoPage() {
   const [criterion, setCriterion] = useState<DemoCriterion>(asCrit(params.get('tri')));
   const [view, setView] = useState<View>(deepLinked ? 'results' : 'search');
   const [optionId, setOptionId] = useState<string | null>(null);
+  const [recents, setRecents] = useState<SavedTrip[]>(() =>
+    typeof window === 'undefined' ? [] : loadRecents(window.localStorage),
+  );
+  const [favorites, setFavorites] = useState<SavedTrip[]>(() =>
+    typeof window === 'undefined' ? [] : loadFavorites(window.localStorage),
+  );
+  useEffect(() => {
+    if (deepLinked) setRecents(pushRecent(window.localStorage, { fromId: urlFrom, toId: urlTo }));
+    // Dépendances vides à dessein : n'enregistrer que le trajet d'arrivée.
+  }, []);
+
+  const currentTrip: SavedTrip = { fromId, toId };
+  const currentIsFavorite = favorites.some((t) => tripKey(t) === tripKey(currentTrip));
+
+  function starCurrent() {
+    setFavorites(toggleFavorite(window.localStorage, currentTrip));
+  }
 
   const cmp: DemoComparison | null = useMemo(
     () => comparePair(fromId, toId, criterion),
@@ -205,6 +230,7 @@ export default function DemoPage() {
     setCriterion(crit);
     setView('results');
     syncUrl(from, to, crit);
+    setRecents(pushRecent(window.localStorage, { fromId: from, toId: to }));
   }
 
   function pickCriterion(crit: DemoCriterion) {
@@ -335,6 +361,56 @@ export default function DemoPage() {
               Comparer les modes →
             </Button>
 
+            {favorites.length > 0 && (
+              <>
+                <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  ★ Vos favoris
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {favorites.map((t) => {
+                    const from = COMMUNES.find((c) => c.id === t.fromId);
+                    const to = COMMUNES.find((c) => c.id === t.toId);
+                    if (!from || !to) return null;
+                    return (
+                      <button
+                        key={tripKey(t)}
+                        type="button"
+                        onClick={() => showResults(t.fromId, t.toId, criterion)}
+                        className="rounded-full border border-[#B9722A]/50 bg-[#B9722A]/8 px-3 py-1.5 text-[12.5px] font-medium transition hover:border-[#B9722A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {from.name} → {to.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {recents.length > 0 && (
+              <>
+                <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Récents
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {recents.map((t) => {
+                    const from = COMMUNES.find((c) => c.id === t.fromId);
+                    const to = COMMUNES.find((c) => c.id === t.toId);
+                    if (!from || !to) return null;
+                    return (
+                      <button
+                        key={tripKey(t)}
+                        type="button"
+                        onClick={() => showResults(t.fromId, t.toId, criterion)}
+                        className="rounded-full border bg-card px-3 py-1.5 text-[12.5px] font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {from.name} → {to.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
             {/* Trajets fréquents */}
             <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Trajets fréquents
@@ -370,8 +446,27 @@ export default function DemoPage() {
               Étape 2 · Comparaison
             </p>
             <div className="mb-4 mt-1 flex items-baseline justify-between gap-3">
-              <h1 className="text-2xl font-extrabold tracking-tight">
+              <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
                 {cmp.corridor.from} → {cmp.corridor.to}
+                <button
+                  type="button"
+                  onClick={starCurrent}
+                  aria-pressed={currentIsFavorite}
+                  aria-label={currentIsFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill={currentIsFavorite ? '#B9722A' : 'none'}
+                    stroke={currentIsFavorite ? '#B9722A' : 'currentColor'}
+                    strokeWidth={1.8}
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 3l2.7 5.8 6.3.8-4.6 4.4 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.6l6.3-.8z" />
+                  </svg>
+                </button>
               </h1>
               <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
                 ≈ {km1(cmp.corridor.km)} km · {cmp.options.length} modes

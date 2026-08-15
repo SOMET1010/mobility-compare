@@ -1,0 +1,26 @@
+# OSRM auto-hébergé — Côte d'Ivoire (DEP-001).
+# Usage : ./setup.sh prépare les données, puis `docker compose up -d`.
+# Le frontend n'appelle JAMAIS ce service directement (CDC §7) : il sera
+# consommé par notre couche de services (authentification, quotas, journaux).
+services:
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    command: osrm-routed --algorithm mld /data/ivory-coast-latest.osrm
+    volumes:
+      - ./data:/data
+    ports:
+      # Écoute locale uniquement : l'exposition publique passera par la
+      # couche de services (reverse proxy authentifié), pas par ce port.
+      - '127.0.0.1:5000:5000'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-sf',
+          'http://localhost:5000/route/v1/driving/-4.017,5.32;-3.983,5.359',
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
