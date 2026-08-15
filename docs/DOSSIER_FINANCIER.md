@@ -1,8 +1,9 @@
 # Dossier financier — investissement CAPEX / OPEX
 
-> **Statut : document de travail (15 août 2026).** Compagnon du modèle Excel
-> `MOBILIS_modele_financier.xlsx` (36 mois, 3 scénarios, hypothèses modifiables,
-> remis au décideur — hors dépôt). Doctrine du projet appliquée aux chiffres :
+> **Statut : document de travail (15 août 2026, v2 — échelle nationale).**
+> Compagnon du classeur `MOBILIS_dossier_financier_v2.xlsx` (36 mois, 3
+> scénarios côte à côte, valeurs calculées, remis au décideur — hors dépôt ;
+> une version « dynamique » à formules existe aussi). Doctrine du projet appliquée aux chiffres :
 > chaque nombre est un **fait sourcé** ou une **hypothèse marquée**. Un dossier
 > qui distingue les deux est plus solide devant un investisseur qu'un dossier
 > qui les confond.
@@ -47,10 +48,11 @@ prudent/central/ambitieux), `CAPEX`, `OPEX` (36 mois), `Revenus` (36 mois),
 
 ### CAPEX (décaissements one-shot — hypothèses à confirmer par devis)
 
-Marque OAPI et conseil PI · identité visuelle définitive · domaine ·
-matériel et formation terrain · **revue juridique CGU + déclaration ARTCI**
-(loi n° 2013-450) · campagne de lancement · réserve 10 %.
-Ordre de grandeur : **~7,5 M FCFA** (hors apport en nature).
+**Applications mobiles natives (~25 M)** · identité de marque définitive ·
+OAPI/PI · **structuration juridique complète + ARTCI** (loi n° 2013-450) ·
+matériel et bureau · **campagne de lancement national (~15 M)** ·
+**extension 3 villes** (Bouaké, Yamoussoukro, San-Pédro) · réserve 10 %.
+Ordre de grandeur : **~74 M FCFA** (hors apport en nature).
 
 ### OPEX (mensuels, pilotés par hypothèses)
 
@@ -58,10 +60,13 @@ Ordre de grandeur : **~7,5 M FCFA** (hors apport en nature).
   puis palier pro), hébergement front (gratuit en pilote), VPS OSRM (~25 000
   FCFA/mois, devis à confirmer), **SMS OTP (prix unitaire = hypothèse forte,
   devis Orange/MTN/Moov en attente — DEP-008)**.
-- **Équipe (hypothèses de salaires locaux)** : enquêteurs terrain dès le mois 1
-  (le chemin critique DEP-004 est un poste de dépense, pas une option),
-  fondateur/community à partir du mois 7, développeur au mois 10.
-- Marketing récurrent, comptabilité/juridique, imprévus 8 %.
+- **Équipe (hypothèses de salaires locaux)** : montée à **12 salariés + 6
+  enquêteurs** au mois 36 — CEO et CTO dès le mois 1, mobile/data/community en
+  phase pilote, commercial et support en consolidation, équipe villes en phase
+  nationale. Enquêteurs terrain dès le mois 1 (DEP-004 = poste de dépense, pas
+  une option). OPEX An 1 ≈ **64 M FCFA**.
+- Marketing par paliers (0,5 → 2 → 4 → 6 M FCFA/mois), bureau, compta/juridique,
+  imprévus 8 %.
 
 ### Revenus (CDC M8 — règles non négociables)
 
@@ -91,9 +96,11 @@ plus aligné avec le positionnement) · premium.
    produit passe de « démonstration » à « fiable ».
 2. **Faire connaître** : lancement + marketing récurrent — construire l'audience
    qui conditionne toute monétisation.
-3. **Tenir** : OPEX jusqu'à l'équilibre — le besoin de financement du modèle est
-   le creux de trésorerie maximal, lisible en un coup d'œil dans `Synthèse`,
-   scénario par scénario.
+3. **Tenir** : OPEX jusqu'à l'équilibre — le besoin de financement est le creux
+   de trésorerie maximal, lisible dans `Synthèse` :
+   **~248 M FCFA (central, équilibre au mois 32)** · ~308 M (prudent,
+   équilibre au-delà de 36 mois — affiché, pas caché) · ~238 M (ambitieux,
+   mois 30). Soit un tour de table d'environ **380 à 470 k€**.
 
 ## 6. Risques financiers (repris du CDC §9, traités)
 
