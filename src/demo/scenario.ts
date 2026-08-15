@@ -374,6 +374,12 @@ export const COMMUNES: readonly Commune[] = [
   { id: 'portbouet', name: 'Port-Bouët', lat: 5.258, lng: -3.93 },
   { id: 'bingerville', name: 'Bingerville', lat: 5.355, lng: -3.885 },
   { id: 'aeroport', name: 'Aéroport FHB', lat: 5.261, lng: -3.926 },
+  { id: 'zone4', name: 'Zone 4 (Marcory)', lat: 5.286, lng: -3.996 },
+  { id: 'cocody-danga', name: 'Cocody Danga', lat: 5.345, lng: -3.995 },
+  { id: 'palmeraie', name: 'Palmeraie', lat: 5.375, lng: -3.945 },
+  { id: 'williamsville', name: 'Williamsville', lat: 5.365, lng: -4.021 },
+  { id: 'siporex', name: 'Yopougon Siporex', lat: 5.34, lng: -4.086 },
+  { id: 'vridi', name: 'Vridi', lat: 5.262, lng: -3.972 },
 ];
 
 const communeById = new Map(COMMUNES.map((c) => [c.id, c]));
