@@ -10,6 +10,7 @@ import Method from '@/pages/Method';
 import AccountPage from '@/pages/AccountPage';
 import Terms from '@/pages/Terms';
 import Observatory from '@/pages/Observatory';
+import Moderation from '@/pages/Moderation';
 
 const queryClient = createQueryClient();
 
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/compte" element={<AccountPage />} />
             <Route path="/conditions" element={<Terms />} />
             <Route path="/observatoire" element={<Observatory />} />
+            <Route path="/moderation" element={<Moderation />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
