@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner';
 import Home from '@/pages/Home';
 import DemoPage from '@/pages/DemoPage';
 import Partners from '@/pages/Partners';
+import Method from '@/pages/Method';
 
 const queryClient = createQueryClient();
 
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/partenaires" element={<Partners />} />
+            <Route path="/methode" element={<Method />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

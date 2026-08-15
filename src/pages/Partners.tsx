@@ -73,6 +73,12 @@ export default function Partners() {
           </Link>
           <nav className="flex items-center gap-1 text-sm font-medium">
             <Link
+              to="/methode"
+              className="hidden rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white sm:block"
+            >
+              Méthode
+            </Link>
+            <Link
               to="/"
               className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
             >

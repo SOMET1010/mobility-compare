@@ -74,6 +74,12 @@ export default function Home() {
           <Wordmark className="text-lg" />
           <div className="flex items-center gap-1 text-sm font-medium sm:gap-2">
             <Link
+              to="/methode"
+              className="hidden rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white sm:block"
+            >
+              Méthode
+            </Link>
+            <Link
               to="/partenaires"
               className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
             >
