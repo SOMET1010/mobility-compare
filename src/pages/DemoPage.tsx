@@ -12,6 +12,7 @@ import {
   type DemoCriterion,
   type DemoMode,
 } from '@/demo/scenario';
+import { PRODUCT } from '@/config/product';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
@@ -129,12 +130,8 @@ export default function DemoPage() {
       <main className="mx-auto w-full max-w-md p-4">
         <header className="mb-3 flex items-baseline justify-between gap-2">
           <div>
-            <div className="text-lg font-extrabold tracking-tight">
-              Mobility<span style={{ color: 'hsl(var(--primary))' }}>Compare</span>
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              Démonstration · Abidjan · nom à définir (ADR-001)
-            </div>
+            <div className="text-lg font-extrabold tracking-tight">{PRODUCT.displayName}</div>
+            <div className="text-[11px] text-muted-foreground">Démonstration · Abidjan</div>
           </div>
           <Button asChild variant="ghost" size="sm">
             <Link to="/">Quitter</Link>

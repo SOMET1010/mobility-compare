@@ -27,14 +27,15 @@ export const PRODUCT = {
   technicalName: 'mobility_compare',
 
   /**
-   * Nom affiché à l'usager.
-   * Volontairement explicite tant que la marque n'est pas arrêtée :
-   * on n'affiche pas un nom de travail à un utilisateur final.
+   * Nom affiché à l'usager. Arrêté par le décideur (Patrick SOMET) : « MOBILIS ».
+   * Réserve ouverte : un « Mobilis » télécom existe (Algérie) — vérification de
+   * marque à mener avant tout dépôt de domaine ou de Sender ID (ADR-001 / DEP-007).
+   * Ces démarches réglementées restent donc NON lancées ; seul l'affichage change.
    */
-  displayName: 'Nom du produit à définir',
+  displayName: 'MOBILIS',
 
-  /** Baseline. À définir avec la marque. */
-  tagline: null as string | null,
+  /** Baseline produit. */
+  tagline: 'Le comparateur neutre des mobilités urbaines' as string | null,
 
   /**
    * Sender ID SMS — 11 caractères alphanumériques maximum.
@@ -57,5 +58,10 @@ export const PRODUCT = {
   },
 } as const;
 
-/** Vrai tant que la marque n'est pas arrêtée. Permet de conditionner l'affichage. */
-export const IS_BRAND_PENDING = PRODUCT.displayName === 'Nom du produit à définir';
+/**
+ * Vrai tant que l'empreinte réglementée de la marque n'est pas sécurisée :
+ * le nom affiché est arrêté (« MOBILIS »), mais le Sender ID SMS et le domaine
+ * de production restent à déposer (ADR-001 / DEP-007). Permet de conditionner
+ * l'affichage des mentions « provisoire ».
+ */
+export const IS_BRAND_PENDING = PRODUCT.smsSenderId === null || PRODUCT.productionDomain === null;
