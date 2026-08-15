@@ -10,7 +10,9 @@ describe('shell applicatif', () => {
   it('affiche le nom de produit et le perimetre', () => {
     render(<App />);
     expect(screen.getByTestId('product-name')).toBeInTheDocument();
-    expect(screen.getByText(/Abidjan/)).toBeInTheDocument();
+    // Le perimetre (Abidjan) est cite plusieurs fois dans la vitrine : on
+    // verifie sa presence, pas son unicite.
+    expect(screen.getAllByText(/Abidjan/).length).toBeGreaterThan(0);
   });
 
   it("signale honnetement l'absence de backend configure", () => {
