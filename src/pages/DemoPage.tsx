@@ -125,8 +125,8 @@ type View = 'search' | 'results' | 'detail' | 'contribute';
 function AppBar() {
   return (
     <div className="sticky top-0 z-20">
-      <div className="bg-[#26301C] text-white">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3 sm:px-6">
+      <div className="border-b border-white/10 bg-[#26301C]/90 text-white backdrop-blur">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-2.5 sm:px-6">
           <Wordmark className="text-base" />
           <Link
             to="/"
@@ -136,12 +136,18 @@ function AppBar() {
           </Link>
         </div>
       </div>
+      {/* Bandeau d'honnêteté — accordé à la palette (crème/encre, pointes ocre). */}
       <div
-        className="flex items-center justify-center gap-2 px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-white"
-        style={{ backgroundColor: WARN }}
+        className="flex items-center justify-center gap-2 border-b border-[#B9722A]/40 bg-[#F3EEDF]/95 px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-[#26301C] backdrop-blur"
         role="alert"
       >
-        <span aria-hidden="true">●</span> {SIMULATION_BANNER} <span aria-hidden="true">●</span>
+        <span aria-hidden="true" className="text-[#B9722A]">
+          ●
+        </span>{' '}
+        {SIMULATION_BANNER}{' '}
+        <span aria-hidden="true" className="text-[#B9722A]">
+          ●
+        </span>
       </div>
     </div>
   );
