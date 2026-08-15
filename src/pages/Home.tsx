@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
@@ -152,13 +153,29 @@ const ROADMAP: { tag: string; title: string; body: string; done?: boolean }[] = 
 /* ------------------------------------------------------------------ page */
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Barre supérieure */}
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#26301C]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 text-white">
-          <Wordmark className="text-lg" />
-          <div className="flex items-center gap-1 text-sm font-medium sm:gap-2">
+      {/* Barre supérieure — compacte, liens repliés en burger sous 640 px, resserrée au scroll */}
+      <header
+        className={`sticky top-0 z-30 border-b border-white/10 bg-[#26301C]/90 backdrop-blur transition-shadow duration-200 ${
+          scrolled ? 'shadow-lg shadow-black/10' : ''
+        }`}
+      >
+        <div
+          className={`mx-auto flex max-w-6xl items-center justify-between px-4 text-white transition-[padding] duration-200 sm:px-5 ${
+            scrolled ? 'py-1.5 sm:py-2' : 'py-2.5 sm:py-3'
+          }`}
+        >
+          <Wordmark className="text-base sm:text-lg" />
+          <nav className="flex items-center gap-1 text-sm font-medium sm:gap-2">
             <Link
               to="/methode"
               className="hidden rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white sm:block"
@@ -167,18 +184,59 @@ export default function Home() {
             </Link>
             <Link
               to="/partenaires"
-              className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="hidden rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white sm:block"
             >
               Partenaires
             </Link>
             <Link
               to="/demo"
-              className="rounded-lg bg-[#B9722A] px-3.5 py-2 font-semibold text-[#26301C] transition hover:brightness-105"
+              className="rounded-lg bg-[#B9722A] px-3 py-2 font-semibold text-[#26301C] transition hover:brightness-105 sm:px-3.5"
             >
               Voir la démo
             </Link>
-          </div>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-expanded={menuOpen}
+              aria-controls="menu-mobile"
+              aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:hidden"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+              >
+                {menuOpen ? (
+                  <path d="M6 6l12 12M18 6L6 18" />
+                ) : (
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                )}
+              </svg>
+            </button>
+          </nav>
         </div>
+        {menuOpen && (
+          <div id="menu-mobile" className="border-t border-white/10 px-4 pb-3 pt-1 sm:hidden">
+            <Link
+              to="/methode"
+              onClick={() => setMenuOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              Méthode
+            </Link>
+            <Link
+              to="/partenaires"
+              onClick={() => setMenuOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              Partenaires
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* HERO (clair, composition inspirée de la maquette) */}
@@ -199,31 +257,31 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-20 lg:py-28">
+        <div className="relative mx-auto max-w-6xl px-5 pb-10 pt-6 sm:py-20 lg:py-28">
           <div className="lg:max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {PRODUCT.scope.countryName} · Mobilité urbaine
             </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+            <h1 className="mt-4 text-[1.9rem] font-extrabold leading-[1.12] tracking-tight sm:text-5xl sm:leading-[1.05] lg:text-6xl">
               Comparez tous vos trajets urbains. <span className="text-primary">En toute</span>{' '}
               <span className="text-[#B9722A]">neutralité.</span>
             </h1>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-4 max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-lg">
               {PRODUCT.displayName} met le VTC, le taxi compteur, le woro-woro et le gbaka sur un
               même écran — prix, temps et meilleur compromis. À Abidjan aujourd’hui, en Côte
               d’Ivoire demain.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:flex-row sm:items-center">
               <Link
                 to="/demo"
-                className="inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105"
+                className="inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-95"
               >
                 Voir la démonstration →
               </Link>
               <a
                 href="#comment"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border bg-background/60 px-6 py-3.5 text-base font-semibold backdrop-blur transition hover:bg-muted"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border bg-background/60 px-6 py-3 text-base font-medium backdrop-blur transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-muted"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
                   <path d="M8 5v14l11-7z" />
@@ -231,10 +289,10 @@ export default function Home() {
                 Comment ça marche
               </a>
             </div>
-            <p className="mt-6 inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <p className="mt-4 inline-flex items-start gap-2 text-xs leading-snug text-muted-foreground">
               <svg
                 viewBox="0 0 24 24"
-                className="h-4 w-4 text-primary"
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={1.8}
@@ -248,8 +306,8 @@ export default function Home() {
               Aperçu de démonstration — données 100 % simulées, aucun prix ou itinéraire réel.
             </p>
 
-            {/* Mobile : bande visuelle */}
-            <div className="relative mt-10 aspect-[16/10] overflow-hidden rounded-3xl border shadow-lg lg:hidden">
+            {/* Mobile : bande visuelle, remontée près du contenu */}
+            <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-2xl border shadow-lg lg:hidden">
               <HeroPhoto />
               <ConvergingModes />
               <span className="absolute bottom-2 right-3 rounded-full bg-black/35 px-2 py-0.5 text-[9px] font-medium text-white/90">
@@ -259,25 +317,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Barre de stats (faits réels sur le produit) */}
-        <div className="border-t">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
+        {/* Bloc de preuves — cartes compactes (2×2 mobile, faits réels sur le produit) */}
+        <div className="border-t bg-muted/30">
+          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 py-5 sm:gap-4 sm:px-5 sm:py-6 lg:grid-cols-4">
             {STATS.map((s) => (
-              <div key={s.label} className="flex items-center gap-3 px-5 py-6">
-                <span
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                  style={{
-                    backgroundColor: `color-mix(in oklab, ${s.tint} 16%, transparent)`,
-                    color: s.tint,
-                  }}
-                >
-                  {STAT_ICONS[s.icon]}
-                </span>
-                <div>
-                  <div className="text-2xl font-extrabold leading-none">{s.value}</div>
-                  <div className="mt-1 text-[12px] leading-snug text-muted-foreground">
-                    {s.label}
-                  </div>
+              <div key={s.label} className="rounded-xl border bg-card p-3 sm:p-4">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg [&_svg]:h-5 [&_svg]:w-5"
+                    style={{
+                      backgroundColor: `color-mix(in oklab, ${s.tint} 16%, transparent)`,
+                      color: s.tint,
+                    }}
+                  >
+                    {STAT_ICONS[s.icon]}
+                  </span>
+                  <span className="text-xl font-extrabold leading-none sm:text-2xl">{s.value}</span>
+                </div>
+                <div className="mt-2 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                  {s.label}
                 </div>
               </div>
             ))}
@@ -286,29 +344,31 @@ export default function Home() {
       </section>
 
       {/* PROBLÈME / RÉPONSE */}
-      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-        <div className="grid gap-10 md:grid-cols-2 md:gap-16">
+      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#B9722A]" />
               Le problème
-            </h2>
-            <p className="mt-4 text-2xl font-bold leading-snug sm:text-3xl">
+            </span>
+            <h2 className="mt-3 text-[1.55rem] font-bold leading-[1.2] sm:text-3xl">
               À Abidjan, choisir son mode de transport se fait à l’aveugle.
-            </p>
-            <p className="mt-4 text-muted-foreground">
+            </h2>
+            <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-muted-foreground">
               VTC, taxi compteur, woro-woro, gbaka : des prix qui ne se comparent pas, des temps
               qu’on découvre en route, et chaque acteur qui défend son offre. Aucun repère neutre
               pour trancher.
             </p>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               La réponse
-            </h2>
-            <p className="mt-4 text-2xl font-bold leading-snug sm:text-3xl">
+            </span>
+            <h2 className="mt-3 text-[1.55rem] font-bold leading-[1.2] sm:text-3xl">
               Un comparateur neutre, d’intérêt public.
-            </p>
-            <p className="mt-4 text-muted-foreground">
+            </h2>
+            <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-muted-foreground">
               {PRODUCT.displayName} met tous les modes à plat sur le même trajet et affiche le
               calcul en clair. Il ne vend pas de courses : il aide à décider. Sa neutralité est une
               règle du système, pas un argument.
@@ -319,19 +379,27 @@ export default function Home() {
 
       {/* MODES */}
       <section className="border-y bg-muted/40">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-          <h2 className="text-2xl font-bold sm:text-3xl">Les modes couverts</h2>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Les mobilités réelles d’Abidjan, comparées ensemble — pas seulement les applications.
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+          <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#5C6B2E]" />
+            Les modes couverts
+          </span>
+          <h2 className="mt-3 text-[1.55rem] font-bold leading-[1.2] sm:text-3xl">
+            Les mobilités réelles d’Abidjan, ensemble.
+          </h2>
+          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+            Comparées côte à côte — pas seulement les applications.
           </p>
-          <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {MODES.map((m) => (
-              <div key={m.name} className="rounded-2xl border bg-card p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#5C6B2E]/12 text-[#5C6B2E]">
-                  <ModeGlyph shape={m.icon} className="h-7 w-7" />
+              <div key={m.name} className="flex items-center gap-3 rounded-xl border bg-card p-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#5C6B2E]/12 text-[#5C6B2E]">
+                  <ModeGlyph shape={m.icon} className="h-6 w-6" />
                 </div>
-                <div className="mt-4 font-semibold">{m.name}</div>
-                <div className="mt-1 text-sm text-muted-foreground">{m.note}</div>
+                <div className="min-w-0">
+                  <div className="font-semibold leading-tight">{m.name}</div>
+                  <div className="text-xs text-muted-foreground">{m.note}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -339,9 +407,9 @@ export default function Home() {
       </section>
 
       {/* COMMENT ÇA MARCHE */}
-      <section id="comment" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-16 sm:py-24">
+      <section id="comment" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-12 sm:py-20">
         <h2 className="text-2xl font-bold sm:text-3xl">Comment ça marche</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:gap-6 md:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="relative rounded-2xl border bg-card p-6">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#B9722A] text-sm font-bold text-[#26301C]">
@@ -356,8 +424,8 @@ export default function Home() {
 
       {/* NEUTRALITÉ */}
       <section className="bg-[#26301C] text-white">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-          <div className="grid gap-10 md:grid-cols-[1fr,1.2fr] md:items-center md:gap-16">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
+          <div className="grid gap-8 md:grid-cols-[1fr,1.2fr] md:items-center md:gap-16">
             <div>
               <BrandMark className="h-12 w-12 text-white" />
               <h2 className="mt-6 text-3xl font-bold leading-tight sm:text-4xl">
@@ -385,12 +453,12 @@ export default function Home() {
       </section>
 
       {/* FEUILLE DE ROUTE */}
-      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
         <h2 className="text-2xl font-bold sm:text-3xl">L’ambition</h2>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
           Une plateforme pensée pour l’échelle nationale, livrée par étapes honnêtes.
         </p>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:gap-6 md:grid-cols-3">
           {ROADMAP.map((r) => (
             <div key={r.title} className="rounded-2xl border bg-card p-6">
               <span
@@ -409,15 +477,15 @@ export default function Home() {
 
       {/* CTA FINAL */}
       <section className="border-t bg-muted/40">
-        <div className="mx-auto max-w-6xl px-5 py-16 text-center sm:py-20">
+        <div className="mx-auto max-w-6xl px-5 py-12 text-center sm:py-16">
           <h2 className="text-2xl font-bold sm:text-3xl">Voyez la comparaison en action</h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-xl text-[15px] leading-[1.6] text-muted-foreground">
             Un parcours complet, de la recherche au détail du calcul. Sur des données de
             démonstration, en attendant les sources réelles.
           </p>
           <Link
             to="/demo"
-            className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#26301C] px-7 py-3.5 text-base font-semibold text-white transition hover:brightness-125"
+            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#26301C] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-muted active:brightness-110"
           >
             Comparer un trajet →
           </Link>
@@ -565,7 +633,7 @@ function ConvergingModes() {
       {nodes.map((n) => (
         <span
           key={n.shape}
-          className="absolute grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full shadow-lg backdrop-blur"
+          className="absolute grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full shadow-md backdrop-blur sm:h-11 sm:w-11 [&_svg]:h-5 [&_svg]:w-5 sm:[&_svg]:h-6 sm:[&_svg]:w-6"
           style={{
             left: `${n.x}%`,
             top: `${n.y}%`,

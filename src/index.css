@@ -109,4 +109,10 @@
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
+  /* Defilement doux pour les ancres internes, desactive si mouvement reduit. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 }
