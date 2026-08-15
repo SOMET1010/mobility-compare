@@ -42,8 +42,9 @@ corridors en **deux semaines** ; deux enquêteurs, en une.
 
 ## Ce qui se passe à la remise du fichier
 
-1. J'écris l'import (validation des colonnes, rejet des aberrations
-   évidentes, aucune invention pour « remplir »).
+1. L'import existe : `scripts/import-observations.mjs` (validation ligne à
+   ligne, lignes invalides listées et écartées — jamais corrigées en
+   silence). Chaque ligne importée entre en file de modération (PENDING).
 2. Les grilles passent en `basis: OBSERVED` avec le nombre d'observations et
    leur fraîcheur dans la trace de calcul (invariant I2).
 3. **L'indice de confiance affiché passe de 0 à sa vraie valeur** — le moment

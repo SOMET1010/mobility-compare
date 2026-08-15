@@ -30,6 +30,7 @@ import {
 import { Conditions } from '@/components/Conditions';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { submitContribution } from '@/features/contributions/submit';
+import { fetchApprovedCounts, type ObservationCounts } from '@/features/contributions/stats';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
@@ -217,6 +218,19 @@ export default function DemoPage() {
     () => comparePair(fromId, toId, criterion),
     [fromId, toId, criterion],
   );
+
+  // Observations réelles approuvées (RLS) — null si backend absent : rien n'est affiché.
+  const [obsCounts, setObsCounts] = useState<ObservationCounts | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setObsCounts(null);
+    fetchApprovedCounts(fromId, toId).then((c) => {
+      if (!cancelled) setObsCounts(c);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fromId, toId]);
 
   const fromCommune = COMMUNES.find((c) => c.id === fromId);
   const toCommune = COMMUNES.find((c) => c.id === toId);
@@ -520,6 +534,18 @@ export default function DemoPage() {
 
             <div className="mb-4">
               <ConfidenceNote />
+              {obsCounts && obsCounts.total > 0 && (
+                <p className="mt-2 flex items-start gap-1.5 text-[11.5px] font-medium leading-snug text-[#5C6B2E]">
+                  <span aria-hidden="true">🌱</span>
+                  <span>
+                    {obsCounts.total} observation{obsCounts.total > 1 ? 's' : ''} réelle
+                    {obsCounts.total > 1 ? 's' : ''} déjà collectée
+                    {obsCounts.total > 1 ? 's' : ''} et modérée{obsCounts.total > 1 ? 's' : ''}
+                    {obsCounts.pair > 0 ? ` — dont ${obsCounts.pair} sur ce trajet` : ''}. Les prix
+                    affichés restent des exemples tant que la grille n'est pas recalibrée.
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Pourquoi le n°1 */}
