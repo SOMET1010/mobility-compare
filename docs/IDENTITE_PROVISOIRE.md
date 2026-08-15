@@ -45,19 +45,19 @@ fond clair — réservé aux grands titres, au logo et aux boutons (texte gras).
 
 ## Fichiers concernés
 
-| Fichier                       | Rôle                                                                                                 |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `public/favicon.svg`          | Favicon vectoriel, variante A, trait adapté au thème clair/sombre du navigateur.                     |
-| `public/favicon.ico`          | Repli neutre pour navigateurs sans support SVG (inchangé).                                           |
-| `public/icon-app.svg`         | Icône d'application mobile / PWA (`maskable`) : marque sur fond Encre.                               |
-| `public/manifest.webmanifest` | Manifeste PWA — nom marqué « provisoire », couleurs de thème.                                        |
-| `index.html`                  | Déclare favicon SVG, `apple-touch-icon`, manifeste, `theme-color`.                                   |
-| `src/index.css`               | Bloc `--brand-*` : palette enregistrée pour référence, **sans** remplacer les tokens shadcn neutres. |
+| Fichier                       | Rôle                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `public/favicon.svg`          | Favicon vectoriel, variante A, trait adapté au thème clair/sombre du navigateur.                       |
+| `public/favicon.ico`          | Repli neutre pour navigateurs sans support SVG (inchangé).                                             |
+| `public/icon-app.svg`         | Icône d'application mobile / PWA (`maskable`) : marque sur fond Encre.                                 |
+| `public/manifest.webmanifest` | Manifeste PWA — nom marqué « provisoire », couleurs de thème.                                          |
+| `index.html`                  | Déclare favicon SVG, `apple-touch-icon`, manifeste, `theme-color`.                                     |
+| `src/index.css`               | Tokens shadcn re-teintés en crème/olive (`--primary` olive, `--background` crème…) + bloc `--brand-*`. |
 
-Les tokens de thème shadcn (`--primary`, `--background`, …) restent **volontairement
-neutres et à fort contraste**. La palette de marque est enregistrée à part et n'est
-pas encore appliquée à l'interface : le passage à l'identité définitive se fera d'un
-seul geste, sans réécriture de l'UI.
+La palette crème & vert olive **est appliquée** aux tokens de thème shadcn
+(`--primary`, `--background`, …) : elle habille toute l'interface. Elle reste
+**provisoire** jusqu'à l'arbitrage de marque — le passage à l'identité définitive
+se fera en re-teintant ces mêmes tokens, sans réécriture de l'UI.
 
 ## Remplacement par l'identité définitive
 
