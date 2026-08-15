@@ -14,12 +14,11 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 /* --------------------------------------------------------------- contenu */
 
 /**
- * Photo de hero (libre de droits, optimisée < 250 Ko). Reste `null` tant
- * qu'aucune image n'est déposée : le visuel de repli (dégradé + skyline
- * stylisée) évite tout 404. Pour l'activer : déposer `public/hero-abidjan.webp`
- * puis mettre `HERO_IMAGE = '/hero-abidjan.webp'`.
+ * Photo de hero — Abidjan à l'heure dorée (pont, lagune, skyline), fournie par
+ * le décideur, optimisée en WebP 1600px / 182 Ko (contrainte 3G du CDC). Le repli
+ * stylisé (skyline SVG) reste le défaut si on repasse `HERO_IMAGE` à `null`.
  */
-const HERO_IMAGE: string | null = null;
+const HERO_IMAGE: string | null = '/hero-abidjan.webp';
 
 /** Accents multicolores des stats (comme la maquette), accordés à la palette. */
 type StatIcon = 'route' | 'shield' | 'eye' | 'people';
@@ -505,7 +504,11 @@ function Skyline() {
 /** Photo réelle si fournie (remplit le conteneur), sinon le repli stylisé. */
 function HeroPhoto() {
   return HERO_IMAGE ? (
-    <img src={HERO_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover" />
+    <img
+      src={HERO_IMAGE}
+      alt="Abidjan au coucher du soleil : pont, lagune et skyline"
+      className="absolute inset-0 h-full w-full object-cover"
+    />
   ) : (
     <Skyline />
   );
