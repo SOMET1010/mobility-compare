@@ -183,10 +183,26 @@ export default function Home() {
       </header>
 
       {/* HERO (clair, composition inspirée de la maquette) */}
-      <section className="border-b bg-background">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-2 lg:gap-14">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
+      <section className="relative overflow-hidden border-b bg-background">
+        {/* Desktop : visuel pleine hauteur à droite, fondu vers le crème */}
+        <div aria-hidden className="absolute inset-y-0 right-0 hidden w-[58%] lg:block">
+          <div className="relative h-full w-full">
+            <div
+              className="absolute inset-0"
+              style={{
+                WebkitMaskImage: 'linear-gradient(to right, transparent, #000 42%)',
+                maskImage: 'linear-gradient(to right, transparent, #000 42%)',
+              }}
+            >
+              <HeroPhoto />
+            </div>
+            <ConvergingModes />
+          </div>
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-20 lg:py-28">
+          <div className="lg:max-w-xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {PRODUCT.scope.countryName} · Mobilité urbaine
             </span>
@@ -194,7 +210,7 @@ export default function Home() {
               Comparez tous vos trajets urbains. <span className="text-primary">En toute</span>{' '}
               <span className="text-[#B9722A]">neutralité.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">
               {PRODUCT.displayName} met le VTC, le taxi compteur, le woro-woro et le gbaka sur un
               même écran — prix, temps et meilleur compromis. À Abidjan aujourd’hui, en Côte
               d’Ivoire demain.
@@ -208,7 +224,7 @@ export default function Home() {
               </Link>
               <a
                 href="#comment"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 text-base font-semibold transition hover:bg-muted"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border bg-background/60 px-6 py-3.5 text-base font-semibold backdrop-blur transition hover:bg-muted"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
                   <path d="M8 5v14l11-7z" />
@@ -232,9 +248,16 @@ export default function Home() {
               </svg>
               Aperçu de démonstration — données 100 % simulées, aucun prix ou itinéraire réel.
             </p>
-          </div>
 
-          <HeroVisual />
+            {/* Mobile : bande visuelle */}
+            <div className="relative mt-10 aspect-[16/10] overflow-hidden rounded-3xl border shadow-lg lg:hidden">
+              <HeroPhoto />
+              <ConvergingModes />
+              <span className="absolute bottom-2 right-3 rounded-full bg-black/35 px-2 py-0.5 text-[9px] font-medium text-white/90">
+                Visuel provisoire
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Barre de stats (faits réels sur le produit) */}
@@ -430,91 +453,111 @@ export default function Home() {
   );
 }
 
+/** Repli visuel : coucher de soleil + skyline / pont / lagune stylisés (léger, CDC 3G). */
+function Skyline() {
+  return (
+    <svg
+      viewBox="0 0 400 300"
+      className="absolute inset-0 h-full w-full"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2A3A46" />
+          <stop offset="55%" stopColor="#C98A3C" />
+          <stop offset="100%" stopColor="#E3B872" />
+        </linearGradient>
+        <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2E6E70" />
+          <stop offset="100%" stopColor="#1D4E52" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="400" height="300" fill="url(#sky)" />
+      <circle cx="300" cy="90" r="26" fill="#F4E3B0" opacity="0.85" />
+      <g fill="#26301C" opacity="0.92">
+        <rect x="20" y="150" width="22" height="60" />
+        <rect x="48" y="130" width="16" height="80" />
+        <rect x="70" y="160" width="26" height="50" />
+        <rect x="104" y="120" width="18" height="90" />
+        <rect x="128" y="145" width="20" height="65" />
+        <path d="M300 210 V120 l10 -14 l10 14 V210 z" />
+        <rect x="330" y="150" width="18" height="60" />
+        <rect x="354" y="135" width="22" height="75" />
+      </g>
+      <g stroke="#26301C" strokeWidth="2" opacity="0.85" fill="none">
+        <path d="M170 210 L210 150 L250 210" />
+        <path
+          d="M210 150 L182 205 M210 150 L196 205 M210 150 L224 205 M210 150 L238 205"
+          strokeWidth="1"
+        />
+      </g>
+      <rect x="0" y="210" width="400" height="90" fill="url(#water)" />
+      <g stroke="#5FA6A4" strokeWidth="1.2" opacity="0.5">
+        <line x1="30" y1="235" x2="120" y2="235" />
+        <line x1="60" y1="255" x2="180" y2="255" />
+        <line x1="240" y1="245" x2="360" y2="245" />
+      </g>
+    </svg>
+  );
+}
+
+/** Photo réelle si fournie (remplit le conteneur), sinon le repli stylisé. */
+function HeroPhoto() {
+  return HERO_IMAGE ? (
+    <img src={HERO_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover" />
+  ) : (
+    <Skyline />
+  );
+}
+
 /**
- * Visuel du hero : cadre « carte postale » d'Abidjan. Par défaut, un dégradé de
- * ciel + une skyline/pont stylisés (aucune dépendance externe, léger — CDC 3G).
- * Si `HERO_IMAGE` est défini, la photo (libre de droits, optimisée) le remplace.
- * Des pastilles de mode évoquent la comparaison multimodale.
+ * « Voies qui convergent » posées sur le visuel : les pastilles de mode sont
+ * reliées par des courbes vers un point de décision central (identité, variante A).
  */
-function HeroVisual() {
-  const badges: { shape: GlyphShape; x: string; y: string; color: string }[] = [
-    { shape: 'vtc', x: '16%', y: '24%', color: '#B9722A' },
-    { shape: 'gbaka', x: '52%', y: '14%', color: '#5C6B2E' },
-    { shape: 'taxi', x: '82%', y: '30%', color: '#B9722A' },
-    { shape: 'woro', x: '70%', y: '60%', color: '#5C6B2E' },
+function ConvergingModes() {
+  const hub = { x: 62, y: 50 };
+  const nodes: { shape: GlyphShape; x: number; y: number; tint: string }[] = [
+    { shape: 'vtc', x: 24, y: 20, tint: '#B9722A' },
+    { shape: 'gbaka', x: 52, y: 12, tint: '#5C6B2E' },
+    { shape: 'taxi', x: 82, y: 22, tint: '#B9722A' },
+    { shape: 'woro', x: 22, y: 66, tint: '#5C6B2E' },
   ];
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border shadow-xl">
-      {/* Repli visuel (dégradé + skyline) — remplacé par la photo si fournie */}
+    <div className="pointer-events-none absolute inset-0">
       <svg
-        viewBox="0 0 400 300"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
       >
-        <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2A3A46" />
-            <stop offset="55%" stopColor="#C98A3C" />
-            <stop offset="100%" stopColor="#E3B872" />
-          </linearGradient>
-          <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2E6E70" />
-            <stop offset="100%" stopColor="#1D4E52" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="400" height="300" fill="url(#sky)" />
-        <circle cx="300" cy="90" r="26" fill="#F4E3B0" opacity="0.85" />
-        {/* Skyline */}
-        <g fill="#26301C" opacity="0.92">
-          <rect x="20" y="150" width="22" height="60" />
-          <rect x="48" y="130" width="16" height="80" />
-          <rect x="70" y="160" width="26" height="50" />
-          <rect x="104" y="120" width="18" height="90" />
-          <rect x="128" y="145" width="20" height="65" />
-          <path d="M300 210 V120 l10 -14 l10 14 V210 z" />
-          <rect x="330" y="150" width="18" height="60" />
-          <rect x="354" y="135" width="22" height="75" />
-        </g>
-        {/* Pont à haubans */}
-        <g stroke="#26301C" strokeWidth="2" opacity="0.85" fill="none">
-          <path d="M170 210 L210 150 L250 210" />
+        {nodes.map((n) => (
           <path
-            d="M210 150 L182 205 M210 150 L196 205 M210 150 L224 205 M210 150 L238 205"
-            strokeWidth="1"
+            key={n.shape}
+            d={`M ${n.x} ${n.y} C ${(n.x + hub.x) / 2} ${n.y} ${(n.x + hub.x) / 2} ${hub.y} ${hub.x} ${hub.y}`}
+            fill="none"
+            stroke="#ffffff"
+            strokeOpacity="0.8"
+            strokeWidth="2"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
           />
-        </g>
-        {/* Lagune */}
-        <rect x="0" y="210" width="400" height="90" fill="url(#water)" />
-        <g stroke="#5FA6A4" strokeWidth="1.2" opacity="0.5">
-          <line x1="30" y1="235" x2="120" y2="235" />
-          <line x1="60" y1="255" x2="180" y2="255" />
-          <line x1="240" y1="245" x2="360" y2="245" />
-        </g>
+        ))}
       </svg>
-
-      {HERO_IMAGE && (
-        <img
-          src={HERO_IMAGE}
-          alt="Abidjan"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
-
-      {/* Pastilles de mode */}
-      {badges.map((b) => (
+      <span
+        className="absolute -translate-x-1/2 -translate-y-1/2"
+        style={{ left: `${hub.x}%`, top: `${hub.y}%` }}
+      >
+        <span className="block h-4 w-4 rounded-full border-2 border-white bg-[#B9722A] shadow-lg" />
+      </span>
+      {nodes.map((n) => (
         <span
-          key={b.shape}
-          className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white/80 bg-white/90 shadow-lg"
-          style={{ left: b.x, top: b.y, color: b.color }}
+          key={n.shape}
+          className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white/85 bg-white/90 shadow-lg backdrop-blur"
+          style={{ left: `${n.x}%`, top: `${n.y}%`, color: n.tint }}
         >
-          <ModeGlyph shape={b.shape} className="h-6 w-6" />
+          <ModeGlyph shape={n.shape} className="h-6 w-6" />
         </span>
       ))}
-
-      <span className="absolute bottom-2 right-3 rounded-full bg-black/35 px-2 py-0.5 text-[9px] font-medium text-white/90">
-        Visuel provisoire
-      </span>
     </div>
   );
 }
