@@ -467,6 +467,25 @@ export function buildPairCorridor(fromId: string, toId: string): DemoCorridor | 
   return { id: `${a.id}__${b.id}`, from: a.name, to: b.name, km, legs };
 }
 
+/**
+ * Empreinte carbone INDICATIVE (grammes de CO₂ par passager) — estimation, pas
+ * une mesure. Facteurs génériques par passager-kilomètre (ordre de grandeur
+ * public : voiture solo élevée, modes partagés bien plus bas grâce au taux
+ * d'occupation). NON spécifiques à Abidjan, non mesurés sur le terrain : à
+ * afficher comme « estimation indicative » et jamais comme une donnée validée.
+ */
+export const CO2_FACTOR_G_PER_KM: Record<DemoMode, number> = {
+  VTC: 180,
+  TAXI: 150,
+  WORO: 55,
+  GBAKA: 45,
+};
+
+/** Estimation indicative de CO₂ (g) pour un mode sur une distance donnée. */
+export function estimateCo2Grams(mode: DemoMode, km: number): number {
+  return Math.round(CO2_FACTOR_G_PER_KM[mode] * km);
+}
+
 /** Comparaison d'une paire origine → destination (recherche libre, simulée). */
 export function comparePair(
   fromId: string,

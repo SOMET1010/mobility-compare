@@ -9,6 +9,7 @@ import {
   COMMUNES,
   CRITERIA,
   comparePair,
+  estimateCo2Grams,
   MODE_META,
   type DemoComparison,
   type DemoCriterion,
@@ -21,6 +22,8 @@ import type { BadgeCode, RankableOption } from '@/domain/ranking';
 const XOF = new Intl.NumberFormat('fr-FR');
 const fmt = (n: number) => XOF.format(n);
 const km1 = (n: number) => n.toFixed(1).replace('.', ',');
+const fmtCo2 = (g: number) =>
+  g >= 1000 ? `${(g / 1000).toFixed(1).replace('.', ',')} kg` : `${g} g`;
 
 const BADGE_LABEL: Record<BadgeCode, string> = {
   CHEAPEST: 'Moins cher',
@@ -475,6 +478,9 @@ export default function DemoPage() {
                       <span className="mt-1 block text-[12px] tabular-nums text-muted-foreground">
                         {Math.round(r.option.durationSeconds! / 60)} min
                       </span>
+                      <span className="mt-0.5 block text-[10px] tabular-nums text-muted-foreground">
+                        ≈ {fmtCo2(estimateCo2Grams(r.option.mode, cmp.corridor.km))} CO₂
+                      </span>
                     </span>
                     <Chevron />
                   </button>
@@ -672,7 +678,16 @@ function DetailView({
         <dd className="text-right font-semibold tabular-nums">
           {Math.round(o.durationSeconds! / 60)} min
         </dd>
+        <dt className="text-muted-foreground">Empreinte carbone</dt>
+        <dd className="text-right font-semibold tabular-nums">
+          ≈ {fmtCo2(estimateCo2Grams(o.mode, cmp.corridor.km))} CO₂
+        </dd>
       </dl>
+      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+        Empreinte carbone : <b>estimation indicative</b> (facteurs génériques par passager ×
+        distance simulée). Ordre de grandeur, non mesuré à Abidjan — les modes partagés émettent
+        moins par personne grâce au taux d’occupation.
+      </p>
 
       {trace && (
         <>

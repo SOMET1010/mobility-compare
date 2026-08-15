@@ -3,6 +3,7 @@ import {
   COMMUNES,
   CORRIDORS,
   comparePair,
+  estimateCo2Grams,
   getComparison,
   MODE_META,
   pairDistanceKm,
@@ -169,5 +170,23 @@ describe('recherche libre origine → destination (simulée, sans OSRM)', () => 
   it('propose un jeu de communes cohérent (au moins 10, identifiants uniques)', () => {
     expect(COMMUNES.length).toBeGreaterThanOrEqual(10);
     expect(new Set(COMMUNES.map((c) => c.id)).size).toBe(COMMUNES.length);
+  });
+});
+
+describe('empreinte carbone — estimation indicative', () => {
+  it('croît avec la distance et reste déterministe', () => {
+    expect(estimateCo2Grams('VTC', 10)).toBe(1800);
+    expect(estimateCo2Grams('VTC', 20)).toBe(3600);
+  });
+
+  it('les modes partagés émettent moins par passager que la voiture solo', () => {
+    const km = 12;
+    const vtc = estimateCo2Grams('VTC', km);
+    const taxi = estimateCo2Grams('TAXI', km);
+    const woro = estimateCo2Grams('WORO', km);
+    const gbaka = estimateCo2Grams('GBAKA', km);
+    expect(gbaka).toBeLessThan(woro);
+    expect(woro).toBeLessThan(taxi);
+    expect(taxi).toBeLessThan(vtc);
   });
 });
