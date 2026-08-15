@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { CORRIDORS, getComparison, MODE_META } from '@/demo/scenario';
+import {
+  COMMUNES,
+  CORRIDORS,
+  comparePair,
+  getComparison,
+  MODE_META,
+  pairDistanceKm,
+} from '@/demo/scenario';
 import { DEMO_ROUTING_PROVIDER } from '@/demo/simulation';
 
 /**
@@ -96,5 +103,71 @@ describe('mode démonstration — le critère de tri change le classement', () =
   it('compromis : émet bien le badge « meilleur rapport »', () => {
     const cmp = getComparison('cocody-plateau', 'PRICE_TIME')!;
     expect(cmp.ranking.badges.some((b) => b.code === 'BEST_VALUE')).toBe(true);
+  });
+});
+
+describe('recherche libre origine → destination (simulée, sans OSRM)', () => {
+  it('compare n’importe quelle paire de communes via les moteurs réels', () => {
+    const cmp = comparePair('yopougon', 'bingerville')!;
+    expect(cmp).not.toBeNull();
+    expect(cmp.options).toHaveLength(4);
+    for (const opt of cmp.options) {
+      expect(opt.fare.available).toBe(true);
+      if (opt.fare.available) {
+        expect(opt.fare.trace.confidenceScore).toBe(0);
+        expect(opt.fare.trace.routingProvider).toBe(DEMO_ROUTING_PROVIDER);
+      }
+    }
+    expect(cmp.ranking.badges.map((b) => b.code).sort()).toEqual([
+      'BEST_VALUE',
+      'CHEAPEST',
+      'FASTEST',
+    ]);
+  });
+
+  it('même origine et destination → absence (pas d’invention)', () => {
+    expect(comparePair('cocody', 'cocody')).toBeNull();
+    expect(pairDistanceKm('cocody', 'cocody')).toBeNull();
+  });
+
+  it('une commune inconnue → absence', () => {
+    expect(comparePair('cocody', 'atlantide')).toBeNull();
+    expect(pairDistanceKm('atlantide', 'cocody')).toBeNull();
+  });
+
+  it('la distance estimée est positive et symétrique', () => {
+    const ab = pairDistanceKm('yopougon', 'koumassi');
+    const ba = pairDistanceKm('koumassi', 'yopougon');
+    expect(ab).not.toBeNull();
+    expect(ab!).toBeGreaterThan(0);
+    expect(ab).toBe(ba);
+  });
+
+  it('est déterministe : deux comparaisons identiques donnent le même résultat', () => {
+    const a = comparePair('abobo', 'marcory', 'PRICE')!;
+    const b = comparePair('abobo', 'marcory', 'PRICE')!;
+    const key = (c: typeof a) => c.ranking.ranked.map((r) => `${r.option.mode}:${r.sortValue}`);
+    expect(key(a)).toEqual(key(b));
+  });
+
+  it('un trajet vers l’aéroport porte le supplément dans la trace (modes au compteur)', () => {
+    const cmp = comparePair('cocody', 'aeroport')!;
+    const vtc = cmp.options.find((o) => o.mode === 'VTC')!;
+    expect(vtc.fare.available).toBe(true);
+    if (vtc.fare.available) {
+      const labels = vtc.fare.trace.steps.map((s) => s.label);
+      expect(labels).toContain('Supplément aéroport (exemple)');
+    }
+  });
+
+  it('tri par prix : ordre croissant', () => {
+    const cmp = comparePair('plateau', 'abobo', 'PRICE')!;
+    const prices = cmp.ranking.ranked.map((r) => r.sortValue);
+    expect(prices).toEqual([...prices].sort((x, y) => x - y));
+  });
+
+  it('propose un jeu de communes cohérent (au moins 10, identifiants uniques)', () => {
+    expect(COMMUNES.length).toBeGreaterThanOrEqual(10);
+    expect(new Set(COMMUNES.map((c) => c.id)).size).toBe(COMMUNES.length);
   });
 });

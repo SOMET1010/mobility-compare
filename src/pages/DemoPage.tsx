@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import {
-  CORRIDORS,
+  COMMUNES,
   CRITERIA,
-  getComparison,
+  comparePair,
   MODE_META,
   type DemoComparison,
   type DemoCriterion,
@@ -156,17 +156,30 @@ function AppBar() {
   );
 }
 
+const QUICK_TRIPS: { from: string; to: string }[] = [
+  { from: 'yopougon', to: 'plateau' },
+  { from: 'cocody', to: 'aeroport' },
+  { from: 'abobo', to: 'adjame' },
+  { from: 'marcory', to: 'plateau' },
+];
+
 export default function DemoPage() {
   const [section, setSection] = useState<Section>('app');
-  const [corridorId, setCorridorId] = useState<string>(CORRIDORS[0]!.id);
+  const [fromId, setFromId] = useState<string>('cocody');
+  const [toId, setToId] = useState<string>('plateau');
   const [criterion, setCriterion] = useState<DemoCriterion>('PRICE_TIME');
   const [view, setView] = useState<View>('search');
   const [optionId, setOptionId] = useState<string | null>(null);
 
   const cmp: DemoComparison | null = useMemo(
-    () => getComparison(corridorId, criterion),
-    [corridorId, criterion],
+    () => comparePair(fromId, toId, criterion),
+    [fromId, toId, criterion],
   );
+
+  function swap() {
+    setFromId(toId);
+    setToId(fromId);
+  }
 
   const badgesByOption = useMemo(() => {
     const map = new Map<string, BadgeCode[]>();
@@ -221,45 +234,90 @@ export default function DemoPage() {
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               Étape 1 · Recherche
             </p>
-            <h1 className="mb-1 mt-1 text-2xl font-extrabold tracking-tight">
-              Choisissez un trajet
-            </h1>
+            <h1 className="mb-1 mt-1 text-2xl font-extrabold tracking-tight">Où allez-vous ?</h1>
             <p className="mb-4 text-sm text-muted-foreground">
-              8 corridors d&apos;exemple à Abidjan — fictifs.
+              Choisissez une origine et une destination à Abidjan.
             </p>
-            <div className="flex flex-col gap-2">
-              {CORRIDORS.map((c) => {
-                const active = c.id === corridorId;
+
+            {/* Sélecteurs origine → destination */}
+            <div className="relative flex flex-col gap-2 rounded-2xl border bg-card p-3">
+              <CommuneSelect
+                label="Départ"
+                dotClass="bg-[#0F8B8D]"
+                value={fromId}
+                onChange={setFromId}
+              />
+              <div className="ml-1 h-3 border-l border-dashed" />
+              <CommuneSelect
+                label="Arrivée"
+                dotClass="bg-[#E8920A]"
+                value={toId}
+                onChange={setToId}
+              />
+              <button
+                type="button"
+                onClick={swap}
+                aria-label="Inverser origine et destination"
+                className="absolute right-4 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border bg-background shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l3-3M17 20l-3-3" />
+                </svg>
+              </button>
+            </div>
+
+            {fromId === toId && (
+              <p className="mt-2 text-[12px] font-medium" style={{ color: WARN }}>
+                Choisissez deux communes différentes.
+              </p>
+            )}
+
+            <Button
+              className="mt-4 h-12 w-full text-base"
+              disabled={fromId === toId}
+              onClick={() => setView('results')}
+            >
+              Comparer les modes →
+            </Button>
+
+            {/* Trajets fréquents */}
+            <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Trajets fréquents
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_TRIPS.map((t) => {
+                const from = COMMUNES.find((c) => c.id === t.from)!;
+                const to = COMMUNES.find((c) => c.id === t.to)!;
                 return (
                   <button
-                    key={c.id}
+                    key={`${t.from}-${t.to}`}
                     type="button"
-                    aria-pressed={active}
-                    onClick={() => setCorridorId(c.id)}
-                    className={
-                      'flex items-center gap-3 rounded-xl border bg-card px-4 py-3.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                      (active ? 'border-primary ring-1 ring-primary' : 'hover:border-foreground/30')
-                    }
+                    onClick={() => {
+                      setFromId(t.from);
+                      setToId(t.to);
+                      setView('results');
+                    }}
+                    className="rounded-full border bg-card px-3 py-1.5 text-[12.5px] font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <RouteDots />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">
-                        {c.from} → {c.to}
-                      </span>
-                    </span>
-                    <span className="ml-auto shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                      ≈ {km1(c.km)} km
-                    </span>
+                    {from.name} → {to.name}
                   </button>
                 );
               })}
             </div>
-            <Button className="mt-5 h-12 w-full text-base" onClick={() => setView('results')}>
-              Comparer les modes →
-            </Button>
-            <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
-              Lieux et distances sont des <b style={{ color: WARN }}>exemples</b>. Le trajet réel
-              dépendra du routage OSRM (non encore disponible — DEP-001).
+
+            <p className="mt-6 text-[11px] leading-snug text-muted-foreground">
+              Positions des communes = <b>réelles</b>. Distances, durées et prix ={' '}
+              <b style={{ color: WARN }}>estimations simulées</b> (à vol d’oiseau × facteur route,
+              sans routage OSRM — DEP-001).
             </p>
           </section>
         )}
@@ -277,6 +335,8 @@ export default function DemoPage() {
                 ≈ {km1(cmp.corridor.km)} km · {cmp.options.length} modes
               </span>
             </div>
+
+            <AbidjanMap fromId={fromId} toId={toId} />
 
             {/* Sélecteur de critère */}
             <div
@@ -430,25 +490,112 @@ export default function DemoPage() {
   );
 }
 
-/** Petit repère visuel origine → destination. */
-function RouteDots() {
+/** Sélecteur de commune (natif, stylé) avec pastille de repère. */
+function CommuneSelect({
+  label,
+  dotClass,
+  value,
+  onChange,
+}: {
+  label: string;
+  dotClass: string;
+  value: string;
+  onChange: (id: string) => void;
+}) {
   return (
-    <svg viewBox="0 0 12 24" className="h-9 w-3 shrink-0" aria-hidden="true">
-      <circle cx="6" cy="5" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <line
-        x1="6"
-        y1="8"
-        x2="6"
-        y2="16"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeDasharray="1.5 2"
-      />
-      <path
-        d="M6 22c2.2-3 3.4-4.6 3.4-6.2A3.4 3.4 0 0 0 6 12.4a3.4 3.4 0 0 0-3.4 3.4C2.6 17.4 3.8 19 6 22z"
-        fill={AMBER}
-      />
-    </svg>
+    <label className="flex items-center gap-3 rounded-xl px-1 py-1">
+      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotClass}`} aria-hidden="true" />
+      <span className="flex-1">
+        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="-ml-0.5 w-full bg-transparent text-[15px] font-bold focus-visible:outline-none"
+        >
+          {COMMUNES.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </span>
+    </label>
+  );
+}
+
+/**
+ * Carte schématique d'Abidjan : positions RÉELLES des communes projetées, tracé
+ * origine → destination SIMPLIFIÉ (ligne directe — pas de routage réel).
+ */
+function AbidjanMap({ fromId, toId }: { fromId: string; toId: string }) {
+  const W = 320;
+  const H = 200;
+  const PAD = 22;
+  const lats = COMMUNES.map((c) => c.lat);
+  const lngs = COMMUNES.map((c) => c.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const px = (lng: number) => PAD + ((lng - minLng) / (maxLng - minLng)) * (W - 2 * PAD);
+  const py = (lat: number) => PAD + ((maxLat - lat) / (maxLat - minLat)) * (H - 2 * PAD);
+  const from = COMMUNES.find((c) => c.id === fromId);
+  const to = COMMUNES.find((c) => c.id === toId);
+
+  return (
+    <figure className="mb-4 overflow-hidden rounded-2xl border bg-[#0E1B1F]">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full"
+        role="img"
+        aria-label="Carte schématique du trajet à Abidjan"
+      >
+        {from && to && (
+          <line
+            x1={px(from.lng)}
+            y1={py(from.lat)}
+            x2={px(to.lng)}
+            y2={py(to.lat)}
+            stroke={AMBER}
+            strokeWidth={2}
+            strokeDasharray="5 4"
+          />
+        )}
+        {COMMUNES.map((c) => {
+          const isFrom = c.id === fromId;
+          const isTo = c.id === toId;
+          const active = isFrom || isTo;
+          return (
+            <g key={c.id}>
+              <circle
+                cx={px(c.lng)}
+                cy={py(c.lat)}
+                r={active ? 5 : 2.5}
+                fill={isFrom ? '#0F8B8D' : isTo ? AMBER : '#35BDBE'}
+                opacity={active ? 1 : 0.45}
+              />
+              {active && (
+                <text
+                  x={px(c.lng)}
+                  y={py(c.lat) - 9}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fontWeight="700"
+                  fill="#EAF1EE"
+                >
+                  {c.name}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <figcaption className="px-3 py-1.5 text-[10px] text-white/45">
+        Positions réelles des communes · tracé simplifié, sans routage (simulation)
+      </figcaption>
+    </figure>
   );
 }
 

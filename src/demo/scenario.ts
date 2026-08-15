@@ -288,17 +288,8 @@ export interface DemoComparison {
   readonly timeValueXofPerMinute: number;
 }
 
-/**
- * Construit la comparaison d'un corridor en passant par les moteurs réels.
- * `getComparison(id)` est la couture : une implémentation réelle la remplacera.
- */
-export function getComparison(
-  corridorId: string,
-  criterion: DemoCriterion = 'PRICE_TIME',
-): DemoComparison | null {
-  const corridor = CORRIDORS.find((c) => c.id === corridorId);
-  if (!corridor) return null;
-
+/** Construit la comparaison d'un corridor (fictif) en passant par les moteurs réels. */
+function compareCorridor(corridor: DemoCorridor, criterion: DemoCriterion): DemoComparison {
   const options: RankableOption[] = corridor.legs.map((leg) => {
     const grid = buildGrid(leg);
     const fare = computeFare(
@@ -338,4 +329,144 @@ export function getComparison(
     criterion,
     timeValueXofPerMinute: DEMO_TIME_VALUE_XOF_PER_MIN,
   };
+}
+
+/**
+ * Comparaison d'un corridor d'exemple (raccourci). `getComparison(id)` est la
+ * couture : une implémentation réelle la remplacera.
+ */
+export function getComparison(
+  corridorId: string,
+  criterion: DemoCriterion = 'PRICE_TIME',
+): DemoComparison | null {
+  const corridor = CORRIDORS.find((c) => c.id === corridorId);
+  return corridor ? compareCorridor(corridor, criterion) : null;
+}
+
+/* ------------------------------------------------------------------ communes
+ * Recherche libre origine → destination (façon Rome2Rio / Citymapper).
+ * Les COORDONNÉES sont des faits géographiques publics (communes d'Abidjan).
+ * La DISTANCE en est une estimation À VOL D'OISEAU × facteur route, et les
+ * prix / durées en découlent : tout cela reste SIMULÉ (aucun OSRM — DEP-001),
+ * clairement étiqueté côté interface. Le jour du réel, on remplace ce modèle
+ * par des itinéraires calculés — les écrans ne changent pas.
+ */
+export interface Commune {
+  readonly id: string;
+  readonly name: string;
+  readonly lat: number;
+  readonly lng: number;
+}
+
+export const COMMUNES: readonly Commune[] = [
+  { id: 'plateau', name: 'Plateau', lat: 5.32, lng: -4.017 },
+  { id: 'cocody', name: 'Cocody', lat: 5.359, lng: -3.983 },
+  { id: 'deux-plateaux', name: 'Deux-Plateaux', lat: 5.383, lng: -3.998 },
+  { id: 'riviera', name: 'Riviera', lat: 5.362, lng: -3.958 },
+  { id: 'angre', name: 'Angré', lat: 5.393, lng: -3.972 },
+  { id: 'yopougon', name: 'Yopougon', lat: 5.345, lng: -4.07 },
+  { id: 'adjame', name: 'Adjamé', lat: 5.352, lng: -4.028 },
+  { id: 'attecoube', name: 'Attécoubé', lat: 5.335, lng: -4.03 },
+  { id: 'abobo', name: 'Abobo', lat: 5.418, lng: -4.019 },
+  { id: 'treichville', name: 'Treichville', lat: 5.293, lng: -4.01 },
+  { id: 'marcory', name: 'Marcory', lat: 5.303, lng: -3.987 },
+  { id: 'koumassi', name: 'Koumassi', lat: 5.288, lng: -3.955 },
+  { id: 'portbouet', name: 'Port-Bouët', lat: 5.258, lng: -3.93 },
+  { id: 'bingerville', name: 'Bingerville', lat: 5.355, lng: -3.885 },
+  { id: 'aeroport', name: 'Aéroport FHB', lat: 5.261, lng: -3.926 },
+];
+
+const communeById = new Map(COMMUNES.map((c) => [c.id, c]));
+
+/** Distance à vol d'oiseau (km) entre deux points géographiques. */
+function haversineKm(a: Commune, b: Commune): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+/** Facteur route : le trajet réel est plus long que la ligne droite. Estimation. */
+const ROAD_FACTOR = 1.35;
+
+/** Distance ROUTE estimée (km, simulée) entre deux communes. `null` si invalide. */
+export function pairDistanceKm(fromId: string, toId: string): number | null {
+  const a = communeById.get(fromId);
+  const b = communeById.get(toId);
+  if (!a || !b || a.id === b.id) return null;
+  return Math.round(haversineKm(a, b) * ROAD_FACTOR * 10) / 10;
+}
+
+const SPEED_KMH: Record<DemoMode, number> = { VTC: 24, TAXI: 22, WORO: 15, GBAKA: 13 };
+const OVERHEAD_MIN: Record<DemoMode, number> = { VTC: 4, TAXI: 3, WORO: 6, GBAKA: 9 };
+const WAIT_MIN: Record<DemoMode, number> = { VTC: 0, TAXI: 0, WORO: 5, GBAKA: 8 };
+
+function durationMinFor(mode: DemoMode, km: number): number {
+  return Math.max(5, Math.round((km / SPEED_KMH[mode]) * 60 + OVERHEAD_MIN[mode]));
+}
+
+/** Tarif forfaitaire (simulé) des modes partagés, dérivé de la distance. */
+function flatFareFor(mode: 'WORO' | 'GBAKA', km: number): number {
+  const raw = mode === 'WORO' ? 120 + 22 * km : 80 + 15 * km;
+  const step = Math.round(raw / 50) * 50;
+  const [lo, hi] = mode === 'WORO' ? [200, 1000] : [150, 800];
+  return Math.min(hi, Math.max(lo, step));
+}
+
+/** Construit un corridor SIMULÉ pour une paire origine → destination. */
+export function buildPairCorridor(fromId: string, toId: string): DemoCorridor | null {
+  const a = communeById.get(fromId);
+  const b = communeById.get(toId);
+  const km = pairDistanceKm(fromId, toId);
+  if (!a || !b || km === null) return null;
+
+  const airport = a.id === 'aeroport' || b.id === 'aeroport';
+  const meteredFees: readonly FixedFeeSpec[] | undefined = airport
+    ? [{ code: 'AIRPORT', label: 'Supplément aéroport (exemple)', amount: 1000 }]
+    : undefined;
+
+  const legs: Leg[] = [
+    {
+      mode: 'VTC',
+      providerId: 'op-vtc-demo',
+      durationMin: durationMinFor('VTC', km),
+      fixedFees: meteredFees,
+    },
+    {
+      mode: 'TAXI',
+      providerId: 'op-taxi-demo',
+      durationMin: durationMinFor('TAXI', km),
+      fixedFees: meteredFees,
+    },
+    {
+      mode: 'WORO',
+      providerId: 'op-woro-demo',
+      durationMin: durationMinFor('WORO', km),
+      waitMin: WAIT_MIN.WORO,
+      flatFare: flatFareFor('WORO', km),
+    },
+    {
+      mode: 'GBAKA',
+      providerId: 'op-gbaka-demo',
+      durationMin: durationMinFor('GBAKA', km),
+      waitMin: WAIT_MIN.GBAKA,
+      flatFare: flatFareFor('GBAKA', km),
+    },
+  ];
+
+  return { id: `${a.id}__${b.id}`, from: a.name, to: b.name, km, legs };
+}
+
+/** Comparaison d'une paire origine → destination (recherche libre, simulée). */
+export function comparePair(
+  fromId: string,
+  toId: string,
+  criterion: DemoCriterion = 'PRICE_TIME',
+): DemoComparison | null {
+  const corridor = buildPairCorridor(fromId, toId);
+  return corridor ? compareCorridor(corridor, criterion) : null;
 }
