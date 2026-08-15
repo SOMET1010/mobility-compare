@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/sonner';
 import Home from '@/pages/Home';
 import DemoPage from '@/pages/DemoPage';
+import Partners from '@/pages/Partners';
 
 const queryClient = createQueryClient();
 
@@ -25,6 +26,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/demo" element={<DemoPage />} />
+            <Route path="/partenaires" element={<Partners />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

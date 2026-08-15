@@ -72,13 +72,16 @@ export default function Home() {
       <header className="sticky top-0 z-20 border-b border-white/10 bg-[#26301C]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 text-white">
           <Wordmark className="text-lg" />
-          <div className="flex items-center gap-3">
-            <span className="hidden rounded-full border border-white/20 px-2.5 py-1 text-[11px] font-medium text-white/70 sm:inline">
-              Démonstration
-            </span>
+          <div className="flex items-center gap-1 text-sm font-medium sm:gap-2">
+            <Link
+              to="/partenaires"
+              className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              Partenaires
+            </Link>
             <Link
               to="/demo"
-              className="rounded-lg bg-[#B9722A] px-3.5 py-2 text-sm font-semibold text-[#26301C] transition hover:brightness-105"
+              className="rounded-lg bg-[#B9722A] px-3.5 py-2 font-semibold text-[#26301C] transition hover:brightness-105"
             >
               Voir la démo
             </Link>
