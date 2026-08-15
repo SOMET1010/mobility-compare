@@ -17,7 +17,7 @@ interface Slide {
 const SLIDES: readonly Slide[] = [
   {
     title: 'Tous vos trajets, sur un même écran',
-    body: 'VTC, taxi compteur, woro-woro, gbaka : MOBILIS compare le prix, la durée et le meilleur compromis d’un même trajet à Abidjan.',
+    body: 'MOBILIS compare d’abord les VTC — puis le taxi compteur, le woro-woro et le gbaka — prix, durée et meilleur compromis d’un même trajet à Abidjan.',
     art: 'modes',
   },
   {

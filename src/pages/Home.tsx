@@ -202,9 +202,9 @@ export default function Home() {
               <span className="text-[#B9722A]">neutralité.</span>
             </h1>
             <p className="mt-4 max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-lg">
-              {PRODUCT.displayName} met le VTC, le taxi compteur, le woro-woro et le gbaka sur un
-              même écran — prix, temps et meilleur compromis. À Abidjan aujourd’hui, en Côte
-              d’Ivoire demain.
+              {PRODUCT.displayName} compare d’abord les VTC — prix, temps et meilleur compromis — et
+              met aussi le taxi compteur, le woro-woro et le gbaka sur le même écran. À Abidjan
+              aujourd’hui, en Côte d’Ivoire demain.
             </p>
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
             <div className="mt-5 sm:mt-6">

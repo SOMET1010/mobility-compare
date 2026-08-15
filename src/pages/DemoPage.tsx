@@ -627,95 +627,122 @@ export default function DemoPage() {
             )}
 
             <div className="flex flex-col gap-2.5">
-              {cmp.ranking.ranked.map((r) => {
-                const price = fareAmount(r.option);
-                const codes = badgesByOption.get(r.option.optionId) ?? [];
-                const m = MODE_META[r.option.mode];
-                const winner = r.position === 1;
-                return (
-                  <button
-                    key={r.option.optionId}
-                    type="button"
-                    onClick={() => openDetail(r.option.optionId)}
-                    className={
-                      'flex w-full flex-wrap items-center gap-3.5 rounded-2xl border bg-card p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                      (winner ? 'ring-1' : 'hover:border-foreground/30')
-                    }
-                    style={
-                      winner ? { borderColor: AMBER, boxShadow: `0 0 0 1px ${AMBER}` } : undefined
-                    }
-                  >
-                    <ModeChip mode={r.option.mode} />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2 text-[15px] font-bold">
-                        <span
-                          className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-extrabold tabular-nums"
-                          style={
-                            winner
-                              ? { backgroundColor: AMBER, color: '#26301C' }
-                              : {
-                                  backgroundColor: 'hsl(var(--muted))',
-                                  color: 'hsl(var(--muted-foreground))',
-                                }
-                          }
-                        >
-                          {r.position}
-                        </span>
-                        {m.label}
-                      </span>
-                      <span className="text-[12px] text-muted-foreground">{m.note}</span>
-                      <Badges codes={codes} />
-                    </span>
-                    <span className="shrink-0 text-right">
-                      <span className="block text-lg font-extrabold tabular-nums leading-none">
-                        {price !== null ? fmt(price) : '—'}
-                      </span>
-                      <span className="text-[10px] font-semibold text-muted-foreground">FCFA</span>
-                      <span className="mt-1 block text-[12px] tabular-nums text-muted-foreground">
-                        {Math.round(r.option.durationSeconds! / 60)} min
-                      </span>
-                      <span className="mt-0.5 block text-[10px] tabular-nums text-muted-foreground">
-                        ≈ {fmtCo2(estimateCo2Grams(r.option.mode, cmp.corridor.km))} CO₂
-                      </span>
-                    </span>
-                    <Chevron />
-                    {(() => {
-                      const ops = operators?.filter((op) => op.mode === r.option.mode) ?? [];
-                      const agg = observed?.[r.option.mode];
-                      if (ops.length === 0 && (!agg || agg.count === 0)) return null;
-                      if (!agg || agg.count === 0)
-                        return (
-                          <span className="-mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
-                            <OperatorChips ops={ops} />
+              {(() => {
+                const vtc = cmp.ranking.ranked.filter((r) => r.option.mode === 'VTC');
+                const others = cmp.ranking.ranked.filter((r) => r.option.mode !== 'VTC');
+                const renderCard = (r: (typeof cmp.ranking.ranked)[number]) => {
+                  const price = fareAmount(r.option);
+                  const codes = badgesByOption.get(r.option.optionId) ?? [];
+                  const m = MODE_META[r.option.mode];
+                  const winner = r.position === 1;
+                  return (
+                    <button
+                      key={r.option.optionId}
+                      type="button"
+                      onClick={() => openDetail(r.option.optionId)}
+                      className={
+                        'flex w-full flex-wrap items-center gap-3.5 rounded-2xl border bg-card p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                        (winner ? 'ring-1' : 'hover:border-foreground/30')
+                      }
+                      style={
+                        winner ? { borderColor: AMBER, boxShadow: `0 0 0 1px ${AMBER}` } : undefined
+                      }
+                    >
+                      <ModeChip mode={r.option.mode} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2 text-[15px] font-bold">
+                          <span
+                            className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-extrabold tabular-nums"
+                            style={
+                              winner
+                                ? { backgroundColor: AMBER, color: '#26301C' }
+                                : {
+                                    backgroundColor: 'hsl(var(--muted))',
+                                    color: 'hsl(var(--muted-foreground))',
+                                  }
+                            }
+                          >
+                            {r.position}
                           </span>
-                        );
-                      return (
-                        <span className="-mt-1 block basis-full border-t pt-1.5 text-[10.5px] font-medium leading-snug text-[#5C6B2E]">
-                          {ops.length > 0 && (
-                            <span className="mb-1 flex flex-wrap items-center gap-1.5">
+                          {m.label}
+                        </span>
+                        <span className="text-[12px] text-muted-foreground">{m.note}</span>
+                        <Badges codes={codes} />
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block text-lg font-extrabold tabular-nums leading-none">
+                          {price !== null ? fmt(price) : '—'}
+                        </span>
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          FCFA
+                        </span>
+                        <span className="mt-1 block text-[12px] tabular-nums text-muted-foreground">
+                          {Math.round(r.option.durationSeconds! / 60)} min
+                        </span>
+                        <span className="mt-0.5 block text-[10px] tabular-nums text-muted-foreground">
+                          ≈ {fmtCo2(estimateCo2Grams(r.option.mode, cmp.corridor.km))} CO₂
+                        </span>
+                      </span>
+                      <Chevron />
+                      {(() => {
+                        const ops = operators?.filter((op) => op.mode === r.option.mode) ?? [];
+                        const agg = observed?.[r.option.mode];
+                        if (ops.length === 0 && (!agg || agg.count === 0)) return null;
+                        if (!agg || agg.count === 0)
+                          return (
+                            <span className="-mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
                               <OperatorChips ops={ops} />
                             </span>
-                          )}
-                          {agg.medianXof !== null ? (
-                            <>
-                              🌱 Observé sur ce trajet : ~
-                              <b className="tabular-nums">{fmt(agg.medianXof)} FCFA</b> (médiane de{' '}
-                              {agg.count} relevés modérés)
-                            </>
-                          ) : (
-                            <>
-                              🌱 {agg.count} relevé{agg.count > 1 ? 's' : ''} réel
-                              {agg.count > 1 ? 's' : ''} sur ce trajet — médiane affichée à partir
-                              de 5
-                            </>
-                          )}
-                        </span>
-                      );
-                    })()}
-                  </button>
+                          );
+                        return (
+                          <span className="-mt-1 block basis-full border-t pt-1.5 text-[10.5px] font-medium leading-snug text-[#5C6B2E]">
+                            {ops.length > 0 && (
+                              <span className="mb-1 flex flex-wrap items-center gap-1.5">
+                                <OperatorChips ops={ops} />
+                              </span>
+                            )}
+                            {agg.medianXof !== null ? (
+                              <>
+                                🌱 Observé sur ce trajet : ~
+                                <b className="tabular-nums">{fmt(agg.medianXof)} FCFA</b> (médiane
+                                de {agg.count} relevés modérés)
+                              </>
+                            ) : (
+                              <>
+                                🌱 {agg.count} relevé{agg.count > 1 ? 's' : ''} réel
+                                {agg.count > 1 ? 's' : ''} sur ce trajet — médiane affichée à partir
+                                de 5
+                              </>
+                            )}
+                          </span>
+                        );
+                      })()}
+                    </button>
+                  );
+                };
+                return (
+                  <>
+                    {vtc.length > 0 && (
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                        VTC · cœur du comparateur
+                      </p>
+                    )}
+                    {vtc.map((r) => renderCard(r))}
+                    {others.length > 0 && (
+                      <p className="mt-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Aussi sur ce trajet · taxi, woro-woro, gbaka
+                      </p>
+                    )}
+                    {others.map((r) => renderCard(r))}
+                  </>
                 );
-              })}
+              })()}
             </div>
+            <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
+              Ordre d’affichage : VTC d’abord (périmètre prioritaire V1). Les positions et badges
+              restent calculés par le classement neutre sur tous les modes — l’ordre éditorial ne
+              les modifie pas (invariant I3).
+            </p>
 
             {cmp.ranking.excluded.map((e) => (
               <div
