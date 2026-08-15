@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { Wordmark } from '@/components/BrandMark';
+import { SiteHeader } from '@/components/SiteHeader';
 
 /**
  * Page Méthode & transparence — la référence « comment on calcule ».
@@ -43,52 +44,37 @@ const OPEN_DEPS: { code: string; title: string; body: string }[] = [
 export default function Method() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[var(--brand-ink)]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3 text-white">
-          <Link to="/">
-            <Wordmark className="text-lg" />
-          </Link>
-          <nav className="flex items-center gap-1 text-sm font-medium">
-            <Link
-              to="/partenaires"
-              className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
-            >
-              Partenaires
-            </Link>
-            <Link
-              to="/demo"
-              className="rounded-lg bg-[var(--brand-ochre)] px-3.5 py-2 font-semibold text-[var(--brand-ink)] transition hover:brightness-105"
-            >
-              Voir la démo
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader
+        links={[
+          { to: '/', label: 'Accueil' },
+          { to: '/partenaires', label: 'Partenaires' },
+        ]}
+      />
 
       <section className="bg-[var(--brand-ink)] text-white">
-        <div className="mx-auto max-w-5xl px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
             Méthode &amp; transparence
           </p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl sm:leading-tight">
             Comment MOBILIS calcule — et pourquoi on peut le vérifier.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-white/70">
+          <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-white/70 sm:text-lg">
             Aucune boîte noire : chaque prix expose sa formule, le classement est neutre par
             construction, et ce qui n’est pas prouvé est signalé comme tel.
           </p>
         </div>
       </section>
 
-      <div className="mx-auto max-w-5xl space-y-16 px-5 py-16 sm:py-20">
+      <div className="mx-auto max-w-5xl space-y-12 px-5 py-12 sm:space-y-16 sm:py-16">
         {/* Prix */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">Le prix, étape par étape</h2>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
             Chaque course produit une <b>trace de calcul</b> (invariant I2) : la démonstration
             l’affiche en clair, ligne par ligne.
           </p>
-          <dl className="mt-6 divide-y rounded-2xl border bg-card">
+          <dl className="mt-5 divide-y rounded-2xl border bg-card">
             {FARE_STEPS.map((s) => (
               <div
                 key={s.k}
@@ -104,15 +90,15 @@ export default function Method() {
         {/* Classement */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">Le classement est neutre</h2>
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <div className="rounded-2xl border bg-card p-6">
+          <div className="mt-5 grid gap-3 sm:gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold">Trois critères, au choix de l’usager</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Moins cher, plus rapide, ou meilleur compromis (prix + valeur du temps). C’est
                 l’usager qui décide de la priorité — pas un opérateur.
               </p>
             </div>
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold">Aucun levier commercial (invariant I3)</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Le moteur de classement n’a aucun accès à un identifiant de sponsor, de promotion ou
@@ -126,21 +112,21 @@ export default function Method() {
         {/* Honnêteté */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">L’honnêteté des données</h2>
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
-            <div className="rounded-2xl border bg-card p-6">
+          <div className="mt-5 grid gap-3 sm:gap-5 md:grid-cols-3">
+            <div className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold">Indice de confiance</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Sans observation de terrain, un tarif s’affiche comme non validé (confiance 0)
                 plutôt que comme une certitude.
               </p>
             </div>
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold">Absence honnête (invariant I1)</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Quand une donnée manque, {PRODUCT.displayName} le dit. Pas d’estimation déguisée.
               </p>
             </div>
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold">Estimations étiquetées</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Distances simulées, empreinte carbone indicative : toujours marquées comme
@@ -153,11 +139,11 @@ export default function Method() {
         {/* Dépendances */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">Ce qu’il reste à brancher</h2>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
             La démonstration tourne sur des données simulées. Voici, honnêtement, ce qui la rendra
             réelle.
           </p>
-          <div className="mt-6 space-y-3">
+          <div className="mt-5 space-y-3">
             {OPEN_DEPS.map((d) => (
               <div
                 key={d.code}
@@ -175,7 +161,7 @@ export default function Method() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-muted/40 p-8 text-center">
+        <section className="rounded-2xl border bg-muted/40 p-6 text-center sm:p-8">
           <h2 className="text-xl font-bold sm:text-2xl">Voyez la méthode à l’œuvre</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
             La démonstration affiche la trace de calcul de chaque course et signale ce qui est
@@ -183,7 +169,7 @@ export default function Method() {
           </p>
           <Link
             to="/demo"
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[var(--brand-ink)] px-7 py-3.5 text-base font-semibold text-white transition hover:brightness-125"
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-[var(--brand-ink)] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ink)] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-110"
           >
             Ouvrir la démonstration →
           </Link>

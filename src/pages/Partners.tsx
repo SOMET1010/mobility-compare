@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
+import { SiteHeader } from '@/components/SiteHeader';
 
 /**
  * Page Partenaires — registre institutionnel.
@@ -65,58 +66,36 @@ const NEEDS: { tag: string; title: string; body: string }[] = [
 export default function Partners() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Barre supérieure */}
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[var(--brand-ink)]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 text-white">
-          <Link to="/">
-            <Wordmark className="text-lg" />
-          </Link>
-          <nav className="flex items-center gap-1 text-sm font-medium">
-            <Link
-              to="/methode"
-              className="hidden rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white sm:block"
-            >
-              Méthode
-            </Link>
-            <Link
-              to="/"
-              className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
-            >
-              Accueil
-            </Link>
-            <Link
-              to="/demo"
-              className="rounded-lg bg-[var(--brand-ochre)] px-3.5 py-2 font-semibold text-[var(--brand-ink)] transition hover:brightness-105"
-            >
-              Voir la démo
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader
+        links={[
+          { to: '/', label: 'Accueil' },
+          { to: '/methode', label: 'Méthode' },
+        ]}
+      />
 
       {/* HERO */}
       <section className="bg-[var(--brand-ink)] text-white">
-        <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-20">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
             Institutions · Opérateurs · Usagers
           </p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl sm:leading-[1.05]">
             Un observatoire neutre de la mobilité urbaine.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
+          <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-white/70 sm:text-lg">
             {PRODUCT.displayName} compare les mobilités d’Abidjan sans vendre de courses et sans
             classement payant. Un outil d’intérêt public, pensé pour l’échelle nationale.
           </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
               to="/demo"
-              className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-ochre)] px-6 py-3.5 text-base font-semibold text-[var(--brand-ink)] transition hover:brightness-105"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-ochre)] px-6 py-3 text-base font-semibold text-[var(--brand-ink)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ochre)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-ink)] active:brightness-95"
             >
               Voir la démonstration →
             </Link>
             <a
               href="#contact"
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3.5 text-base font-semibold text-white/90 transition hover:bg-white/5"
+              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3 text-base font-medium text-white/90 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-ink)] active:bg-white/10"
             >
               Devenir partenaire
             </a>
@@ -125,11 +104,11 @@ export default function Partners() {
       </section>
 
       {/* POUR QUI */}
-      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
         <h2 className="text-2xl font-bold sm:text-3xl">Ce que MOBILIS apporte</h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:gap-5 md:grid-cols-3">
           {AUDIENCES.map((a) => (
-            <div key={a.title} className="rounded-2xl border bg-card p-6">
+            <div key={a.title} className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold text-primary">{a.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{a.body}</p>
             </div>
@@ -139,14 +118,14 @@ export default function Partners() {
 
       {/* PRINCIPES */}
       <section className="border-y bg-muted/40">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
           <h2 className="text-2xl font-bold sm:text-3xl">Nos principes de partenariat</h2>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
             Des engagements structurels, pas des slogans : ils sont tenus par le code et les tests.
           </p>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2">
+          <div className="mt-6 grid gap-3 sm:gap-5 sm:grid-cols-2">
             {PRINCIPLES.map((p) => (
-              <div key={p.title} className="rounded-2xl border bg-card p-6">
+              <div key={p.title} className="rounded-2xl border bg-card p-5">
                 <div className="flex items-start gap-3">
                   <BrandMark className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
                   <div>
@@ -163,14 +142,14 @@ export default function Partners() {
       </section>
 
       {/* CE QUE NOUS CHERCHONS */}
-      <section id="contact" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-16 sm:py-24">
+      <section id="contact" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-12 sm:py-20">
         <h2 className="text-2xl font-bold sm:text-3xl">Ce que nous cherchons</h2>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
           Les dépendances ouvertes du projet sont d’abord des partenariats à nouer.
         </p>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:gap-5 md:grid-cols-3">
           {NEEDS.map((n) => (
-            <div key={n.title} className="rounded-2xl border bg-card p-6">
+            <div key={n.title} className="rounded-2xl border bg-card p-5">
               <span className="inline-block rounded-full bg-primary/12 px-2.5 py-1 text-[11px] font-semibold text-primary">
                 {n.tag}
               </span>
@@ -180,7 +159,7 @@ export default function Partners() {
           ))}
         </div>
 
-        <div className="mt-10 rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="mt-8 rounded-2xl border bg-card p-5 text-sm text-muted-foreground">
           <b className="text-foreground">Prise de contact.</b> Le canal officiel (adresse, domaine)
           est <b>en cours de définition</b> : la marque et l’identité restent provisoires tant que
           l’arbitrage n’est pas rendu (ADR-001 / DEP-007). En attendant, la démonstration publique
