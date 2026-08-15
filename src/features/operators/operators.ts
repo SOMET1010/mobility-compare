@@ -16,6 +16,7 @@ export interface Operator {
   readonly agrement_status: 'AGREE' | 'NON_AGREE' | 'INCONNU';
   readonly status_verified_at: string | null;
   readonly status_source: string | null;
+  readonly brand_color: string | null;
 }
 
 export const AGREMENT_LABEL: Record<Operator['agrement_status'], string> = {
@@ -31,7 +32,7 @@ export async function fetchPublishedOperators(): Promise<Operator[] | null> {
   try {
     const { data, error } = await supabase
       .from('operators')
-      .select('id, label, mode, agrement_status, status_verified_at, status_source')
+      .select('id, label, mode, agrement_status, status_verified_at, status_source, brand_color')
       .order('label');
     if (error || !data) return null;
     return data as Operator[];

@@ -119,6 +119,36 @@ function Badges({ codes }: { codes: BadgeCode[] }) {
   );
 }
 
+/** Pastilles d'opérateurs publiés (I4) — nom + couleur de marque, depuis la base. */
+function OperatorChips({ ops }: { ops: Operator[] }) {
+  return (
+    <>
+      {ops.map((op) => (
+        <span
+          key={op.id}
+          className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2 py-0.5 text-[10.5px] font-bold text-foreground"
+        >
+          <span
+            aria-hidden="true"
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: op.brand_color ?? 'hsl(var(--muted-foreground))' }}
+          />
+          {op.label}
+          {op.agrement_status === 'AGREE' && (
+            <span
+              aria-label="Plateforme agréée"
+              title="Plateforme agréée"
+              className="text-[#5C6B2E]"
+            >
+              ✓
+            </span>
+          )}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function ConfidenceNote() {
   return (
     <div
@@ -650,10 +680,22 @@ export default function DemoPage() {
                     </span>
                     <Chevron />
                     {(() => {
+                      const ops = operators?.filter((op) => op.mode === r.option.mode) ?? [];
                       const agg = observed?.[r.option.mode];
-                      if (!agg || agg.count === 0) return null;
+                      if (ops.length === 0 && (!agg || agg.count === 0)) return null;
+                      if (!agg || agg.count === 0)
+                        return (
+                          <span className="-mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
+                            <OperatorChips ops={ops} />
+                          </span>
+                        );
                       return (
                         <span className="-mt-1 block basis-full border-t pt-1.5 text-[10.5px] font-medium leading-snug text-[#5C6B2E]">
+                          {ops.length > 0 && (
+                            <span className="mb-1 flex flex-wrap items-center gap-1.5">
+                              <OperatorChips ops={ops} />
+                            </span>
+                          )}
                           {agg.medianXof !== null ? (
                             <>
                               🌱 Observé sur ce trajet : ~
