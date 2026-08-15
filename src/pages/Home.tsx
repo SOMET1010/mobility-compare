@@ -516,13 +516,20 @@ function HeroPhoto() {
  * reliées par des courbes vers un point de décision central (identité, variante A).
  */
 function ConvergingModes() {
-  const hub = { x: 62, y: 50 };
+  const hub = { x: 60, y: 52 };
   const nodes: { shape: GlyphShape; x: number; y: number; tint: string }[] = [
-    { shape: 'vtc', x: 24, y: 20, tint: '#B9722A' },
-    { shape: 'gbaka', x: 52, y: 12, tint: '#5C6B2E' },
-    { shape: 'taxi', x: 82, y: 22, tint: '#B9722A' },
-    { shape: 'woro', x: 22, y: 66, tint: '#5C6B2E' },
+    { shape: 'vtc', x: 22, y: 22, tint: '#B9722A' },
+    { shape: 'gbaka', x: 54, y: 14, tint: '#5C6B2E' },
+    { shape: 'taxi', x: 84, y: 24, tint: '#B9722A' },
+    { shape: 'woro', x: 24, y: 70, tint: '#5C6B2E' },
   ];
+  // Courbe fluide : quitte la pastille à l'horizontale, rejoint le point central.
+  const flow = (n: { x: number; y: number }) => {
+    const c1x = n.x + (hub.x - n.x) * 0.5;
+    const c2x = hub.x - (hub.x - n.x) * 0.12;
+    const c2y = hub.y - (hub.y - n.y) * 0.6;
+    return `M ${n.x} ${n.y} C ${c1x} ${n.y}, ${c2x} ${c2y}, ${hub.x} ${hub.y}`;
+  };
   return (
     <div className="pointer-events-none absolute inset-0">
       <svg
@@ -533,27 +540,36 @@ function ConvergingModes() {
         {nodes.map((n) => (
           <path
             key={n.shape}
-            d={`M ${n.x} ${n.y} C ${(n.x + hub.x) / 2} ${n.y} ${(n.x + hub.x) / 2} ${hub.y} ${hub.x} ${hub.y}`}
+            d={flow(n)}
             fill="none"
             stroke="#ffffff"
-            strokeOpacity="0.8"
-            strokeWidth="2"
+            strokeOpacity="0.65"
+            strokeWidth="1.6"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
           />
         ))}
       </svg>
+      {/* Point de décision central (halo + cœur ocre) */}
       <span
         className="absolute -translate-x-1/2 -translate-y-1/2"
         style={{ left: `${hub.x}%`, top: `${hub.y}%` }}
       >
-        <span className="block h-4 w-4 rounded-full border-2 border-white bg-[#B9722A] shadow-lg" />
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-white/25 backdrop-blur">
+          <span className="block h-3.5 w-3.5 rounded-full border-2 border-white bg-[#B9722A] shadow" />
+        </span>
       </span>
       {nodes.map((n) => (
         <span
           key={n.shape}
-          className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white/85 bg-white/90 shadow-lg backdrop-blur"
-          style={{ left: `${n.x}%`, top: `${n.y}%`, color: n.tint }}
+          className="absolute grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full shadow-lg backdrop-blur"
+          style={{
+            left: `${n.x}%`,
+            top: `${n.y}%`,
+            color: n.tint,
+            backgroundColor: `color-mix(in oklab, ${n.tint} 22%, #F3EEDF)`,
+            border: `2px solid color-mix(in oklab, ${n.tint} 45%, #ffffff)`,
+          }}
         >
           <ModeGlyph shape={n.shape} className="h-6 w-6" />
         </span>

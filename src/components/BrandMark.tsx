@@ -7,15 +7,18 @@ import { PRODUCT } from '@/config/product';
 export function BrandMark({ className = 'h-6 w-6' }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" className={className} fill="none" aria-hidden="true">
-      <g stroke="currentColor" strokeWidth={3} strokeLinecap="round">
+      {/* Soleil / « voies qui convergent » : 8 rayons vers un point de décision. */}
+      <g stroke="currentColor" strokeWidth={2.6} strokeLinecap="round">
         <line x1="24" y1="4" x2="24" y2="17" />
-        <line x1="41.3" y1="14" x2="30.5" y2="20.5" />
-        <line x1="41.3" y1="34" x2="30.5" y2="27.5" />
         <line x1="24" y1="44" x2="24" y2="31" />
-        <line x1="6.7" y1="34" x2="17.5" y2="27.5" />
-        <line x1="6.7" y1="14" x2="17.5" y2="20.5" />
+        <line x1="4" y1="24" x2="17" y2="24" />
+        <line x1="44" y1="24" x2="31" y2="24" />
+        <line x1="9.9" y1="9.9" x2="19.1" y2="19.1" />
+        <line x1="38.1" y1="38.1" x2="28.9" y2="28.9" />
+        <line x1="38.1" y1="9.9" x2="28.9" y2="19.1" />
+        <line x1="9.9" y1="38.1" x2="19.1" y2="28.9" />
       </g>
-      <circle cx="24" cy="24" r="4.2" fill="#B9722A" />
+      <circle cx="24" cy="24" r="4.4" fill="#B9722A" />
     </svg>
   );
 }

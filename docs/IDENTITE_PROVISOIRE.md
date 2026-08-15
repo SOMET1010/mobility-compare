@@ -11,11 +11,11 @@
 - **Piste retenue :** « Voies qui convergent ».
 - **Variante retenue :** **A — convergence radiale** (recommandation du décideur,
   1er août 2026).
-- **Motif :** six voies symétriques convergent vers un **point de décision** unique.
-  Aucun mode (VTC, taxi compteur, woro-woro, gbaka) ni opérateur n'est codé
-  graphiquement — la neutralité du comparateur est portée par la forme elle-même.
-  Pas de flèches : rien ne suggère une recommandation imposée. La simplicité du
-  tracé est aussi ce qui résiste le mieux au favicon 16 px.
+- **Motif :** des voies symétriques (soleil à huit rayons) convergent vers un
+  **point de décision** unique. Aucun mode (VTC, taxi compteur, woro-woro, gbaka)
+  ni opérateur n'est codé graphiquement — la neutralité du comparateur est portée
+  par la forme elle-même. Pas de flèches : rien ne suggère une recommandation
+  imposée. Forme radiale simple, lisible jusqu'au favicon 16 px.
 
 Les autres variantes explorées (B « multimodal » à points de mode colorés,
 C « point de décision » à halo) sont écartées pour l'usage courant ; elles restent
