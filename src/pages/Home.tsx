@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
+import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -40,58 +40,6 @@ function Wordmark({ className = '', testId = false }: { className?: string; test
   );
 }
 
-/* ------------------------------------------------------------ icônes modes */
-
-const iconBase = 'h-7 w-7';
-function stroke(children: ReactNode) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={iconBase}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {children}
-    </svg>
-  );
-}
-const ICONS: Record<string, ReactNode> = {
-  vtc: stroke(
-    <>
-      <path d="M5 16l1.5-4.5A2 2 0 0 1 8.4 10h7.2a2 2 0 0 1 1.9 1.5L19 16" />
-      <path d="M4 16h16v2a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
-      <circle cx="7.5" cy="16" r="0.4" />
-      <circle cx="16.5" cy="16" r="0.4" />
-    </>,
-  ),
-  taxi: stroke(
-    <>
-      <path d="M5 16l1.5-4.5A2 2 0 0 1 8.4 10h7.2a2 2 0 0 1 1.9 1.5L19 16" />
-      <path d="M4 16h16v2a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
-      <rect x="9.5" y="6.5" width="5" height="2.2" rx="0.5" />
-    </>,
-  ),
-  woro: stroke(
-    <>
-      <rect x="4" y="8" width="16" height="8" rx="1.5" />
-      <path d="M4 12h16M12 8v8" />
-      <path d="M5 18v-1M19 18v-1" />
-    </>,
-  ),
-  gbaka: stroke(
-    <>
-      <rect x="4" y="6" width="16" height="10" rx="1.5" />
-      <path d="M4 12h16" />
-      <path d="M7 9h4M13 9h4" />
-      <path d="M6 18v-2M18 18v-2" />
-    </>,
-  ),
-};
-
 /* --------------------------------------------------------------- contenu */
 
 const PILLARS: { value: string; label: string }[] = [
@@ -100,7 +48,7 @@ const PILLARS: { value: string; label: string }[] = [
   { value: '100 %', label: 'du calcul de prix visible, étape par étape' },
 ];
 
-const MODES: { icon: string; name: string; note: string }[] = [
+const MODES: { icon: GlyphShape; name: string; note: string }[] = [
   { icon: 'vtc', name: 'VTC', note: 'Réservé, porte-à-porte' },
   { icon: 'taxi', name: 'Taxi compteur', note: 'Direct, au compteur' },
   { icon: 'woro', name: 'Woro-woro', note: 'Partagé, tarif fixe' },
@@ -260,7 +208,7 @@ export default function Home() {
             {MODES.map((m) => (
               <div key={m.name} className="rounded-2xl border bg-card p-5">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0F8B8D]/12 text-[#0F8B8D]">
-                  {ICONS[m.icon]}
+                  <ModeGlyph shape={m.icon} className="h-7 w-7" />
                 </div>
                 <div className="mt-4 font-semibold">{m.name}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{m.note}</div>
