@@ -15,7 +15,7 @@ Dernière mise à jour : 1er août 2026.
 |                           |                                                                      |
 | ------------------------- | -------------------------------------------------------------------- |
 | **Bloque**                | Clôture de J2                                                        |
-| **Responsable**           | Patrick SOMET                                                        |
+| **Responsable**           | Patrick ADOM                                                         |
 | **Source attendue**       | VM Linux ou poste avec Docker, accès réseau à Geofabrik              |
 | **Critère d'acceptation** | `./scripts/j2.3/run-proof.sh` produit un rapport de verdict **PASS** |
 | **Statut**                | OUVERTE                                                              |
@@ -71,7 +71,7 @@ Les deux options sont implémentées et testées. Il ne manque que la réponse.
 |                           |                                                               |
 | ------------------------- | ------------------------------------------------------------- |
 | **Bloque**                | Validation du premier parcours navigateur                     |
-| **Responsable**           | Patrick SOMET                                                 |
+| **Responsable**           | Patrick ADOM                                                  |
 | **Source attendue**       | Environnement autorisant le téléchargement des navigateurs    |
 | **Critère d'acceptation** | `npx playwright install chromium && npm run test:e2e` au vert |
 | **Statut**                | **LEVÉE (2026-08-01)**                                        |
@@ -92,7 +92,7 @@ l'exécution). Ceci ne concerne pas DEP-001 (preuve OSRM), qui reste ouverte.
 |                           |                                                                                                            |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | **Bloque**                | J1.5, J1.6 ; fonctions géographiques de J2                                                                 |
-| **Responsable**           | Patrick SOMET                                                                                              |
+| **Responsable**           | Patrick ADOM                                                                                               |
 | **Source attendue**       | Dashboard Supabase                                                                                         |
 | **Critère d'acceptation** | Clés publishable et secret créées ; PostGIS activée ; build et tests au vert avec configuration renseignée |
 | **Statut**                | **LEVÉE** (15 août 2026)                                                                                   |
@@ -106,7 +106,7 @@ Procédure détaillée : `docs/CONFIGURATION_SUPABASE.md` §3.
 |                           |                                                              |
 | ------------------------- | ------------------------------------------------------------ |
 | **Bloque**                | Dépôt du Sender ID, réservation du domaine, charte graphique |
-| **Responsable**           | Patrick SOMET                                                |
+| **Responsable**           | Patrick ADOM                                                 |
 | **Source attendue**       | Décision                                                     |
 | **Critère d'acceptation** | ADR-001 close ; `product.ts` mis à jour                      |
 | **Statut**                | OUVERTE                                                      |

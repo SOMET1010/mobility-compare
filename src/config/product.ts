@@ -27,7 +27,7 @@ export const PRODUCT = {
   technicalName: 'mobility_compare',
 
   /**
-   * Nom affiché à l'usager. Arrêté par le décideur (Patrick SOMET) : « MOBILIS ».
+   * Nom affiché à l'usager. Arrêté par le décideur (Patrick ADOM) : « MOBILIS ».
    * Réserve ouverte : un « Mobilis » télécom existe (Algérie) — vérification de
    * marque à mener avant tout dépôt de domaine ou de Sender ID (ADR-001 / DEP-007).
    * Ces démarches réglementées restent donc NON lancées ; seul l'affichage change.
