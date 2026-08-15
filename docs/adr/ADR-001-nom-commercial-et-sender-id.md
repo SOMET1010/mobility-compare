@@ -2,7 +2,7 @@
 
 - **Statut** : OUVERTE
 - **Date** : 1er aout 2026
-- **Decideur** : Patrick ADOM
+- **Decideur** : Le décideur
 
 ## Contexte
 
