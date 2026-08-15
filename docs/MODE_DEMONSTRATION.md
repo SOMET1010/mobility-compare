@@ -14,7 +14,7 @@ la mécanique de calcul ne changent pas.
 ## À quoi ça sert
 
 - Rendre le produit **montrable** (partenaires, ARTI, testeurs) sans attendre
-  les dépendances externes ouvertes (voir « Ce qui manque »).
+  les dépendances externes ouvertes (voir « Passer aux données réelles »).
 - Prouver que la chaîne **UI → moteur de tarification → moteur de classement**
   est réellement câblée et se comporte correctement, pas seulement maquettée.
 - Fixer l'expérience utilisateur (recherche → comparaison → détail) pour qu'elle
