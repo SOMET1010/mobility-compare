@@ -16,51 +16,53 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    /**
+     * PALETTE PROVISOIRE — crème & vert olive (tons terre).
+     * Fond crème chaud, primaire olive, accent ocre. Contrastes vérifiés pour
+     * le texte principal ; provisoire jusqu'à la marque définitive (ADR-001).
+     */
+    --background: 45 40% 91%;
+    --foreground: 84 24% 14%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card: 46 52% 96%;
+    --card-foreground: 84 24% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover: 46 52% 96%;
+    --popover-foreground: 84 24% 14%;
 
-    --primary: 0 0% 12%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 75 40% 30%;
+    --primary-foreground: 48 52% 95%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 12%;
+    --secondary: 45 34% 86%;
+    --secondary-foreground: 84 24% 16%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 45 32% 87%;
+    --muted-foreground: 66 12% 34%;
 
-    --accent: 0 0% 94%;
-    --accent-foreground: 0 0% 12%;
+    --accent: 46 34% 83%;
+    --accent-foreground: 84 24% 16%;
 
-    --destructive: 0 72% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 12 68% 42%;
+    --destructive-foreground: 48 52% 96%;
 
-    --border: 0 0% 85%;
-    --input: 0 0% 85%;
-    --ring: 0 0% 12%;
+    --border: 44 28% 79%;
+    --input: 44 28% 79%;
+    --ring: 75 40% 30%;
 
     --radius: 0.5rem;
 
     /**
-     * IDENTITE PROVISOIRE — palette « Voies qui convergent » (variante A).
-     * Enregistree ici pour reference ; elle NE remplace PAS les tokens shadcn
-     * ci-dessus, qui restent neutres et a fort contraste (plein soleil).
-     * Regles d'usage (contrastes WCAG mesures sur la planche de revue) :
-     *   - Encre #0E1B1F / Papier #F4F6F5 = 16.19:1  -> texte OK
-     *   - Soleil #E8920A / Encre        =  8.26:1  -> texte OK (fond sombre)
-     *   - Soleil #E8920A / Papier       =  2.26:1  -> INSUFFISANT : logo/aplats seulement, jamais texte sur fond clair
-     *   - Lagune #0F8B8D / Papier       =  3.80:1  -> logo & grands titres seulement
-     * Provisoire jusqu'a la marque definitive (ADR-001 / DEP-007).
+     * Marque provisoire « Voies qui convergent » (variante A) — tons terre.
+     *   - Olive foncé (Encre) #26301C  : fonds sombres, texte
+     *   - Crème (Papier)      #F3EEDF
+     *   - Olive (primaire)    #5C6B2E
+     *   - Ocre (accent)       #B9722A  : logo, aplats, tracé, gagnant
+     * Provisoire jusqu'à la marque définitive (ADR-001 / DEP-007).
      */
-    --brand-ink: #0e1b1f;
-    --brand-paper: #f4f6f5;
-    --brand-sun: #e8920a;
-    --brand-lagoon: #0f8b8d;
+    --brand-ink: #26301c;
+    --brand-paper: #f3eedf;
+    --brand-olive: #5c6b2e;
+    --brand-ochre: #b9722a;
   }
 
   .dark {

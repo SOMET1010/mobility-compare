@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -9,36 +10,6 @@ import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
  * positionnement et de la clarté — jamais de chiffres, partenaires ou avis
  * inventés. La démo reste explicitement une simulation à données 100 % fictives.
  */
-
-/* ------------------------------------------------------------------ marque */
-
-function Mark({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true" fill="none">
-      <g stroke="currentColor" strokeWidth={3} strokeLinecap="round">
-        <line x1="24" y1="4" x2="24" y2="17" />
-        <line x1="41.3" y1="14" x2="30.5" y2="20.5" />
-        <line x1="41.3" y1="34" x2="30.5" y2="27.5" />
-        <line x1="24" y1="44" x2="24" y2="31" />
-        <line x1="6.7" y1="34" x2="17.5" y2="27.5" />
-        <line x1="6.7" y1="14" x2="17.5" y2="20.5" />
-      </g>
-      <circle cx="24" cy="24" r="4.2" fill="#E8920A" />
-    </svg>
-  );
-}
-
-function Wordmark({ className = '', testId = false }: { className?: string; testId?: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-2 font-extrabold tracking-tight ${className}`}
-      {...(testId ? { 'data-testid': 'product-name' } : {})}
-    >
-      <Mark className="h-[0.9em] w-[0.9em]" />
-      {PRODUCT.displayName}
-    </span>
-  );
-}
 
 /* --------------------------------------------------------------- contenu */
 
@@ -98,7 +69,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Barre supérieure */}
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0B1518]/90 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#26301C]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 text-white">
           <Wordmark className="text-lg" />
           <div className="flex items-center gap-3">
@@ -107,7 +78,7 @@ export default function Home() {
             </span>
             <Link
               to="/demo"
-              className="rounded-lg bg-[#E8920A] px-3.5 py-2 text-sm font-semibold text-[#0B1518] transition hover:brightness-105"
+              className="rounded-lg bg-[#B9722A] px-3.5 py-2 text-sm font-semibold text-[#26301C] transition hover:brightness-105"
             >
               Voir la démo
             </Link>
@@ -116,10 +87,10 @@ export default function Home() {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-[#0B1518] text-white">
+      <section className="relative overflow-hidden bg-[#26301C] text-white">
         <HeroBackdrop />
         <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#35BDBE]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
             Côte d’Ivoire · Mobilité urbaine
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
@@ -135,7 +106,7 @@ export default function Home() {
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               to="/demo"
-              className="inline-flex items-center justify-center rounded-xl bg-[#E8920A] px-6 py-3.5 text-base font-semibold text-[#0B1518] shadow-lg shadow-black/20 transition hover:brightness-105"
+              className="inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-3.5 text-base font-semibold text-[#26301C] shadow-lg shadow-black/20 transition hover:brightness-105"
             >
               Voir la démonstration →
             </Link>
@@ -147,7 +118,7 @@ export default function Home() {
             </a>
           </div>
           <p className="mt-6 inline-flex items-center gap-2 text-xs text-white/50">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#E8920A]" />
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#B9722A]" />
             Aperçu de démonstration — données 100 % simulées, aucun prix ou itinéraire réel.
           </p>
         </div>
@@ -207,7 +178,7 @@ export default function Home() {
           <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {MODES.map((m) => (
               <div key={m.name} className="rounded-2xl border bg-card p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0F8B8D]/12 text-[#0F8B8D]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#5C6B2E]/12 text-[#5C6B2E]">
                   <ModeGlyph shape={m.icon} className="h-7 w-7" />
                 </div>
                 <div className="mt-4 font-semibold">{m.name}</div>
@@ -224,7 +195,7 @@ export default function Home() {
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="relative rounded-2xl border bg-card p-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E8920A] text-sm font-bold text-[#0B1518]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#B9722A] text-sm font-bold text-[#26301C]">
                 {s.n}
               </div>
               <div className="mt-4 font-semibold">{s.title}</div>
@@ -235,11 +206,11 @@ export default function Home() {
       </section>
 
       {/* NEUTRALITÉ */}
-      <section className="bg-[#0E1B1F] text-white">
+      <section className="bg-[#26301C] text-white">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
           <div className="grid gap-10 md:grid-cols-[1fr,1.2fr] md:items-center md:gap-16">
             <div>
-              <Mark className="h-12 w-12 text-white" />
+              <BrandMark className="h-12 w-12 text-white" />
               <h2 className="mt-6 text-3xl font-bold leading-tight sm:text-4xl">
                 La neutralité n’est pas une promesse. C’est une règle du code.
               </h2>
@@ -275,7 +246,7 @@ export default function Home() {
             <div key={r.title} className="rounded-2xl border bg-card p-6">
               <span
                 className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  r.done ? 'bg-[#0F8B8D]/15 text-[#0F8B8D]' : 'bg-muted text-muted-foreground'
+                  r.done ? 'bg-[#5C6B2E]/15 text-[#5C6B2E]' : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {r.tag}
@@ -297,7 +268,7 @@ export default function Home() {
           </p>
           <Link
             to="/demo"
-            className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#0E1B1F] px-7 py-3.5 text-base font-semibold text-white transition hover:brightness-125"
+            className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#26301C] px-7 py-3.5 text-base font-semibold text-white transition hover:brightness-125"
           >
             Comparer un trajet →
           </Link>
@@ -312,7 +283,7 @@ export default function Home() {
             <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium">
               <span
                 className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  IS_BACKEND_CONFIGURED ? 'bg-[#0F8B8D]' : 'bg-muted-foreground'
+                  IS_BACKEND_CONFIGURED ? 'bg-[#5C6B2E]' : 'bg-muted-foreground'
                 }`}
               />
               {IS_BACKEND_CONFIGURED ? 'Backend configure' : 'Backend non configure'}
@@ -343,11 +314,11 @@ function HeroBackdrop() {
     >
       <defs>
         <radialGradient id="hub" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#E8920A" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#E8920A" stopOpacity="0" />
+          <stop offset="0%" stopColor="#B9722A" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#B9722A" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <g stroke="#35BDBE" strokeWidth="1.4" fill="none">
+      <g stroke="#C3D18F" strokeWidth="1.4" fill="none">
         <path d="M120 40 L560 250" />
         <path d="M40 200 L560 250" />
         <path d="M80 420 L560 250" />
@@ -357,7 +328,7 @@ function HeroBackdrop() {
         <path d="M700 440 L560 250" />
         <path d="M440 20 L560 250" />
       </g>
-      <g fill="#35BDBE">
+      <g fill="#C3D18F">
         {[
           [120, 40],
           [40, 200],
@@ -372,7 +343,7 @@ function HeroBackdrop() {
         ))}
       </g>
       <circle cx="560" cy="250" r="60" fill="url(#hub)" />
-      <circle cx="560" cy="250" r="7" fill="#E8920A" />
+      <circle cx="560" cy="250" r="7" fill="#B9722A" />
     </svg>
   );
 }

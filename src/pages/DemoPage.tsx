@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
+import { StreetMap } from '@/components/StreetMap';
 import {
   COMMUNES,
   CRITERIA,
@@ -13,7 +14,7 @@ import {
   type DemoCriterion,
   type DemoMode,
 } from '@/demo/scenario';
-import { PRODUCT } from '@/config/product';
+import { Wordmark } from '@/components/BrandMark';
 import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
@@ -40,7 +41,7 @@ function fareAmount(o: RankableOption): number | null {
 
 /* ---------------------------------------------------------------- primitives */
 
-const AMBER = '#E8920A';
+const AMBER = '#B9722A';
 const WARN = '#9A3412';
 
 function ModeChip({ mode, size = 44 }: { mode: DemoMode; size?: number }) {
@@ -121,22 +122,9 @@ type View = 'search' | 'results' | 'detail' | 'contribute';
 function AppBar() {
   return (
     <div className="sticky top-0 z-20">
-      <div className="bg-[#0B1518] text-white">
+      <div className="bg-[#26301C] text-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3 sm:px-6">
-          <span className="inline-flex items-center gap-2 text-base font-extrabold tracking-tight">
-            <svg viewBox="0 0 48 48" className="h-5 w-5" fill="none" aria-hidden="true">
-              <g stroke="currentColor" strokeWidth={3} strokeLinecap="round">
-                <line x1="24" y1="4" x2="24" y2="17" />
-                <line x1="41.3" y1="14" x2="30.5" y2="20.5" />
-                <line x1="41.3" y1="34" x2="30.5" y2="27.5" />
-                <line x1="24" y1="44" x2="24" y2="31" />
-                <line x1="6.7" y1="34" x2="17.5" y2="27.5" />
-                <line x1="6.7" y1="14" x2="17.5" y2="20.5" />
-              </g>
-              <circle cx="24" cy="24" r="4.2" fill={AMBER} />
-            </svg>
-            {PRODUCT.displayName}
-          </span>
+          <Wordmark className="text-base" />
           <Link
             to="/"
             className="rounded-lg px-3 py-1.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
@@ -186,6 +174,9 @@ export default function DemoPage() {
     () => comparePair(fromId, toId, criterion),
     [fromId, toId, criterion],
   );
+
+  const fromCommune = COMMUNES.find((c) => c.id === fromId);
+  const toCommune = COMMUNES.find((c) => c.id === toId);
 
   /** Reflète le trajet dans l'URL (lien partageable / rechargeable). */
   function syncUrl(from: string, to: string, crit: DemoCriterion) {
@@ -282,14 +273,14 @@ export default function DemoPage() {
             <div className="relative flex flex-col gap-2 rounded-2xl border bg-card p-3">
               <CommuneSelect
                 label="Départ"
-                dotClass="bg-[#0F8B8D]"
+                dotClass="bg-[#5C6B2E]"
                 value={fromId}
                 onChange={setFromId}
               />
               <div className="ml-1 h-3 border-l border-dashed" />
               <CommuneSelect
                 label="Arrivée"
-                dotClass="bg-[#E8920A]"
+                dotClass="bg-[#B9722A]"
                 value={toId}
                 onChange={setToId}
               />
@@ -371,7 +362,14 @@ export default function DemoPage() {
               </span>
             </div>
 
-            <AbidjanMap fromId={fromId} toId={toId} />
+            {fromCommune && toCommune && (
+              <figure className="mb-4 overflow-hidden rounded-2xl border">
+                <StreetMap from={fromCommune} to={toCommune} />
+                <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
+                  Fond © OpenStreetMap · tracé direct, sans calcul d’itinéraire (DEP-001)
+                </figcaption>
+              </figure>
+            )}
 
             {/* Sélecteur de critère */}
             <div
@@ -455,7 +453,7 @@ export default function DemoPage() {
                           className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-extrabold tabular-nums"
                           style={
                             winner
-                              ? { backgroundColor: AMBER, color: '#0B1518' }
+                              ? { backgroundColor: AMBER, color: '#26301C' }
                               : {
                                   backgroundColor: 'hsl(var(--muted))',
                                   color: 'hsl(var(--muted-foreground))',
@@ -580,80 +578,6 @@ function CommuneSelect({
   );
 }
 
-/**
- * Carte schématique d'Abidjan : positions RÉELLES des communes projetées, tracé
- * origine → destination SIMPLIFIÉ (ligne directe — pas de routage réel).
- */
-function AbidjanMap({ fromId, toId }: { fromId: string; toId: string }) {
-  const W = 320;
-  const H = 200;
-  const PAD = 22;
-  const lats = COMMUNES.map((c) => c.lat);
-  const lngs = COMMUNES.map((c) => c.lng);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs);
-  const maxLng = Math.max(...lngs);
-  const px = (lng: number) => PAD + ((lng - minLng) / (maxLng - minLng)) * (W - 2 * PAD);
-  const py = (lat: number) => PAD + ((maxLat - lat) / (maxLat - minLat)) * (H - 2 * PAD);
-  const from = COMMUNES.find((c) => c.id === fromId);
-  const to = COMMUNES.find((c) => c.id === toId);
-
-  return (
-    <figure className="mb-4 overflow-hidden rounded-2xl border bg-[#0E1B1F]">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full"
-        role="img"
-        aria-label="Carte schématique du trajet à Abidjan"
-      >
-        {from && to && (
-          <line
-            x1={px(from.lng)}
-            y1={py(from.lat)}
-            x2={px(to.lng)}
-            y2={py(to.lat)}
-            stroke={AMBER}
-            strokeWidth={2}
-            strokeDasharray="5 4"
-          />
-        )}
-        {COMMUNES.map((c) => {
-          const isFrom = c.id === fromId;
-          const isTo = c.id === toId;
-          const active = isFrom || isTo;
-          return (
-            <g key={c.id}>
-              <circle
-                cx={px(c.lng)}
-                cy={py(c.lat)}
-                r={active ? 5 : 2.5}
-                fill={isFrom ? '#0F8B8D' : isTo ? AMBER : '#35BDBE'}
-                opacity={active ? 1 : 0.45}
-              />
-              {active && (
-                <text
-                  x={px(c.lng)}
-                  y={py(c.lat) - 9}
-                  textAnchor="middle"
-                  fontSize="9"
-                  fontWeight="700"
-                  fill="#EAF1EE"
-                >
-                  {c.name}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      <figcaption className="px-3 py-1.5 text-[10px] text-white/45">
-        Positions réelles des communes · tracé simplifié, sans routage (simulation)
-      </figcaption>
-    </figure>
-  );
-}
-
 function DetailView({
   comparison: cmp,
   optionId,
@@ -758,7 +682,7 @@ function DetailView({
           </div>
           <div
             className="mt-2 overflow-x-auto rounded-xl p-4 font-mono text-[11.5px] leading-relaxed"
-            style={{ backgroundColor: '#0E1B1F', color: '#cfe' }}
+            style={{ backgroundColor: '#26301C', color: '#cfe' }}
           >
             {trace.steps.map((s, i) => (
               <div key={i}>
