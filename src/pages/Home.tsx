@@ -1,10 +1,18 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
 import { Assistant } from '@/components/Assistant';
+import { COMMUNES } from '@/demo/scenario';
+import {
+  estimateTraffic,
+  fetchWeatherAbidjan,
+  TRAFFIC_TINT,
+  type WeatherNow,
+} from '@/demo/ecosystem';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -197,18 +205,27 @@ export default function Home() {
               même écran — prix, temps et meilleur compromis. À Abidjan aujourd’hui, en Côte
               d’Ivoire demain.
             </p>
-            <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:flex-row sm:items-center">
+            {/* Widget de comparaison — l'action principale, directement dans le hero */}
+            <div className="mt-5 sm:mt-6">
+              <TripWidget />
+            </div>
+            <div className="mt-3 flex items-center gap-4 text-sm">
               <Link
                 to="/demo"
-                className="inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-95"
+                className="font-semibold text-primary underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                Voir la démonstration →
+                Démonstration guidée →
               </Link>
               <a
                 href="#comment"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border bg-background/60 px-6 py-3 text-base font-medium backdrop-blur transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-muted"
+                className="inline-flex items-center gap-1.5 font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-3.5 w-3.5"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M8 5v14l11-7z" />
                 </svg>
                 Comment ça marche
@@ -448,6 +465,138 @@ export default function Home() {
         </div>
       </footer>
       <Assistant />
+    </div>
+  );
+}
+
+/**
+ * Widget de comparaison du hero : départ → arrivée → Comparer, avec les
+ * conditions du moment (météo réelle Open-Meteo, trafic profil type).
+ * C'est l'entrée principale du produit — le comparateur en un geste.
+ */
+function TripWidget() {
+  const navigate = useNavigate();
+  const [from, setFrom] = useState('cocody');
+  const [to, setTo] = useState('plateau');
+  const [weather, setWeather] = useState<WeatherNow | null>(null);
+  const traffic = estimateTraffic(new Date());
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetchWeatherAbidjan(ctrl.signal).then((w) => {
+      if (!ctrl.signal.aborted) setWeather(w);
+    });
+    return () => ctrl.abort();
+  }, []);
+
+  const selectCls =
+    'w-full appearance-none bg-transparent text-[15px] font-bold focus-visible:outline-none';
+
+  return (
+    <div className="max-w-md rounded-2xl border bg-card/95 p-3.5 shadow-xl backdrop-blur">
+      <div className="relative flex flex-col gap-1.5">
+        <label className="flex items-center gap-2.5 rounded-xl bg-muted/50 px-3 py-2">
+          <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#5C6B2E]" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+              Départ
+            </span>
+            <select
+              aria-label="Départ"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className={selectCls}
+            >
+              {COMMUNES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </span>
+        </label>
+        <label className="flex items-center gap-2.5 rounded-xl bg-muted/50 px-3 py-2">
+          <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#B9722A]" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+              Arrivée
+            </span>
+            <select
+              aria-label="Arrivée"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className={selectCls}
+            >
+              {COMMUNES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </span>
+        </label>
+        <button
+          type="button"
+          onClick={() => {
+            setFrom(to);
+            setTo(from);
+          }}
+          aria-label="Inverser départ et arrivée"
+          className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full border bg-background shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-3.5 w-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l3-3M17 20l-3-3" />
+          </svg>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        disabled={from === to}
+        onClick={() => navigate(`/demo?de=${from}&a=${to}&tri=PRICE_TIME`)}
+        className="mt-2.5 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {from === to ? 'Choisissez deux communes différentes' : 'Comparer les 4 modes →'}
+      </button>
+
+      {/* Conditions du moment : météo réelle + trafic type */}
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+        {weather && (
+          <span className="inline-flex items-center gap-1 font-medium">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5 text-[#B9722A]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2" />
+            </svg>
+            {weather.tempC} °C · {weather.label} <span className="opacity-60">(réel)</span>
+          </span>
+        )}
+        <span className="inline-flex items-center gap-1.5 font-medium">
+          <span
+            aria-hidden="true"
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: TRAFFIC_TINT[traffic.level] }}
+          />
+          Circulation {{ FLUIDE: 'fluide', DENSE: 'dense', SATURE: 'saturée' }[traffic.level]}{' '}
+          <span className="opacity-60">(profil type)</span>
+        </span>
+      </div>
     </div>
   );
 }
