@@ -7,14 +7,14 @@ import { Wordmark } from '@/components/BrandMark';
  * site (audit UI/UX, constat n°4). Compacte, liens secondaires repliés en
  * burger sous 640 px, resserrée au scroll.
  *
- * - `cta`   : bouton toujours visible ; « Voir la démo » par défaut, `null`
+ * - `cta`   : bouton toujours visible ; « Comparer » par défaut, `null`
  *             pour le masquer (sur la démo elle-même).
  * - `banner`: bande collante rendue sous la barre — le bandeau d'honnêteté de
  *             la démo, par exemple.
  */
 export function SiteHeader({
   links,
-  cta = { to: '/demo', label: 'Voir la démo' },
+  cta = { to: '/comparer', label: 'Comparer' },
   banner,
 }: {
   links: { to: string; label: string }[];

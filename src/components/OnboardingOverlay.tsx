@@ -26,8 +26,8 @@ const SLIDES: readonly Slide[] = [
     art: 'shield',
   },
   {
-    title: 'Aujourd’hui : démonstration',
-    body: 'Les prix et durées sont simulés, en attendant les grilles officielles et les relevés de terrain. Tout ce qui est estimé est étiqueté.',
+    title: 'Aujourd’hui : version pilote',
+    body: 'Les prix sont indicatifs, en calibration avec les grilles officielles et les relevés de terrain. Tout ce qui est estimé est étiqueté.',
     art: 'demo',
   },
 ];

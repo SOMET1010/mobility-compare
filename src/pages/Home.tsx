@@ -137,7 +137,7 @@ const STEPS: { n: string; title: string; body: string }[] = [
 const ROADMAP: { tag: string; title: string; body: string; done?: boolean }[] = [
   {
     tag: 'Aujourd’hui',
-    title: 'Abidjan — démonstration',
+    title: 'Abidjan — version pilote',
     body: 'Le parcours complet et les moteurs de calcul, sur un échantillon de corridors.',
     done: true,
   },
@@ -210,10 +210,10 @@ export default function Home() {
             </div>
             <div className="mt-3 flex items-center gap-4 text-sm">
               <Link
-                to="/demo"
+                to="/methode#faq"
                 className="font-semibold text-primary underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                Démonstration guidée →
+                Questions fréquentes
               </Link>
               <a
                 href="#comment"
@@ -244,7 +244,7 @@ export default function Home() {
                 <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
                 <path d="M9 12l2 2 4-4" />
               </svg>
-              Aperçu de démonstration — données 100 % simulées, aucun prix ou itinéraire réel.
+              Version pilote — prix indicatifs, chaque calcul reste visible et vérifiable.
             </p>
 
             {/* Mobile : bande visuelle, remontée près du contenu */}
@@ -419,13 +419,13 @@ export default function Home() {
       {/* CTA FINAL */}
       <section className="border-t bg-muted/40">
         <div className="mx-auto max-w-6xl px-5 py-12 text-center sm:py-16">
-          <h2 className="text-2xl font-bold sm:text-3xl">Voyez la comparaison en action</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">Comparez votre premier trajet</h2>
           <p className="mx-auto mt-3 max-w-xl text-[15px] leading-[1.6] text-muted-foreground">
-            Un parcours complet, de la recherche au détail du calcul. Sur des données de
-            démonstration, en attendant les sources réelles.
+            De la recherche au détail du calcul, en quelques secondes. Prix indicatifs, en
+            calibration terrain.
           </p>
           <Link
-            to="/demo"
+            to="/comparer"
             className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#26301C] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-muted active:brightness-110"
           >
             Comparer un trajet →
@@ -457,10 +457,10 @@ export default function Home() {
           </div>
         </div>
         <div className="mx-auto max-w-6xl px-5 pb-10 text-[11px] leading-relaxed text-muted-foreground">
-          {PRODUCT.displayName} — {PRODUCT.scope.city}, {PRODUCT.scope.countryName}. La
-          démonstration présente des données 100 % fictives ; le moteur de tarification et le
-          classement sont réels et attendent leurs sources de terrain avant toute mise en
-          production. Nom, identité visuelle et hébergement sont provisoires.
+          {PRODUCT.displayName} — {PRODUCT.scope.city}, {PRODUCT.scope.countryName}. Version pilote
+          : prix indicatifs en attente des grilles officielles et des relevés de terrain ; le moteur
+          de tarification et le classement, eux, sont réels et testés. Nom, identité visuelle et
+          hébergement sont provisoires.
         </div>
       </footer>
     </div>
@@ -550,7 +550,7 @@ function TripWidget() {
       <button
         type="button"
         disabled={from === to}
-        onClick={() => navigate(`/demo?de=${from}&a=${to}&tri=PRICE_TIME`)}
+        onClick={() => navigate(`/comparer?de=${from}&a=${to}&tri=PRICE_TIME`)}
         className="mt-2.5 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {from === to ? 'Choisissez deux communes différentes' : 'Comparer les 4 modes →'}

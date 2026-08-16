@@ -14,8 +14,8 @@
  * =============================================================================
  */
 
-/** Bandeau permanent, affiché sur chaque écran du mode Démonstration. */
-export const SIMULATION_BANNER = 'MAQUETTE — DONNÉES 100 % FICTIVES, NON CONTRACTUELLES';
+/** Bandeau permanent du comparateur : honnête sur le statut, sans se déclarer « démo ». */
+export const SIMULATION_BANNER = 'VERSION PILOTE — PRIX INDICATIFS, EN CALIBRATION TERRAIN';
 
 /**
  * Fournisseur de routage inscrit dans la trace des calculs de démonstration.

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -168,7 +168,6 @@ function ConfidenceNote() {
 
 /* --------------------------------------------------------------------- shell */
 
-type Section = 'app' | 'realvs' | 'about';
 type View = 'search' | 'results' | 'detail' | 'contribute';
 
 /** Bandeau d'honnêteté — accordé à la palette (crème/encre, pointes ocre). */
@@ -208,7 +207,6 @@ export default function DemoPage() {
   const urlTo = params.get('a');
   const deepLinked = isCommune(urlFrom) && isCommune(urlTo) && urlFrom !== urlTo;
 
-  const [section, setSection] = useState<Section>('app');
   const [showOnboarding, setShowOnboarding] = useState(
     () => typeof window !== 'undefined' && !hasSeenOnboarding(window.localStorage),
   );
@@ -295,7 +293,7 @@ export default function DemoPage() {
   }
 
   async function share() {
-    const url = `${window.location.origin}/demo?de=${fromId}&a=${toId}&tri=${criterion}`;
+    const url = `${window.location.origin}/comparer?de=${fromId}&a=${toId}&tri=${criterion}`;
     try {
       await navigator.clipboard.writeText(url);
       toast('Lien copié', { description: `${fromId} → ${toId} · ${url}` });
@@ -324,12 +322,6 @@ export default function DemoPage() {
     setView('detail');
   }
 
-  const navItems: { key: Section; label: string }[] = [
-    { key: 'app', label: 'Comparateur' },
-    { key: 'realvs', label: 'Réel vs simulé' },
-    { key: 'about', label: 'À propos' },
-  ];
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader
@@ -343,30 +335,7 @@ export default function DemoPage() {
         banner={<HonestyBanner />}
       />
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
-        {/* Navigation de sections */}
-        <div className="mb-6 grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
-          {navItems.map((n) => (
-            <button
-              key={n.key}
-              type="button"
-              onClick={() => setSection(n.key)}
-              aria-pressed={section === n.key}
-              className={
-                'rounded-lg px-2 py-2 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                (section === n.key
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground')
-              }
-            >
-              {n.label}
-            </button>
-          ))}
-        </div>
-
-        {section === 'about' && <AboutSection />}
-        {section === 'realvs' && <RealVsSimSection />}
-
-        {section === 'app' && view === 'search' && (
+        {view === 'search' && (
           <section aria-label="Recherche">
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               Étape 1 · Recherche
@@ -505,7 +474,7 @@ export default function DemoPage() {
           </section>
         )}
 
-        {section === 'app' && view === 'results' && cmp && (
+        {view === 'results' && cmp && (
           <section aria-label="Résultats">
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               Étape 2 · Comparaison
@@ -767,6 +736,12 @@ export default function DemoPage() {
                   classement <b>neutre</b> sur tous les modes — aucun levier commercial, l’ordre
                   éditorial ne les modifie pas (invariant I3).
                 </p>
+                <Link
+                  to="/methode#faq"
+                  className="inline-block text-[12px] font-semibold text-primary underline-offset-2 hover:underline"
+                >
+                  Toutes les questions fréquentes →
+                </Link>
               </div>
             </details>
 
@@ -776,7 +751,7 @@ export default function DemoPage() {
           </section>
         )}
 
-        {section === 'app' && view === 'contribute' && cmp && (
+        {view === 'contribute' && cmp && (
           <ContributeView
             comparison={cmp}
             fromId={fromId}
@@ -785,7 +760,7 @@ export default function DemoPage() {
           />
         )}
 
-        {section === 'app' && view === 'detail' && cmp && optionId && (
+        {view === 'detail' && cmp && optionId && (
           <DetailView
             comparison={cmp}
             optionId={optionId}
@@ -1153,127 +1128,6 @@ function ContributeView({
           ? 'Chaque relevé est modéré avant publication (détection d’aberrations, CDC M4). Rien n’est publié brut.'
           : 'Un vrai envoi passerait par une file modérée, avec masquage des données personnelles et recalage de l’indice de confiance.'}
       </p>
-    </section>
-  );
-}
-
-function RealVsSimSection() {
-  return (
-    <section aria-label="Réel vs simulé">
-      <h2 className="mb-1 text-xl font-extrabold">Ce que montre cette démonstration</h2>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Le <em>parcours</em> et la <em>mécanique de comparaison</em> sont réels. Seules les{' '}
-        <em>valeurs</em> (lieux, distances, prix, durées) sont fictives.
-      </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border bg-card p-4">
-          <h3
-            className="mb-2 text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: '#2E9E5B' }}
-          >
-            Réel / prouvé
-          </h3>
-          <ul className="space-y-1.5 text-[12.5px]">
-            <li>✓ Moteur de classement neutre (moins cher / plus rapide / meilleur rapport)</li>
-            <li>✓ Principe de traçabilité du prix (invariant I2)</li>
-            <li>✓ Absence honnête : indice de confiance affiché (invariant I1)</li>
-            <li>✓ Socle testé en continu — CI verte</li>
-          </ul>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <h3
-            className="mb-2 text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: WARN }}
-          >
-            Simulé / fictif
-          </h3>
-          <ul className="space-y-1.5 text-[12.5px]">
-            <li>≈ Lieux &amp; distances d’Abidjan</li>
-            <li>≈ Prix en FCFA de chaque mode</li>
-            <li>≈ Durées de trajet</li>
-            <li>≈ Disponibilité des modes</li>
-          </ul>
-        </div>
-      </div>
-      <div className="mt-3 rounded-xl bg-muted/50 p-4 text-[12.5px] text-muted-foreground">
-        <b className="text-foreground">Du fictif au réel :</b> quand DEP-001 (routage OSRM), DEP-002
-        (grille officielle) et DEP-004 (relevés terrain) seront levées, on remplace la{' '}
-        <b>source des données</b> (un seul fichier) — les écrans et la mécanique ne changent pas.
-      </div>
-    </section>
-  );
-}
-
-function AboutSection() {
-  const today = ['VTC', 'Taxi compteur', 'Woro-woro', 'Gbaka'];
-  const tomorrow = ['Bus', 'BRT', 'Métro', 'Ferry', 'Vélo', 'Marche', 'Covoiturage'];
-  const later = [
-    'Horaires en temps réel',
-    'Perturbations',
-    'Empreinte carbone',
-    'Accessibilité',
-    'Coût total d’un trajet multimodal',
-  ];
-  return (
-    <section aria-label="À propos">
-      <h2 className="text-balance text-xl font-extrabold">
-        Le premier moteur <span style={{ color: 'hsl(var(--primary))' }}>neutre</span> de
-        comparaison des mobilités urbaines en Afrique
-      </h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Le comparateur n’est que la première fonctionnalité. La même plateforme pourra comparer tous
-        les modes, sans levier commercial : le classement ignore structurellement l’existence d’un
-        annonceur (invariant I3).
-      </p>
-
-      <div className="mt-4 rounded-xl border bg-card p-4">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          Aujourd’hui (démo)
-        </h3>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {today.map((t) => (
-            <span
-              key={t}
-              className="rounded-full bg-primary/12 px-2.5 py-1 text-[12px] font-semibold text-primary"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-3 rounded-xl border bg-card p-4">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          Demain (modes)
-        </h3>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {tomorrow.map((t) => (
-            <span
-              key={t}
-              className="rounded-full bg-muted px-2.5 py-1 text-[12px] font-medium text-muted-foreground"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-3 rounded-xl border bg-card p-4">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          Plus tard (dimensions)
-        </h3>
-        <ul className="mt-2 space-y-1 text-[12.5px]">
-          {later.map((t) => (
-            <li key={t}>• {t}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-3 rounded-xl bg-muted/50 p-4 text-[12.5px] text-muted-foreground">
-        <b className="text-foreground">Exigence de transparence.</b> Aucune donnée n’est inventée
-        dans le produit : un prix sans observation terrain s’affiche comme non validé (confiance 0).
-        Cette démonstration l’assume à chaque écran.
-      </div>
     </section>
   );
 }

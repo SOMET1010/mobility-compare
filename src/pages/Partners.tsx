@@ -88,10 +88,10 @@ export default function Partners() {
           </p>
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
-              to="/demo"
+              to="/comparer"
               className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-ochre)] px-6 py-3 text-base font-semibold text-[var(--brand-ink)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ochre)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-ink)] active:brightness-95"
             >
-              Voir la démonstration →
+              Ouvrir le comparateur →
             </Link>
             <a
               href="#contact"

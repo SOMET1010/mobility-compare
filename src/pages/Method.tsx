@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -52,6 +53,10 @@ const OPEN_DEPS: { code: string; title: string; body: string }[] = [
 ];
 
 export default function Method() {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) document.querySelector(hash)?.scrollIntoView({ block: 'start' });
+  }, [hash]);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader
@@ -171,17 +176,81 @@ export default function Method() {
           </div>
         </section>
 
+        {/* FAQ — les explications vivent ici, pas dans le parcours de comparaison */}
+        <section id="faq" className="scroll-mt-20">
+          <h2 className="text-2xl font-bold sm:text-3xl">Questions fréquentes</h2>
+          <div className="mt-5 space-y-3">
+            <details className="group rounded-2xl border bg-card">
+              <summary className="cursor-pointer select-none px-5 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                Qu’est-ce qui est réel, qu’est-ce qui est indicatif ?
+              </summary>
+              <div className="space-y-3 px-5 pb-5 text-sm text-muted-foreground">
+                <p>
+                  Le <em>parcours</em> et la <em>mécanique de comparaison</em> sont réels : moteur
+                  de classement neutre, trace de calcul de chaque prix (invariant I2), indice de
+                  confiance affiché (invariant I1), socle testé en continu. Les <em>valeurs</em>{' '}
+                  (distances, prix, durées) restent indicatives tant que les grilles officielles
+                  (DEP-002) et les relevés de terrain (DEP-004) ne sont pas branchés.
+                </p>
+                <p>
+                  Du pilote au réel : on remplace la <b>source des données</b> — les écrans et la
+                  mécanique ne changent pas.
+                </p>
+              </div>
+            </details>
+            <details className="group rounded-2xl border bg-card">
+              <summary className="cursor-pointer select-none px-5 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                Quels modes sont couverts — et ensuite ?
+              </summary>
+              <div className="space-y-2 px-5 pb-5 text-sm text-muted-foreground">
+                <p>
+                  <b className="text-foreground">Aujourd’hui :</b> VTC (périmètre prioritaire), taxi
+                  compteur, woro-woro, gbaka.
+                </p>
+                <p>
+                  <b className="text-foreground">Demain :</b> bus, BRT, métro, ferry lagunaire,
+                  vélo, marche, covoiturage.
+                </p>
+                <p>
+                  <b className="text-foreground">Plus tard :</b> horaires en temps réel,
+                  perturbations, empreinte carbone, accessibilité, coût total d’un trajet
+                  multimodal.
+                </p>
+              </div>
+            </details>
+            <details className="group rounded-2xl border bg-card">
+              <summary className="cursor-pointer select-none px-5 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                Pourquoi certains prix affichent « indice de confiance 0 » ?
+              </summary>
+              <div className="px-5 pb-5 text-sm text-muted-foreground">
+                Aucune donnée n’est inventée : un prix sans observation de terrain s’affiche comme
+                non validé plutôt que déguisé en certitude. L’indice monte avec les relevés réels,
+                déposés par les usagers et modérés avant publication.
+              </div>
+            </details>
+            <details className="group rounded-2xl border bg-card">
+              <summary className="cursor-pointer select-none px-5 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                Un opérateur peut-il payer pour être mieux classé ?
+              </summary>
+              <div className="px-5 pb-5 text-sm text-muted-foreground">
+                Non, par construction : le moteur de classement n’a aucun accès à un identifiant de
+                sponsor, de promotion ou de commission (invariant I3), et une vérification
+                automatique bloque toute livraison qui introduirait un tel levier.
+              </div>
+            </details>
+          </div>
+        </section>
+
         <section className="rounded-2xl border bg-muted/40 p-6 text-center sm:p-8">
           <h2 className="text-xl font-bold sm:text-2xl">Voyez la méthode à l’œuvre</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            La démonstration affiche la trace de calcul de chaque course et signale ce qui est
-            simulé.
+            Chaque course affiche sa trace de calcul et signale ce qui reste indicatif.
           </p>
           <Link
-            to="/demo"
+            to="/comparer"
             className="mt-5 inline-flex items-center justify-center rounded-xl bg-[var(--brand-ink)] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ink)] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-110"
           >
-            Ouvrir la démonstration →
+            Ouvrir le comparateur →
           </Link>
         </section>
       </div>

@@ -88,7 +88,7 @@ export function answer(input: string): AssistantReply {
       actions: [
         {
           label: `Comparer ${from.name} → ${to.name}`,
-          to: `/demo?de=${from.id}&a=${to.id}&tri=PRICE_TIME`,
+          to: `/comparer?de=${from.id}&a=${to.id}&tri=PRICE_TIME`,
         },
       ],
     };
@@ -98,7 +98,7 @@ export function answer(input: string): AssistantReply {
     return {
       intent: 'weather',
       text: 'La météo affichée dans le comparateur est réelle (source Open-Meteo, heure d’Abidjan). Ouvrez une comparaison : elle apparaît dans le bloc « Conditions ».',
-      actions: [{ label: 'Ouvrir le comparateur', to: '/demo' }],
+      actions: [{ label: 'Ouvrir le comparateur', to: '/comparer' }],
     };
   }
 
@@ -106,7 +106,7 @@ export function answer(input: string): AssistantReply {
     return {
       intent: 'traffic',
       text: 'Le comparateur affiche un niveau de circulation type selon l’heure (pointes 6h30–9h30 et 16h30–20h). C’est un profil simulé, honnêtement étiqueté — la mesure temps réel est une dépendance ouverte (DEP-009).',
-      actions: [{ label: 'Ouvrir le comparateur', to: '/demo' }],
+      actions: [{ label: 'Ouvrir le comparateur', to: '/comparer' }],
     };
   }
 
@@ -114,14 +114,14 @@ export function answer(input: string): AssistantReply {
     return {
       intent: 'modes',
       text: 'Quatre modes sont comparés : VTC (réservé, porte-à-porte), taxi compteur (direct, au compteur), woro-woro (taxi partagé à tarif fixe) et gbaka (minibus de ligne). Chacun est classé sans favoritisme.',
-      actions: [{ label: 'Voir les modes en action', to: '/demo' }],
+      actions: [{ label: 'Voir les modes en action', to: '/comparer' }],
     };
   }
 
   if (has(t, 'prix', 'tarif', 'cout', 'combien', 'fcfa', 'cher')) {
     return {
       intent: 'pricing',
-      text: 'Chaque prix expose sa formule : prise en charge + distance + temps + suppléments, ligne par ligne. Dans la démonstration les montants sont des exemples (indice de confiance 0) — les grilles officielles et relevés de terrain sont des dépendances ouvertes (DEP-002, DEP-004).',
+      text: 'Chaque prix expose sa formule : prise en charge + distance + temps + suppléments, ligne par ligne. Dans la version pilote les montants sont indicatifs (indice de confiance 0) — les grilles officielles et relevés de terrain sont des dépendances ouvertes (DEP-002, DEP-004).',
       actions: [{ label: 'Voir la méthode', to: '/methode' }],
     };
   }
@@ -138,7 +138,7 @@ export function answer(input: string): AssistantReply {
     return {
       intent: 'data',
       text: 'Ce qui est réel : le moteur de calcul, le classement neutre, les positions des communes, la météo. Ce qui est simulé (et étiqueté) : prix, durées, trafic. Rien n’est inventé en silence.',
-      actions: [{ label: 'Réel vs simulé', to: '/demo' }],
+      actions: [{ label: 'Questions fréquentes', to: '/methode#faq' }],
     };
   }
 
@@ -153,7 +153,7 @@ export function answer(input: string): AssistantReply {
     intent: 'help',
     text: 'Je peux : comparer un trajet si vous citez deux communes (ex. « Yopougon Plateau ») · expliquer les modes, les prix ou la neutralité · indiquer la météo et le trafic.',
     actions: [
-      { label: 'Comparer Cocody → Plateau', to: '/demo?de=cocody&a=plateau&tri=PRICE_TIME' },
+      { label: 'Comparer Cocody → Plateau', to: '/comparer?de=cocody&a=plateau&tri=PRICE_TIME' },
     ],
   };
 }

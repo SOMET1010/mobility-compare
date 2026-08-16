@@ -67,7 +67,7 @@ describe('assistant guidé — intentions', () => {
   it('propose la comparaison quand deux communes sont citées', () => {
     const r = answer('Combien de Cocody à Plateau ?');
     expect(r.intent).toBe('trip');
-    expect(r.actions?.[0]?.to).toBe('/demo?de=cocody&a=plateau&tri=PRICE_TIME');
+    expect(r.actions?.[0]?.to).toBe('/comparer?de=cocody&a=plateau&tri=PRICE_TIME');
   });
 
   it('répond sur la neutralité', () => {

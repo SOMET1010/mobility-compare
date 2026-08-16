@@ -135,7 +135,7 @@ export default function AccountPage() {
               Supprimer ce profil (effacement local)
             </Button>
             <Link
-              to="/demo"
+              to="/comparer"
               className="block text-center text-sm font-semibold text-primary hover:underline"
             >
               Aller au comparateur →

@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { createQueryClient } from '@/lib/queryClient';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Assistant } from '@/components/Assistant';
@@ -14,6 +14,12 @@ import Observatory from '@/pages/Observatory';
 import Moderation from '@/pages/Moderation';
 
 const queryClient = createQueryClient();
+
+/** L'ancienne adresse /demo redirige vers /comparer en conservant le trajet. */
+function LegacyDemoRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: '/comparer', search }} replace />;
+}
 
 /**
  * Shell applicatif.
@@ -31,7 +37,8 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/demo" element={<DemoPage />} />
+            <Route path="/comparer" element={<DemoPage />} />
+            <Route path="/demo" element={<LegacyDemoRedirect />} />
             <Route path="/partenaires" element={<Partners />} />
             <Route path="/methode" element={<Method />} />
             <Route path="/compte" element={<AccountPage />} />

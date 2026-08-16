@@ -189,7 +189,7 @@ export default function Observatory() {
                 anonyme par conception.
               </p>
               <Link
-                to="/demo"
+                to="/comparer"
                 className="mt-4 inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Contribuer un tarif →
