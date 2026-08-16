@@ -9,7 +9,9 @@
  * - La charte ci-dessous borne l'IA : aucun prix inventé, neutralité absolue,
  *   aucune collecte de données personnelles.
  * - Conversation : origines autorisées uniquement, entrées bornées
- *   (8 messages × 500 caractères, 400 tokens de réponse).
+ *   (8 messages × 500 caractères, 900 tokens de réponse — les modèles
+ *   raisonneurs type Kimi K3 consomment des tokens de réflexion avant de
+ *   répondre).
  * - Administration (`get_config` / `set_config` / `test`) : jeton de
  *   modérateur en en-tête `x-moderation-token`, vérifié par empreinte SHA-256
  *   (même mécanisme que la fonction `moderation`).
@@ -283,7 +285,7 @@ Deno.serve(async (req) => {
     const PING: { role: string; content: string }[] = [
       { role: 'user', content: 'Réponds uniquement : OK' },
     ];
-    const probe = await callModel(cfg, PING, 8);
+    const probe = await callModel(cfg, PING, 300);
     if (probe.ok) {
       return new Response(JSON.stringify({ ok: true, model: cfg.model }), {
         status: 200,
@@ -296,7 +298,7 @@ Deno.serve(async (req) => {
     if (cfg.source === 'base') {
       const MOONSHOT = ['https://api.moonshot.ai/v1', 'https://api.moonshot.cn/v1'];
       for (const alt of MOONSHOT.filter((u) => u !== cfg.baseUrl)) {
-        const retry = await callModel({ ...cfg, baseUrl: alt }, PING, 8);
+        const retry = await callModel({ ...cfg, baseUrl: alt }, PING, 300);
         if (retry.ok) {
           await admin
             .from('assistant_config')
@@ -338,7 +340,7 @@ Deno.serve(async (req) => {
                       : 0;
           const pick = ids.slice().sort((a, b) => score(b) - score(a))[0];
           if (pick) {
-            const retry = await callModel({ ...cfg, model: pick }, PING, 8);
+            const retry = await callModel({ ...cfg, model: pick }, PING, 300);
             if (retry.ok) {
               if (cfg.source === 'base') {
                 await admin
@@ -396,7 +398,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  const result = await callModel(cfg, [{ role: 'system', content: CHARTE }, ...messages], 400);
+  const result = await callModel(cfg, [{ role: 'system', content: CHARTE }, ...messages], 900);
   if (!result.ok) {
     return new Response(
       JSON.stringify({ error: "L'assistant IA est momentanément indisponible." }),
