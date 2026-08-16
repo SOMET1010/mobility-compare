@@ -6,7 +6,7 @@
 
 **Règle de propriété** : chaque dépendance porte une **fonction responsable**, même lorsque la personne n'est pas encore désignée. Une dépendance sans propriétaire n'est suivie par personne et finit par disparaître du radar.
 
-Dernière mise à jour : 1er août 2026.
+Dernière mise à jour : 16 août 2026.
 
 ---
 
@@ -18,9 +18,23 @@ Dernière mise à jour : 1er août 2026.
 | **Responsable**           | Le décideur                                                          |
 | **Source attendue**       | VM Linux ou poste avec Docker, accès réseau à Geofabrik              |
 | **Critère d'acceptation** | `./scripts/j2.3/run-proof.sh` produit un rapport de verdict **PASS** |
-| **Statut**                | OUVERTE                                                              |
+| **Statut**                | **LEVÉE (16/08/2026)** — serveur de routage en production            |
 
-Le protocole est livré et testé. Il ne reste qu'à l'exécuter. Le rapport produit fait foi : horodaté, avec empreinte de l'extrait OSM et mesures.
+**Résolution (16/08/2026)** : serveur cloud dédié provisionné par le décideur
+(Hetzner, Helsinki). `infra/osrm/setup.sh` exécuté sur place : extrait
+Côte d'Ivoire de Geofabrik, chaîne `osrm-extract`/`partition`/`customize`
+(algorithme MLD), puis OSRM v5.27.1 en service via `docker compose`
+(écoute locale uniquement). Exposition publique sécurisée : reverse proxy
+Caddy, TLS automatique (Let's Encrypt) sur le nom d'hôte fourni par
+l'hébergeur, jeton d'accès obligatoire — toute requête sans jeton reçoit
+401. Seul client autorisé : l'Edge Function `itineraire` (jeton dans la
+table `routing_config`, RLS sans politique — service role uniquement,
+jamais dans le navigateur ni le dépôt). Chaîne complète vérifiée le jour
+même : fonction → serveur → `{"disponible":true,"distance_m":8722,"duree_s":764}`
+(Plateau → Cocody). Le critère initial (rapport `run-proof.sh`) est dépassé
+par plus fort : le service répond en production. La matrice routière 29×29
+embarquée (`src/demo/distances.ts`) reste le repli honnête si le serveur
+est injoignable (invariant I1).
 
 ---
 
@@ -83,7 +97,8 @@ GitHub Actions (`.github/workflows/ci.yml`), avec installation déterministe du
 navigateur. Deux défauts révélés au premier passage réel ont été corrigés côté
 produit **sans modifier les tests** : favicon absent (404 console) et littéral du
 préfixe de détection `sb_secret_` présent dans le bundle (désormais assemblé à
-l'exécution). Ceci ne concerne pas DEP-001 (preuve OSRM), qui reste ouverte.
+l'exécution). Ceci ne concerne pas DEP-001 (preuve OSRM), levée à son tour
+le 16/08/2026.
 
 ---
 
@@ -183,7 +198,7 @@ budget d'inférence.
 
 | #   | Dépendance                  | Responsable | Bloque               |
 | --- | --------------------------- | ----------- | -------------------- |
-| 001 | Environnement Docker + OSM  | Décideur    | Clôture J2           |
+| 001 | Environnement Docker + OSM  | Décideur    | **Levée 16/08/2026** |
 | 002 | Grille tarifaire officielle | À désigner  | Validation tarifaire |
 | 003 | Assiette de la taxe         | À désigner  | H5                   |
 | 004 | Relevés terrain             | À désigner  | H3, H4, confiance    |
@@ -192,7 +207,9 @@ budget d'inférence.
 | 007 | Nom commercial              | Décideur    | Sender ID, domaine   |
 | 008 | Fournisseurs SMS            | À désigner  | Choix, budget OTP    |
 | 009 | Trafic temps réel           | À désigner  | Durées ajustées      |
-| 010 | Assistant IA serveur        | À désigner  | IA conversationnelle |
+| 010 | Assistant IA serveur        | Décideur    | **Levée 16/08/2026** |
 | 011 | Revue juridique CGU         | À désigner  | CGU opposables       |
 
-Quatre dépendances attendent la désignation d'un responsable. Ce sont aussi les quatre les plus longues à lever.
+Six dépendances restent sans responsable désigné (002, 003, 004, 008, 009,
+011). Ce sont aussi les plus longues à lever — et 004 (relevés terrain) reste
+le chemin critique du projet.
