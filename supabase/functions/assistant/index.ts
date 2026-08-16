@@ -123,7 +123,16 @@ async function callModel(
     if (!upstream.ok) {
       const detail = await upstream.text().catch(() => '');
       console.error('assistant upstream', upstream.status, detail.slice(0, 300));
-      return { ok: false, error: `Fournisseur : erreur ${upstream.status}.` };
+      const friendly: Record<number, string> = {
+        401: 'Clé refusée par le fournisseur — recopiez-la ou créez-en une nouvelle dans la console.',
+        402: 'Compte fournisseur sans crédit — rechargez-le.',
+        404: 'Modèle introuvable chez le fournisseur — vérifiez le nom du modèle.',
+        429: 'Crédit épuisé ou quota atteint chez le fournisseur — vérifiez la facturation.',
+      };
+      return {
+        ok: false,
+        error: friendly[upstream.status] ?? `Fournisseur : erreur ${upstream.status}.`,
+      };
     }
     const json = (await upstream.json()) as { choices?: { message?: { content?: string } }[] };
     const reply = json.choices?.[0]?.message?.content?.trim();
