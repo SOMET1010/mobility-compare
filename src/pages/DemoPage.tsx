@@ -322,6 +322,16 @@ export default function DemoPage() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   }
 
+  /** Partage Facebook : la carte riche (og:image) fait le travail visuel. */
+  function shareFacebook() {
+    const url = `${window.location.origin}/comparer?de=${fromId}&a=${toId}&tri=${criterion}`;
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      '_blank',
+      'noopener',
+    );
+  }
+
   function swap() {
     setFromId(toId);
     setToId(fromId);
@@ -750,11 +760,11 @@ export default function DemoPage() {
               </div>
             ))}
 
-            <div className="mt-5 grid grid-cols-2 gap-2">
+            <div className="mt-5 grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
                 onClick={shareWhatsApp}
-                className="border-[#25D366]/40 text-[#128C4A] hover:bg-[#25D366]/10 hover:text-[#128C4A]"
+                className="border-[#25D366]/40 px-2 text-[#128C4A] hover:bg-[#25D366]/10 hover:text-[#128C4A]"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -766,7 +776,22 @@ export default function DemoPage() {
                 </svg>
                 WhatsApp
               </Button>
-              <Button variant="outline" onClick={share}>
+              <Button
+                variant="outline"
+                onClick={shareFacebook}
+                className="border-[#1877F2]/40 px-2 text-[#1877F2] hover:bg-[#1877F2]/10 hover:text-[#1877F2]"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="mr-1.5 h-4 w-4"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.62.77-1.62 1.56V12h2.76l-.44 2.89h-2.32v6.99A10 10 0 0 0 22 12z" />
+                </svg>
+                Facebook
+              </Button>
+              <Button variant="outline" onClick={share} className="px-2">
                 <svg
                   viewBox="0 0 24 24"
                   className="mr-1.5 h-4 w-4"
@@ -780,7 +805,7 @@ export default function DemoPage() {
                   <rect x="9" y="9" width="11" height="11" rx="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
-                Copier le lien
+                Lien
               </Button>
             </div>
             <Button variant="outline" className="mt-2 w-full" onClick={() => setView('contribute')}>

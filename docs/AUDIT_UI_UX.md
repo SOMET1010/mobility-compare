@@ -54,3 +54,9 @@ La thèse produit : **l'écran de résultats est une réponse, pas une liste.**
 7. **Yango et Heetch visibles dès l'en-tête de section VTC** — pastilles aux
    couleurs de marque (données du registre I4). Les prix par opérateur
    attendent les grilles réelles : on n'invente pas d'écart de prix.
+8. **Le public vit sur TikTok et Facebook** — un lien MOBILIS qui circule doit
+   être beau : balises Open Graph + image sociale 1200×630 (« On va où ?
+   Comparez les prix avant de partir. ») ; bouton Facebook à côté de WhatsApp.
+   Limite connue : la carte est la même pour toutes les pages (site statique,
+   pas de rendu par trajet) — une carte par trajet exigerait des fonctions
+   serveur, noté pour plus tard.
