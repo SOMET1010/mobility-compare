@@ -293,8 +293,9 @@ Deno.serve(async (req) => {
         }
       }
     }
-    // Modèle inconnu ? Lister les modèles réellement accessibles avec cette clé,
-    // pour que l'admin choisisse sans deviner.
+    // Modèle inconnu ? Découvrir les modèles accessibles avec cette clé,
+    // choisir le plus adapté à un assistant conversationnel, l'essayer,
+    // et s'il répond : l'enregistrer. L'admin n'a rien à deviner.
     if (probe.error.startsWith('Modèle introuvable')) {
       try {
         const res = await fetch(`${cfg.baseUrl}/models`, {
@@ -304,13 +305,42 @@ Deno.serve(async (req) => {
           const list = (await res.json()) as { data?: { id?: string }[] };
           const ids = (list.data ?? [])
             .map((m) => m.id)
-            .filter((id): id is string => typeof id === 'string')
-            .slice(0, 15);
+            .filter((id): id is string => typeof id === 'string');
+          // Préférence : rapide et conversationnel ; éviter les variantes
+          // « thinking » (lentes et chères) tant qu'une alternative existe.
+          const score = (id: string) =>
+            id.includes('thinking')
+              ? 1
+              : id.startsWith('kimi-k')
+                ? 5
+                : id.startsWith('kimi')
+                  ? 4
+                  : id.includes('moonshot-v1-8k')
+                    ? 3
+                    : id.startsWith('moonshot')
+                      ? 2
+                      : 0;
+          const pick = ids.slice().sort((a, b) => score(b) - score(a))[0];
+          if (pick) {
+            const retry = await callModel({ ...cfg, model: pick }, PING, 8);
+            if (retry.ok) {
+              if (cfg.source === 'base') {
+                await admin
+                  .from('assistant_config')
+                  .update({ model: pick, updated_at: new Date().toISOString() })
+                  .eq('id', 'default');
+              }
+              return new Response(JSON.stringify({ ok: true, model: pick, adjusted_model: pick }), {
+                status: 200,
+                headers,
+              });
+            }
+          }
           if (ids.length > 0) {
             return new Response(
               JSON.stringify({
                 ok: false,
-                error: `Modèle « ${cfg.model} » introuvable. Disponibles avec votre clé : ${ids.join(' · ')}`,
+                error: `Modèle « ${cfg.model} » introuvable. Disponibles avec votre clé : ${ids.slice(0, 15).join(' · ')}`,
               }),
               { status: 200, headers },
             );

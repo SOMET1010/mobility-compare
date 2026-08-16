@@ -57,10 +57,14 @@ export function setAiConfig(
  * appartient à l'autre plateforme Moonshot, le serveur corrige l'adresse
  * tout seul et le signale via `switched_base_url`.
  */
-export function testAi(
-  token: string,
-): Promise<
-  AdminResult<{ ok: boolean; model?: string; error?: string; switched_base_url?: string }>
+export function testAi(token: string): Promise<
+  AdminResult<{
+    ok: boolean;
+    model?: string;
+    error?: string;
+    switched_base_url?: string;
+    adjusted_model?: string;
+  }>
 > {
   return call(token, { action: 'test' });
 }

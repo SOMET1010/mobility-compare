@@ -285,9 +285,11 @@ function AiConfigPanel({ token }: { token: string }) {
       toast('Clé valide ✓', {
         description: probe.value.switched_base_url
           ? `Votre clé appartient à l'autre plateforme Moonshot — adresse corrigée automatiquement (${probe.value.switched_base_url}).`
-          : `Le modèle ${probe.value.model} a répondu.`,
+          : probe.value.adjusted_model
+            ? `Modèle ajusté automatiquement : ${probe.value.adjusted_model} (le nom configuré n'existait pas chez le fournisseur).`
+            : `Le modèle ${probe.value.model} a répondu.`,
       });
-      if (probe.value.switched_base_url) void load();
+      if (probe.value.switched_base_url || probe.value.adjusted_model) void load();
     } else {
       toast('La clé enregistrée ne fonctionne pas', {
         description: probe.ok ? probe.value.error : probe.error,
@@ -307,9 +309,11 @@ function AiConfigPanel({ token }: { token: string }) {
       toast('Clé valide ✓', {
         description: res.value.switched_base_url
           ? `Votre clé appartient à l'autre plateforme Moonshot — adresse corrigée automatiquement (${res.value.switched_base_url}).`
-          : `Le modèle ${res.value.model} a répondu.`,
+          : res.value.adjusted_model
+            ? `Modèle ajusté automatiquement : ${res.value.adjusted_model} (le nom configuré n'existait pas chez le fournisseur).`
+            : `Le modèle ${res.value.model} a répondu.`,
       });
-      if (res.value.switched_base_url) void load();
+      if (res.value.switched_base_url || res.value.adjusted_model) void load();
     } else {
       toast('La clé ne fonctionne pas', { description: res.value.error });
     }
