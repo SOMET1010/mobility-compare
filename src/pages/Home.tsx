@@ -7,7 +7,7 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { AdSlot } from '@/components/AdSlot';
-import { COMMUNES } from '@/demo/scenario';
+import { PlaceOptions } from '@/components/PlaceOptions';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -498,11 +498,7 @@ function TripWidget() {
               onChange={(e) => setFrom(e.target.value)}
               className={selectCls}
             >
-              {COMMUNES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              <PlaceOptions />
             </select>
           </span>
         </label>
@@ -518,11 +514,7 @@ function TripWidget() {
               onChange={(e) => setTo(e.target.value)}
               className={selectCls}
             >
-              {COMMUNES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              <PlaceOptions />
             </select>
           </span>
         </label>

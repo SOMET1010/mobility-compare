@@ -354,33 +354,67 @@ export function getComparison(
 export interface Commune {
   readonly id: string;
   readonly name: string;
+  /** Commune de rattachement — sert au regroupement dans les sélecteurs. */
+  readonly commune: string;
   readonly lat: number;
   readonly lng: number;
 }
 
 export const COMMUNES: readonly Commune[] = [
-  { id: 'plateau', name: 'Plateau', lat: 5.32, lng: -4.017 },
-  { id: 'cocody', name: 'Cocody', lat: 5.359, lng: -3.983 },
-  { id: 'deux-plateaux', name: 'Deux-Plateaux', lat: 5.383, lng: -3.998 },
-  { id: 'riviera', name: 'Riviera', lat: 5.362, lng: -3.958 },
-  { id: 'angre', name: 'Angré', lat: 5.393, lng: -3.972 },
-  { id: 'yopougon', name: 'Yopougon', lat: 5.345, lng: -4.07 },
-  { id: 'adjame', name: 'Adjamé', lat: 5.352, lng: -4.028 },
-  { id: 'attecoube', name: 'Attécoubé', lat: 5.335, lng: -4.03 },
-  { id: 'abobo', name: 'Abobo', lat: 5.418, lng: -4.019 },
-  { id: 'treichville', name: 'Treichville', lat: 5.293, lng: -4.01 },
-  { id: 'marcory', name: 'Marcory', lat: 5.303, lng: -3.987 },
-  { id: 'koumassi', name: 'Koumassi', lat: 5.288, lng: -3.955 },
-  { id: 'portbouet', name: 'Port-Bouët', lat: 5.258, lng: -3.93 },
-  { id: 'bingerville', name: 'Bingerville', lat: 5.355, lng: -3.885 },
-  { id: 'aeroport', name: 'Aéroport FHB', lat: 5.261, lng: -3.926 },
-  { id: 'zone4', name: 'Zone 4 (Marcory)', lat: 5.286, lng: -3.996 },
-  { id: 'cocody-danga', name: 'Cocody Danga', lat: 5.345, lng: -3.995 },
-  { id: 'palmeraie', name: 'Palmeraie', lat: 5.375, lng: -3.945 },
-  { id: 'williamsville', name: 'Williamsville', lat: 5.365, lng: -4.021 },
-  { id: 'siporex', name: 'Yopougon Siporex', lat: 5.34, lng: -4.086 },
-  { id: 'vridi', name: 'Vridi', lat: 5.262, lng: -3.972 },
+  { id: 'plateau', name: 'Plateau', commune: 'Plateau', lat: 5.32, lng: -4.017 },
+  { id: 'cocody', name: 'Cocody', commune: 'Cocody', lat: 5.359, lng: -3.983 },
+  { id: 'deux-plateaux', name: 'Deux-Plateaux', commune: 'Cocody', lat: 5.383, lng: -3.998 },
+  { id: 'angre', name: 'Angré', commune: 'Cocody', lat: 5.393, lng: -3.972 },
+  { id: 'riviera', name: 'Riviera', commune: 'Cocody', lat: 5.362, lng: -3.958 },
+  { id: 'riviera-golf', name: 'Riviera Golf', commune: 'Cocody', lat: 5.348, lng: -3.965 },
+  { id: 'palmeraie', name: 'Palmeraie', commune: 'Cocody', lat: 5.375, lng: -3.945 },
+  { id: 'cocody-danga', name: 'Cocody Danga', commune: 'Cocody', lat: 5.345, lng: -3.995 },
+  { id: 'yopougon', name: 'Yopougon', commune: 'Yopougon', lat: 5.345, lng: -4.07 },
+  { id: 'siporex', name: 'Yopougon Siporex', commune: 'Yopougon', lat: 5.34, lng: -4.086 },
+  { id: 'niangon', name: 'Niangon', commune: 'Yopougon', lat: 5.325, lng: -4.1 },
+  { id: 'adjame', name: 'Adjamé', commune: 'Adjamé', lat: 5.352, lng: -4.028 },
+  { id: 'adjame-liberte', name: 'Adjamé Liberté', commune: 'Adjamé', lat: 5.358, lng: -4.024 },
+  { id: 'williamsville', name: 'Williamsville', commune: 'Adjamé', lat: 5.365, lng: -4.021 },
+  { id: 'attecoube', name: 'Attécoubé', commune: 'Attécoubé', lat: 5.335, lng: -4.03 },
+  { id: 'abobo', name: 'Abobo', commune: 'Abobo', lat: 5.418, lng: -4.019 },
+  { id: 'abobo-gare', name: 'Abobo Gare', commune: 'Abobo', lat: 5.426, lng: -4.015 },
+  { id: 'anyama', name: 'Anyama', commune: 'Anyama', lat: 5.494, lng: -4.052 },
+  { id: 'treichville', name: 'Treichville', commune: 'Treichville', lat: 5.293, lng: -4.01 },
+  { id: 'zone3', name: 'Zone 3', commune: 'Treichville', lat: 5.297, lng: -4.001 },
+  { id: 'marcory', name: 'Marcory', commune: 'Marcory', lat: 5.303, lng: -3.987 },
+  { id: 'zone4', name: 'Zone 4 (Marcory)', commune: 'Marcory', lat: 5.286, lng: -3.996 },
+  { id: 'bietry', name: 'Biétry', commune: 'Marcory', lat: 5.29, lng: -3.982 },
+  { id: 'koumassi', name: 'Koumassi', commune: 'Koumassi', lat: 5.288, lng: -3.955 },
+  { id: 'portbouet', name: 'Port-Bouët', commune: 'Port-Bouët', lat: 5.258, lng: -3.93 },
+  { id: 'vridi', name: 'Vridi', commune: 'Port-Bouët', lat: 5.262, lng: -3.972 },
+  { id: 'gonzagueville', name: 'Gonzagueville', commune: 'Port-Bouët', lat: 5.253, lng: -3.897 },
+  { id: 'aeroport', name: 'Aéroport FHB', commune: 'Port-Bouët', lat: 5.261, lng: -3.926 },
+  { id: 'bingerville', name: 'Bingerville', commune: 'Bingerville', lat: 5.355, lng: -3.885 },
 ];
+
+/** Ordre d'affichage des communes dans les sélecteurs. */
+const COMMUNE_ORDER: readonly string[] = [
+  'Plateau',
+  'Cocody',
+  'Yopougon',
+  'Abobo',
+  'Adjamé',
+  'Attécoubé',
+  'Treichville',
+  'Marcory',
+  'Koumassi',
+  'Port-Bouët',
+  'Bingerville',
+  'Anyama',
+];
+
+/** Lieux regroupés par commune, pour les sélecteurs (optgroup). */
+export function placeGroups(): { label: string; places: Commune[] }[] {
+  return COMMUNE_ORDER.map((label) => ({
+    label,
+    places: COMMUNES.filter((c) => c.commune === label),
+  })).filter((g) => g.places.length > 0);
+}
 
 const communeById = new Map(COMMUNES.map((c) => [c.id, c]));
 

@@ -18,6 +18,7 @@ import {
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { PlaceOptions } from '@/components/PlaceOptions';
 import { AdSlot } from '@/components/AdSlot';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
@@ -932,11 +933,7 @@ function CommuneSelect({
           onChange={(e) => onChange(e.target.value)}
           className="-ml-0.5 w-full bg-transparent text-[15px] font-bold focus-visible:outline-none"
         >
-          {COMMUNES.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
+          <PlaceOptions />
         </select>
       </span>
     </label>
