@@ -5,7 +5,6 @@ import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
-import { Assistant } from '@/components/Assistant';
 import { Conditions } from '@/components/Conditions';
 import { COMMUNES } from '@/demo/scenario';
 
@@ -464,7 +463,6 @@ export default function Home() {
           production. Nom, identité visuelle et hébergement sont provisoires.
         </div>
       </footer>
-      <Assistant />
     </div>
   );
 }

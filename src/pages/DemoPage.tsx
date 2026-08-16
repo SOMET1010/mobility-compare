@@ -16,7 +16,6 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { Wordmark } from '@/components/BrandMark';
-import { Assistant } from '@/components/Assistant';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
 import {
@@ -802,7 +801,6 @@ export default function DemoPage() {
           />
         )}
       </main>
-      <Assistant />
       {showOnboarding && (
         <OnboardingOverlay
           onDone={() => {

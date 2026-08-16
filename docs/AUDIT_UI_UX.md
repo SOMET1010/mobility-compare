@@ -21,7 +21,7 @@ desktop 1366px).
 | 2   | Le widget trajet de l'accueil **dupliquait** la même donnée en mini-puces (2ᵉ rendu, 2ᵉ appel météo) — la « couche » typique                   | Haute   | **Corrigé** : mini-puces supprimées ; `Conditions` est la source unique                                           |
 | 3   | La page résultats empilait 10 blocs (titre, critères, recommandé, cartes, exclus, actions, carte, conditions, détails) — déjà signalée confuse | Moyenne | **Corrigé** : les conditions n'y sont plus ; la pile raccourcit                                                   |
 | 4   | `/demo` a son propre en-tête (`AppBar`) distinct du `SiteHeader` des 7 autres pages — deux systèmes d'en-tête à maintenir                      | Moyenne | **À faire** : unifier sur `SiteHeader` (chantier séparé, l'AppBar porte le bandeau d'honnêteté et la nav interne) |
-| 5   | L'`Assistant` est monté sur `/`, `/demo`, `/methode` mais absent de `/observatoire`, `/partenaires`, `/compte`, `/conditions`                  | Basse   | **À faire** : le monter une seule fois au niveau du routeur (présence uniforme, un seul point de montage)         |
+| 5   | L'`Assistant` était monté page par page (`/` et `/demo` seulement), absent partout ailleurs                                                    | Basse   | **Corrigé** : monté une seule fois dans le shell applicatif — présent sur tout le site                            |
 | 6   | Les CGU ne sont accessibles que par les pieds de page                                                                                          | Basse   | Acceptable (usage standard) ; lien aussi présent dans le parcours d'inscription                                   |
 
 ## Règle retenue pour la suite

@@ -2,6 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { createQueryClient } from '@/lib/queryClient';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Assistant } from '@/components/Assistant';
 import { Toaster } from '@/components/ui/sonner';
 import Home from '@/pages/Home';
 import DemoPage from '@/pages/DemoPage';
@@ -39,6 +40,8 @@ export default function App() {
             <Route path="/moderation" element={<Moderation />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          {/* Un seul point de montage pour l'assistant : présent sur tout le site */}
+          <Assistant />
         </BrowserRouter>
         <Toaster />
       </QueryClientProvider>
