@@ -13,7 +13,9 @@ source .env
 FONCTION="https://stnjiagjdayrbwhszxwk.supabase.co/functions/v1/lieux-import"
 
 echo "→ Extraction des lieux nommés (Grand Abidjan)…"
-docker compose exec -T nominatim psql -U nominatim -d nominatim -c "COPY (
+# -u postgres : l'authentification « peer » du conteneur n'accepte que
+# l'utilisateur système correspondant au rôle.
+docker compose exec -T -u postgres nominatim psql -d nominatim -c "COPY (
   SELECT
     place_id,
     trim(coalesce(name->'name:fr', name->'name')) AS nom,
