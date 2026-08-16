@@ -10,6 +10,12 @@ import {
   PLAUSIBLE_XOF,
   type PendingObservation,
 } from '@/features/moderation/api';
+import {
+  getAiConfig,
+  setAiConfig,
+  testAi,
+  type AiConfigStatus,
+} from '@/features/assistant/adminApi';
 
 /**
  * Écran de modération — PROTÉGÉ par jeton de modérateur.
@@ -223,9 +229,150 @@ export default function Moderation() {
                 );
               })}
             </div>
+
+            <AiConfigPanel token={token} />
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * Configuration de l'assistant IA — clé, modèle, adresse du fournisseur.
+ * La clé part vers le serveur et n'en revient jamais : l'état affiché ne
+ * contient qu'une empreinte masquée (« ••••1234 »).
+ */
+function AiConfigPanel({ token }: { token: string }) {
+  const [status, setStatus] = useState<AiConfigStatus | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [model, setModel] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const res = await getAiConfig(token);
+    if (res.ok) {
+      setStatus(res.value);
+      setModel(res.value.model ?? '');
+      setBaseUrl(res.value.base_url ?? '');
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function save() {
+    setBusy(true);
+    const res = await setAiConfig(token, {
+      api_key: apiKey.trim() || undefined,
+      model: model.trim() || undefined,
+      base_url: baseUrl.trim() || undefined,
+    });
+    setBusy(false);
+    if (!res.ok) {
+      toast('Échec de l’enregistrement', { description: res.error });
+      return;
+    }
+    toast('Configuration enregistrée', { description: res.value.warning });
+    setApiKey('');
+    void load();
+  }
+
+  async function probe() {
+    setBusy(true);
+    const res = await testAi(token);
+    setBusy(false);
+    if (!res.ok) {
+      toast('Test impossible', { description: res.error });
+      return;
+    }
+    if (res.value.ok) {
+      toast('Clé valide ✓', { description: `Le modèle ${res.value.model} a répondu.` });
+    } else {
+      toast('La clé ne fonctionne pas', { description: res.value.error });
+    }
+  }
+
+  return (
+    <section className="mt-8 rounded-2xl border bg-card p-5">
+      <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        Assistant IA — configuration
+      </h2>
+      <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
+        {status === null
+          ? 'Chargement…'
+          : status.configured
+            ? `Actif · clé ${status.key_hint} · modèle ${status.model}` +
+              (status.source === 'secret' ? ' · définie par secret serveur (prioritaire)' : '')
+            : 'Aucune clé configurée — l’assistant répond uniquement en mode guidé.'}
+      </p>
+
+      <label
+        htmlFor="ai-key"
+        className="mb-1 mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+      >
+        Clé d’API du fournisseur
+      </label>
+      <input
+        id="ai-key"
+        type="password"
+        autoComplete="off"
+        value={apiKey}
+        onChange={(e) => setApiKey(e.target.value)}
+        placeholder={status?.configured ? 'Laisser vide pour conserver la clé actuelle' : 'sk-…'}
+        className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div>
+          <label
+            htmlFor="ai-model"
+            className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+          >
+            Modèle
+          </label>
+          <input
+            id="ai-model"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            placeholder="kimi-latest"
+            className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="ai-base"
+            className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+          >
+            Adresse de l’API
+          </label>
+          <input
+            id="ai-base"
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            placeholder="https://api.moonshot.ai/v1"
+            className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Button variant="outline" onClick={probe} disabled={busy || !status?.configured}>
+          Tester la clé
+        </Button>
+        <Button onClick={save} disabled={busy || (!apiKey.trim() && !status?.configured)}>
+          Enregistrer
+        </Button>
+      </div>
+
+      <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+        La clé est stockée côté serveur (table protégée, aucune lecture publique) et n’est jamais
+        renvoyée au navigateur. Compatible avec toute API au format OpenAI (Kimi/Moonshot par
+        défaut). La charte de l’assistant — aucun prix inventé, neutralité, pas de données
+        personnelles — s’applique quel que soit le modèle.
+      </p>
+    </section>
   );
 }

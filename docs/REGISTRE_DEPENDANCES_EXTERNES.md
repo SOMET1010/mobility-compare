@@ -157,9 +157,13 @@ neutralité, aucune donnée personnelle), origines bornées, entrées bornées
 (8 messages × 500 caractères), clé en secret de fonction — jamais dans le
 navigateur ni le dépôt. L'assistant du produit est hybride : réponses guidées
 locales pour les intentions connues, IA pour les questions libres, repli guidé
-en cas d'indisponibilité. Reste ouvert : le secret `KIMI_API_KEY` à poser par
-le décideur (Dashboard → Edge Functions → Secrets) et le suivi du budget
-d'inférence.
+en cas d'indisponibilité. La configuration (clé, modèle, adresse — toute API
+au format OpenAI) se fait dans l'écran protégé `/moderation`, section
+« Assistant IA » : la clé est stockée dans la table `assistant_config` (RLS
+sans politique, service role uniquement), jamais renvoyée au navigateur
+(empreinte masquée), testable en un clic. Un secret d'environnement
+`KIMI_API_KEY` reste prioritaire s'il existe. Reste ouvert : le suivi du
+budget d'inférence.
 
 ---
 

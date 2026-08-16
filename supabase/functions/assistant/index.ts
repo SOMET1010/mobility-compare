@@ -2,23 +2,28 @@
  * Edge Function `assistant` — pont vers l'IA conversationnelle (DEP-010).
  *
  * Règles non négociables :
- * - La clé d'API (secret `KIMI_API_KEY`) ne quitte JAMAIS cette fonction.
+ * - La clé d'API du fournisseur ne quitte JAMAIS cette fonction : stockée dans
+ *   la table `assistant_config` (RLS sans politique — service role uniquement)
+ *   ou en secret d'environnement (prioritaire). Jamais renvoyée au client :
+ *   l'admin ne voit qu'une empreinte masquée (« ••••1234 »).
  * - La charte ci-dessous borne l'IA : aucun prix inventé, neutralité absolue,
  *   aucune collecte de données personnelles.
- * - Origines autorisées uniquement (le navigateur du produit, pas le web).
- * - Entrées bornées : 8 messages max, 500 caractères par message.
- *
- * Secrets attendus (Dashboard → Edge Functions → Secrets) :
- * - KIMI_API_KEY  (obligatoire)
- * - KIMI_MODEL    (optionnel, défaut « kimi-latest »)
- * - KIMI_BASE_URL (optionnel, défaut « https://api.moonshot.ai/v1 »)
+ * - Conversation : origines autorisées uniquement, entrées bornées
+ *   (8 messages × 500 caractères, 400 tokens de réponse).
+ * - Administration (`get_config` / `set_config` / `test`) : jeton de
+ *   modérateur en en-tête `x-moderation-token`, vérifié par empreinte SHA-256
+ *   (même mécanisme que la fonction `moderation`).
  */
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 const ALLOWED_ORIGINS = new Set([
   'https://mobility-compare.pages.dev',
   'http://localhost:5173',
   'http://localhost:4173',
 ]);
+
+const DEFAULT_MODEL = 'kimi-latest';
+const DEFAULT_BASE_URL = 'https://api.moonshot.ai/v1';
 
 const CHARTE = `Tu es l'assistant de MOBILIS, le comparateur neutre des mobilités urbaines d'Abidjan (VTC, taxi compteur, woro-woro, gbaka).
 
@@ -36,15 +41,106 @@ interface InMsg {
   content: string;
 }
 
+interface AiConfig {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+  source: 'secret' | 'base';
+}
+
 function cors(origin: string | null): HeadersInit {
   const allowed =
     origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://mobility-compare.pages.dev';
   return {
     'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Headers': 'content-type',
+    'Access-Control-Allow-Headers': 'content-type, x-moderation-token',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'content-type': 'application/json',
   };
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function adminClient(): SupabaseClient {
+  return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+}
+
+/** Jeton de modérateur valide ? (empreinte comparée, jamais le clair) */
+async function isModerator(req: Request, admin: SupabaseClient): Promise<boolean> {
+  const token = req.headers.get('x-moderation-token') ?? '';
+  if (token.length < 20) return false;
+  const hex = await sha256Hex(token);
+  const { data } = await admin
+    .from('moderation_tokens')
+    .select('id')
+    .eq('token_sha256', hex)
+    .eq('active', true)
+    .maybeSingle();
+  return data !== null;
+}
+
+/** Config effective : secret d'environnement prioritaire, sinon la base. */
+async function resolveConfig(admin: SupabaseClient): Promise<AiConfig | null> {
+  const envKey = Deno.env.get('KIMI_API_KEY');
+  if (envKey) {
+    return {
+      apiKey: envKey,
+      model: Deno.env.get('KIMI_MODEL') ?? DEFAULT_MODEL,
+      baseUrl: Deno.env.get('KIMI_BASE_URL') ?? DEFAULT_BASE_URL,
+      source: 'secret',
+    };
+  }
+  const { data } = await admin
+    .from('assistant_config')
+    .select('api_key, model, base_url')
+    .eq('id', 'default')
+    .maybeSingle();
+  if (!data?.api_key) return null;
+  return {
+    apiKey: data.api_key,
+    model: data.model || DEFAULT_MODEL,
+    baseUrl: data.base_url || DEFAULT_BASE_URL,
+    source: 'base',
+  };
+}
+
+const maskKey = (key: string) => `••••${key.slice(-4)}`;
+
+async function callModel(
+  cfg: AiConfig,
+  messages: { role: string; content: string }[],
+  maxTokens: number,
+): Promise<{ ok: true; reply: string } | { ok: false; error: string }> {
+  try {
+    const upstream = await fetch(`${cfg.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${cfg.apiKey}` },
+      body: JSON.stringify({ model: cfg.model, messages, temperature: 0.6, max_tokens: maxTokens }),
+    });
+    if (!upstream.ok) {
+      const detail = await upstream.text().catch(() => '');
+      console.error('assistant upstream', upstream.status, detail.slice(0, 300));
+      return { ok: false, error: `Fournisseur : erreur ${upstream.status}.` };
+    }
+    const json = (await upstream.json()) as { choices?: { message?: { content?: string } }[] };
+    const reply = json.choices?.[0]?.message?.content?.trim();
+    if (!reply) return { ok: false, error: 'Réponse vide du modèle.' };
+    return { ok: true, reply };
+  } catch (e) {
+    console.error('assistant fetch failed', e instanceof Error ? e.message : e);
+    return { ok: false, error: 'Fournisseur injoignable.' };
+  }
+}
+
+interface Body {
+  action?: 'chat' | 'get_config' | 'set_config' | 'test';
+  messages?: InMsg[];
+  api_key?: string;
+  model?: string;
+  base_url?: string;
 }
 
 Deno.serve(async (req) => {
@@ -65,21 +161,104 @@ Deno.serve(async (req) => {
     });
   }
 
-  const apiKey = Deno.env.get('KIMI_API_KEY');
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: "L'assistant IA n'est pas encore activé (clé absente)." }),
-      { status: 503, headers },
-    );
-  }
-
-  let body: { messages?: InMsg[] };
+  let body: Body;
   try {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Corps JSON invalide' }), { status: 400, headers });
   }
 
+  const admin = adminClient();
+  const action = body.action ?? 'chat';
+
+  /* ------------------------------------------------ administration (jeton) */
+  if (action === 'get_config' || action === 'set_config' || action === 'test') {
+    if (!(await isModerator(req, admin))) {
+      return new Response(JSON.stringify({ error: 'non autorisé' }), { status: 401, headers });
+    }
+
+    if (action === 'set_config') {
+      const model = (body.model ?? '').trim() || DEFAULT_MODEL;
+      const baseUrl = (body.base_url ?? '').trim() || DEFAULT_BASE_URL;
+      const apiKey = (body.api_key ?? '').trim();
+      if (model.length > 100 || !/^https:\/\/[^\s]{1,200}$/.test(baseUrl)) {
+        return new Response(JSON.stringify({ error: 'Modèle ou adresse invalide.' }), {
+          status: 400,
+          headers,
+        });
+      }
+      if (apiKey && (apiKey.length < 10 || apiKey.length > 300)) {
+        return new Response(JSON.stringify({ error: 'Clé invalide.' }), { status: 400, headers });
+      }
+      // Clé vide = conserver l'existante ; sinon remplacement complet.
+      const { data: existing } = await admin
+        .from('assistant_config')
+        .select('api_key')
+        .eq('id', 'default')
+        .maybeSingle();
+      const finalKey = apiKey || existing?.api_key || '';
+      if (!finalKey) {
+        return new Response(JSON.stringify({ error: 'Aucune clé fournie.' }), {
+          status: 400,
+          headers,
+        });
+      }
+      const { error } = await admin.from('assistant_config').upsert({
+        id: 'default',
+        api_key: finalKey,
+        model,
+        base_url: baseUrl,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+      }
+      const overridden = Boolean(Deno.env.get('KIMI_API_KEY'));
+      return new Response(
+        JSON.stringify({
+          saved: true,
+          warning: overridden
+            ? 'Un secret d’environnement KIMI_API_KEY existe et reste prioritaire sur cette configuration.'
+            : undefined,
+        }),
+        { status: 200, headers },
+      );
+    }
+
+    const cfg = await resolveConfig(admin);
+
+    if (action === 'get_config') {
+      return new Response(
+        JSON.stringify(
+          cfg
+            ? {
+                configured: true,
+                source: cfg.source,
+                model: cfg.model,
+                base_url: cfg.baseUrl,
+                key_hint: maskKey(cfg.apiKey),
+              }
+            : { configured: false },
+        ),
+        { status: 200, headers },
+      );
+    }
+
+    // action === 'test' : un appel minimal au modèle pour valider la clé.
+    if (!cfg) {
+      return new Response(JSON.stringify({ ok: false, error: 'Aucune configuration.' }), {
+        status: 200,
+        headers,
+      });
+    }
+    const probe = await callModel(cfg, [{ role: 'user', content: 'Réponds uniquement : OK' }], 8);
+    return new Response(
+      JSON.stringify(probe.ok ? { ok: true, model: cfg.model } : { ok: false, error: probe.error }),
+      { status: 200, headers },
+    );
+  }
+
+  /* -------------------------------------------------------- conversation */
   const messages = (body.messages ?? [])
     .filter(
       (m): m is InMsg =>
@@ -95,44 +274,20 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Aucune question' }), { status: 400, headers });
   }
 
-  const baseUrl = Deno.env.get('KIMI_BASE_URL') ?? 'https://api.moonshot.ai/v1';
-  const model = Deno.env.get('KIMI_MODEL') ?? 'kimi-latest';
+  const cfg = await resolveConfig(admin);
+  if (!cfg) {
+    return new Response(
+      JSON.stringify({ error: "L'assistant IA n'est pas encore activé (aucune clé configurée)." }),
+      { status: 503, headers },
+    );
+  }
 
-  try {
-    const upstream = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'system', content: CHARTE }, ...messages],
-        temperature: 0.6,
-        max_tokens: 400,
-      }),
-    });
-    if (!upstream.ok) {
-      const detail = await upstream.text().catch(() => '');
-      console.error('kimi upstream', upstream.status, detail.slice(0, 300));
-      return new Response(
-        JSON.stringify({ error: "L'assistant IA est momentanément indisponible." }),
-        { status: 502, headers },
-      );
-    }
-    const json = (await upstream.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const reply = json.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      return new Response(JSON.stringify({ error: 'Réponse vide du modèle.' }), {
-        status: 502,
-        headers,
-      });
-    }
-    return new Response(JSON.stringify({ reply }), { status: 200, headers });
-  } catch (e) {
-    console.error('kimi fetch failed', e instanceof Error ? e.message : e);
+  const result = await callModel(cfg, [{ role: 'system', content: CHARTE }, ...messages], 400);
+  if (!result.ok) {
     return new Response(
       JSON.stringify({ error: "L'assistant IA est momentanément indisponible." }),
       { status: 502, headers },
     );
   }
+  return new Response(JSON.stringify({ reply: result.reply }), { status: 200, headers });
 });
