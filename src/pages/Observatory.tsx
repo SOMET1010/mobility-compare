@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
+import { AdSlot } from '@/components/AdSlot';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { COMMUNES, MODE_META, type DemoMode } from '@/demo/scenario';
 import { MEDIAN_MIN_OBSERVATIONS } from '@/features/contributions/aggregate';
@@ -194,6 +195,10 @@ export default function Observatory() {
               >
                 Contribuer un tarif →
               </Link>
+            </div>
+
+            <div className="mt-6">
+              <AdSlot slotId="observatoire" />
             </div>
 
             <p className="mt-6 text-[11px] leading-relaxed text-muted-foreground">

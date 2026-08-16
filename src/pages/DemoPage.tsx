@@ -18,6 +18,7 @@ import {
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { AdSlot } from '@/components/AdSlot';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
 import {
@@ -827,6 +828,10 @@ export default function DemoPage() {
                 </figcaption>
               </figure>
             )}
+
+            <div className="mt-3">
+              <AdSlot slotId="resultats" />
+            </div>
 
             <details className="group mt-3 rounded-xl border bg-card">
               <summary className="cursor-pointer select-none px-4 py-3 text-[13px] font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">

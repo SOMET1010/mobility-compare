@@ -6,6 +6,7 @@ import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
+import { AdSlot } from '@/components/AdSlot';
 import { COMMUNES } from '@/demo/scenario';
 
 /**
@@ -359,6 +360,11 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ENCART PARTENAIRE — identifié, hors de tout classement */}
+      <div className="mx-auto max-w-6xl px-5 pb-12 sm:pb-16">
+        <AdSlot slotId="accueil" />
+      </div>
 
       {/* NEUTRALITÉ */}
       <section className="bg-[#26301C] text-white">

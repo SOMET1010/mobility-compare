@@ -66,3 +66,10 @@ La thèse produit : **l'écran de résultats est une réponse, pas une liste.**
    l'emplacement `banner` du `SiteHeader` sur l'accueil, et sous le bandeau
    pilote sur le comparateur. Étiquettes honnêtes conservées (réel / profil
    type) ; l'échec météo masque la météo, jamais de valeur par défaut.
+10. **Les encarts publicitaires ont maintenant leur place** (remarque du
+    décideur) : composant `AdSlot` unique, toujours étiqueté « Publicité »,
+    avec la mention « N'influence jamais le classement » (invariant I3).
+    Trois emplacements : accueil (entre les sections), résultats (après la
+    carte, hors de la zone de réponse), observatoire. Tant qu'aucun
+    partenaire n'est signé (CDC §13.7 : pas de monétisation avant preuve
+    d'audience), l'encart se vend lui-même : « Devenir partenaire → ».
