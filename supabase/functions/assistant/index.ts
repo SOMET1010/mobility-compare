@@ -46,6 +46,7 @@ interface AiConfig {
   model: string;
   baseUrl: string;
   source: 'secret' | 'base';
+  updatedAt: string | null;
 }
 
 function cors(origin: string | null): HeadersInit {
@@ -91,11 +92,12 @@ async function resolveConfig(admin: SupabaseClient): Promise<AiConfig | null> {
       model: Deno.env.get('KIMI_MODEL') ?? DEFAULT_MODEL,
       baseUrl: Deno.env.get('KIMI_BASE_URL') ?? DEFAULT_BASE_URL,
       source: 'secret',
+      updatedAt: null,
     };
   }
   const { data } = await admin
     .from('assistant_config')
-    .select('api_key, model, base_url')
+    .select('api_key, model, base_url, updated_at')
     .eq('id', 'default')
     .maybeSingle();
   if (!data?.api_key) return null;
@@ -104,6 +106,7 @@ async function resolveConfig(admin: SupabaseClient): Promise<AiConfig | null> {
     model: data.model || DEFAULT_MODEL,
     baseUrl: data.base_url || DEFAULT_BASE_URL,
     source: 'base',
+    updatedAt: (data.updated_at as string | null) ?? null,
   };
 }
 
@@ -246,6 +249,7 @@ Deno.serve(async (req) => {
                 model: cfg.model,
                 base_url: cfg.baseUrl,
                 key_hint: maskKey(cfg.apiKey),
+                updated_at: cfg.updatedAt,
               }
             : { configured: false },
         ),

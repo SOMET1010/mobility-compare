@@ -270,14 +270,24 @@ function AiConfigPanel({ token }: { token: string }) {
       model: model.trim() || undefined,
       base_url: baseUrl.trim() || undefined,
     });
-    setBusy(false);
     if (!res.ok) {
+      setBusy(false);
       toast('Échec de l’enregistrement', { description: res.error });
       return;
     }
-    toast('Configuration enregistrée', { description: res.value.warning });
+    toast('Configuration enregistrée', { description: res.value.warning ?? 'Test en cours…' });
     setApiKey('');
     void load();
+    // Test automatique : l'état de la clé qu'on vient d'enregistrer, sans ambiguïté.
+    const probe = await testAi(token);
+    setBusy(false);
+    if (probe.ok && probe.value.ok) {
+      toast('Clé valide ✓', { description: `Le modèle ${probe.value.model} a répondu.` });
+    } else {
+      toast('La clé enregistrée ne fonctionne pas', {
+        description: probe.ok ? probe.value.error : probe.error,
+      });
+    }
   }
 
   async function probe() {
@@ -305,6 +315,9 @@ function AiConfigPanel({ token }: { token: string }) {
           ? 'Chargement…'
           : status.configured
             ? `Actif · clé ${status.key_hint} · modèle ${status.model}` +
+              (status.updated_at
+                ? ` · enregistrée le ${new Date(status.updated_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`
+                : '') +
               (status.source === 'secret' ? ' · définie par secret serveur (prioritaire)' : '')
             : 'Aucune clé configurée — l’assistant répond uniquement en mode guidé.'}
       </p>
@@ -368,6 +381,10 @@ function AiConfigPanel({ token }: { token: string }) {
       </div>
 
       <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+        « Tester la clé » vérifie la clé <b>enregistrée</b> — un texte tapé ci-dessus sans «
+        Enregistrer » n’est pas pris en compte (l’enregistrement lance le test tout seul).
+      </p>
+      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
         La clé est stockée côté serveur (table protégée, aucune lecture publique) et n’est jamais
         renvoyée au navigateur. Compatible avec toute API au format OpenAI (Kimi/Moonshot par
         défaut). La charte de l’assistant — aucun prix inventé, neutralité, pas de données

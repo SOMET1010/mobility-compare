@@ -12,6 +12,7 @@ export interface AiConfigStatus {
   readonly model?: string;
   readonly base_url?: string;
   readonly key_hint?: string;
+  readonly updated_at?: string | null;
 }
 
 export type AdminResult<T> =
