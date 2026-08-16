@@ -1,18 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { answer, ASSISTANT_DISCLAIMER, type AssistantReply } from '@/demo/assistant';
+import { askAi, isAiConfigured, type AiTurn } from '@/features/assistant/ai';
 import { BrandMark } from '@/components/BrandMark';
 
 /**
- * Assistant guidé — panneau de conversation flottant.
- * Tout est local et préécrit (voir src/demo/assistant.ts) ; le panneau
- * l'affiche sans ambiguïté (DEP-009 : pas d'IA serveur).
+ * Assistant hybride — panneau de conversation flottant.
+ * Les intentions connues (trajet, modes, prix, neutralité…) reçoivent une
+ * réponse guidée locale, instantanée et hors-ligne. Le reste part vers l'IA
+ * serveur (Edge Function `assistant`, charte intégrée, clé jamais dans le
+ * navigateur) quand elle est activée ; sinon la réponse guidée fait le repli.
  */
 
 interface Msg {
   readonly role: 'user' | 'bot';
   readonly text: string;
   readonly actions?: AssistantReply['actions'];
+  readonly ai?: boolean;
+  readonly pending?: boolean;
 }
 
 const WELCOME: Msg = {
@@ -31,6 +36,7 @@ export function Assistant() {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([WELCOME]);
   const [input, setInput] = useState('');
+  const [aiEnabled, setAiEnabled] = useState(() => isAiConfigured());
   const navigate = useNavigate();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -42,12 +48,46 @@ export function Assistant() {
     const q = text.trim();
     if (!q) return;
     const reply = answer(q);
+    setInput('');
+
+    // Intentions connues → réponse guidée, instantanée et hors-ligne.
+    if (reply.intent !== 'help' || !aiEnabled) {
+      setMsgs((m) => [
+        ...m,
+        { role: 'user', text: q },
+        { role: 'bot', text: reply.text, actions: reply.actions },
+      ]);
+      return;
+    }
+
+    // Question libre → IA serveur ; la réponse guidée reste le repli honnête.
+    const history: AiTurn[] = [
+      ...msgs
+        .filter((m) => !m.pending && m !== WELCOME)
+        .map<AiTurn>((m) => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: m.text,
+        }))
+        .slice(-6),
+      { role: 'user', content: q },
+    ];
     setMsgs((m) => [
       ...m,
       { role: 'user', text: q },
-      { role: 'bot', text: reply.text, actions: reply.actions },
+      { role: 'bot', text: '…', ai: true, pending: true },
     ]);
-    setInput('');
+    void askAi(history).then((r) => {
+      if (!r.ok && r.unavailable) setAiEnabled(false);
+      setMsgs((m) => {
+        const next = m.filter((x) => !x.pending);
+        next.push(
+          r.ok
+            ? { role: 'bot', text: r.reply, ai: true }
+            : { role: 'bot', text: reply.text, actions: reply.actions },
+        );
+        return next;
+      });
+    });
   }
 
   return (
@@ -109,7 +149,16 @@ export function Assistant() {
                       : 'max-w-[85%] rounded-2xl rounded-bl-md bg-muted px-3.5 py-2 text-sm'
                   }
                 >
-                  {m.text}
+                  {m.pending ? (
+                    <span className="inline-block animate-pulse tracking-widest">•••</span>
+                  ) : (
+                    m.text
+                  )}
+                  {m.ai && !m.pending && (
+                    <span className="mt-1.5 block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                      IA — peut se tromper ; les prix viennent du comparateur
+                    </span>
+                  )}
                   {m.actions && m.actions.length > 0 && (
                     <span className="mt-2 flex flex-wrap gap-1.5">
                       {m.actions.map((a) => (

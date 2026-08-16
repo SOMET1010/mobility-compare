@@ -3,9 +3,10 @@ import { COMMUNES } from './scenario';
 /**
  * Assistant guidé — moteur d'intentions 100 % local et déterministe.
  *
- * Honnêteté : ce n'est PAS une IA. Les réponses sont préécrites et le
- * raisonnement est un jeu de règles lisible ci-dessous. Un assistant IA
- * serveur est une dépendance ouverte (DEP-010). L'UI l'affiche clairement.
+ * Honnêteté : ces réponses-ci ne sont PAS une IA — préécrites, régles
+ * lisibles ci-dessous, instantanées et hors-ligne. Les questions libres
+ * partent vers l'IA serveur (Edge Function `assistant`, charte, DEP-010
+ * partiellement levée) quand elle est activée ; ceci reste le repli.
  */
 
 export type AssistantIntent =
@@ -32,7 +33,7 @@ export interface AssistantReply {
 }
 
 export const ASSISTANT_DISCLAIMER =
-  'Assistant guidé : réponses préécrites, calculées sur votre appareil — aucune IA serveur (DEP-010).';
+  'Réponses guidées locales ; questions libres traitées par une IA sous charte (peut se tromper — les prix viennent du comparateur).';
 
 /** Normalise pour la détection : minuscules, sans accents ni ponctuation. */
 export function normalize(s: string): string {

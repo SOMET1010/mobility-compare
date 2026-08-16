@@ -146,12 +146,20 @@ En attendant, l'UI affiche un profil horaire type d'Abidjan, étiqueté « simul
 |                           |                                                                     |
 | ------------------------- | ------------------------------------------------------------------- |
 | **Bloque**                | Remplacement de l'assistant guidé par une IA conversationnelle      |
-| **Responsable**           | `À DÉSIGNER`                                                        |
+| **Responsable**           | Le décideur (clé d'API du fournisseur)                              |
 | **Source attendue**       | Hébergement backend + budget d'inférence + charte d'usage           |
 | **Critère d'acceptation** | Réponses générées côté serveur, journalisées sans données sensibles |
-| **Statut**                | OUVERTE                                                             |
+| **Statut**                | **PARTIELLEMENT LEVÉE (16/08/2026)**                                |
 
-L'assistant actuel est guidé : intentions et réponses préécrites, exécutées sur l'appareil, sans réseau.
+Levée technique : Edge Function `assistant` déployée (fournisseur Kimi/Moonshot,
+API compatible OpenAI), charte intégrée côté serveur (aucun prix inventé,
+neutralité, aucune donnée personnelle), origines bornées, entrées bornées
+(8 messages × 500 caractères), clé en secret de fonction — jamais dans le
+navigateur ni le dépôt. L'assistant du produit est hybride : réponses guidées
+locales pour les intentions connues, IA pour les questions libres, repli guidé
+en cas d'indisponibilité. Reste ouvert : le secret `KIMI_API_KEY` à poser par
+le décideur (Dashboard → Edge Functions → Secrets) et le suivi du budget
+d'inférence.
 
 ---
 

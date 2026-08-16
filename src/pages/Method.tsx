@@ -48,7 +48,7 @@ const OPEN_DEPS: { code: string; title: string; body: string }[] = [
   {
     code: 'DEP-010',
     title: 'Assistant IA',
-    body: 'L’assistant actuel est guidé : réponses préécrites, calculées sur l’appareil. Un assistant IA serveur exigera un hébergement et une charte d’usage.',
+    body: 'Assistant hybride : réponses guidées locales pour les questions connues, IA serveur sous charte pour les questions libres (aucun prix inventé, neutralité, pas de données personnelles). La clé du fournisseur reste côté serveur.',
   },
 ];
 
