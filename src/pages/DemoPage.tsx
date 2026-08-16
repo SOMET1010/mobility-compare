@@ -16,6 +16,7 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { SiteHeader } from '@/components/SiteHeader';
+import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
@@ -362,7 +363,12 @@ export default function DemoPage() {
           { to: '/compte', label: 'Compte' },
         ]}
         cta={null}
-        banner={<HonestyBanner />}
+        banner={
+          <>
+            <HonestyBanner />
+            <ConditionsBar />
+          </>
+        }
       />
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
         {view === 'search' && (

@@ -5,7 +5,7 @@ import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
-import { Conditions } from '@/components/Conditions';
+import { ConditionsBar } from '@/components/Conditions';
 import { COMMUNES } from '@/demo/scenario';
 
 /**
@@ -165,6 +165,7 @@ export default function Home() {
           { to: '/partenaires', label: 'Partenaires' },
           { to: '/compte', label: 'Compte' },
         ]}
+        banner={<ConditionsBar />}
       />
 
       {/* HERO (clair, composition inspirée de la maquette) */}
@@ -203,10 +204,6 @@ export default function Home() {
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
             <div className="mt-5 sm:mt-6">
               <TripWidget />
-            </div>
-            {/* Conditions du moment — les tuiles vivent ici, sur l'accueil (source unique) */}
-            <div className="mt-3 max-w-md">
-              <Conditions />
             </div>
             <div className="mt-3 flex items-center gap-4 text-sm">
               <Link

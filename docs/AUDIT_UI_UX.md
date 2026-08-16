@@ -60,3 +60,9 @@ La thèse produit : **l'écran de résultats est une réponse, pas une liste.**
    Limite connue : la carte est la même pour toutes les pages (site statique,
    pas de rendu par trajet) — une carte par trajet exigerait des fonctions
    serveur, noté pour plus tard.
+9. **La météo et la circulation sont des informations d'ambiance** (remarque du
+   décideur) : leur place est une bande fine sous l'en-tête, pas des tuiles
+   dans le contenu. `ConditionsBar` remplace les tuiles — montée dans
+   l'emplacement `banner` du `SiteHeader` sur l'accueil, et sous le bandeau
+   pilote sur le comparateur. Étiquettes honnêtes conservées (réel / profil
+   type) ; l'échec météo masque la météo, jamais de valeur par défaut.
