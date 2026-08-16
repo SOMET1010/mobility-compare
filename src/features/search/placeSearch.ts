@@ -78,6 +78,25 @@ export function roadEstimateKm(a: ResolvedPoint, b: ResolvedPoint): number {
   return Math.max(0.5, Math.round(haversineKm(a.lat, a.lng, b.lat, b.lng) * 1.35 * 10) / 10);
 }
 
+/**
+ * Si la saisie cite une commune (« gare adjame »), les adresses situées
+ * DANS cette commune passent devant — parade aux arrêts nommés d'après
+ * leur destination (« Inades / Gare d'Adjamé » est à Cocody). Tri stable,
+ * entièrement local.
+ */
+export function prioritizeCommuneMatches<T extends { lat: number; lng: number }>(
+  query: string,
+  hits: readonly T[],
+): T[] {
+  const q = strip(query);
+  if (!q) return [...hits];
+  const communes = [...new Set(COMMUNES.map((c) => c.commune))];
+  const citee = communes.find((c) => q.includes(strip(c)));
+  if (!citee) return [...hits];
+  const dansCommune = (h: T) => (nearestPlace(h.lat, h.lng)?.commune === citee ? 1 : 0);
+  return [...hits].sort((a, b) => dansCommune(b) - dansCommune(a));
+}
+
 const R_TERRE_KM = 6371;
 function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const rad = (d: number) => (d * Math.PI) / 180;

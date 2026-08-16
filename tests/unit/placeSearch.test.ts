@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { nearestPlace, searchPlaces } from '@/features/search/placeSearch';
+import {
+  nearestPlace,
+  prioritizeCommuneMatches,
+  searchPlaces,
+} from '@/features/search/placeSearch';
 import { COMMUNES } from '@/demo/scenario';
 
 /**
@@ -66,5 +70,22 @@ describe('nearestPlace — « Ma position », calcul local', () => {
 
   it('hors d’Abidjan (Paris) : null — jamais d’à-peu-près', () => {
     expect(nearestPlace(48.85, 2.35)).toBeNull();
+  });
+});
+
+describe('prioritizeCommuneMatches — la commune citée passe devant', () => {
+  const adjame = COMMUNES.find((c) => c.id === 'adjame')!;
+  const cocody = COMMUNES.find((c) => c.id === 'cocody')!;
+  const arretCocody = { nom: 'Inades / Gare d’Adjamé', lat: cocody.lat, lng: cocody.lng };
+  const gareAdjame = { nom: 'Gare d’Adjamé', lat: adjame.lat, lng: adjame.lng };
+
+  it('« gare adjame » : les adresses situées à Adjamé remontent', () => {
+    const tri = prioritizeCommuneMatches('gare adjame', [arretCocody, gareAdjame]);
+    expect(tri[0]!.nom).toBe('Gare d’Adjamé');
+  });
+
+  it('sans commune citée : ordre inchangé (tri stable)', () => {
+    const tri = prioritizeCommuneMatches('gare routiere', [arretCocody, gareAdjame]);
+    expect(tri.map((t) => t.nom)).toEqual([arretCocody.nom, gareAdjame.nom]);
   });
 });

@@ -3,6 +3,7 @@ import { placeGroups } from '@/demo/scenario';
 import {
   makeAddressId,
   nearestPlace,
+  prioritizeCommuneMatches,
   resolvePoint,
   searchPlaces,
   type PlaceHit,
@@ -62,7 +63,7 @@ export function PlaceField({
   /** Liste unifiée pour le clavier : quartiers d'abord, adresses ensuite. */
   const combined: { id: string; name: string; sub?: string }[] = [
     ...(lieux ?? []).map((h) => ({ id: h.id, name: h.name, sub: h.commune })),
-    ...addresses.map((a) => ({
+    ...prioritizeCommuneMatches(query ?? '', addresses).map((a) => ({
       id: makeAddressId(a.lat, a.lng, a.nom),
       name: a.nom,
       // Détail absent des données : situer par le quartier connu le plus
