@@ -137,13 +137,12 @@ Deno.serve(async (req) => {
   const admin = adminClient();
   const index = admin ? await chercherIndex(admin, requete) : null;
 
-  // L'index suffit presque toujours pour la saisie en cours.
-  if (index && index.length >= 5) {
-    return json({ disponible: true, resultats: index.slice(0, 6) });
+  // Nominatim en complément seulement si l'index ne suffit pas.
+  let nominatim: Resultat[] | null = null;
+  if (!index || index.length < 5) {
+    const config = await resolveConfig(admin);
+    nominatim = config ? await chercherNominatim(config, requete) : null;
   }
-
-  const config = await resolveConfig(admin);
-  const nominatim = config ? await chercherNominatim(config, requete) : null;
 
   if (index === null && nominatim === null) {
     // Les deux étages injoignables : absence honnête (I1) — l'appelant
@@ -151,16 +150,20 @@ Deno.serve(async (req) => {
     return json({ disponible: false }, 503);
   }
 
-  // Fusion sans doublons : même nom normalisé, ou même endroit (~120 m).
-  const resultats: Resultat[] = [...(index ?? [])];
-  for (const hit of nominatim ?? []) {
+  // Fusion sans doublons — règle appliquée à TOUS les résultats (l'index
+  // aussi) : même nom normalisé à moins de ~350 m = le même endroit
+  // (objet OSM dupliqué) ; deux homonymes éloignés restent distincts.
+  const bruts: Resultat[] = [...(index ?? []), ...(nominatim ?? [])];
+  const resultats: Resultat[] = [];
+  for (const hit of bruts) {
     const doublon = resultats.some(
       (r) =>
-        normalise(r.nom) === normalise(hit.nom) ||
-        (Math.abs(r.lat - hit.lat) < 0.0011 && Math.abs(r.lng - hit.lng) < 0.0011),
+        normalise(r.nom) === normalise(hit.nom) &&
+        Math.abs(r.lat - hit.lat) < 0.0032 &&
+        Math.abs(r.lng - hit.lng) < 0.0032,
     );
     if (!doublon) resultats.push(hit);
     if (resultats.length >= 6) break;
   }
-  return json({ disponible: true, resultats: resultats.slice(0, 6) });
+  return json({ disponible: true, resultats });
 });

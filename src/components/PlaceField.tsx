@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { placeGroups } from '@/demo/scenario';
 import {
   makeAddressId,
+  nearestPlace,
   resolvePoint,
   searchPlaces,
   type PlaceHit,
@@ -64,7 +65,9 @@ export function PlaceField({
     ...addresses.map((a) => ({
       id: makeAddressId(a.lat, a.lng, a.nom),
       name: a.nom,
-      sub: a.detail,
+      // Détail absent des données : situer par le quartier connu le plus
+      // proche (calcul local, jamais un envoi réseau).
+      sub: a.detail || (nearestPlace(a.lat, a.lng)?.name ?? ''),
     })),
   ];
 
