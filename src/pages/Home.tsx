@@ -192,8 +192,8 @@ export default function Home() {
               {PRODUCT.scope.countryName} · Mobilité urbaine
             </span>
             <h1 className="mt-4 text-[1.9rem] font-extrabold leading-[1.12] tracking-tight sm:text-5xl sm:leading-[1.05] lg:text-6xl">
-              Combien coûte <span className="text-primary">votre trajet</span>{' '}
-              <span className="text-[#B9722A]">aujourd’hui ?</span>
+              On va où ? <span className="text-primary">Comparez</span>{' '}
+              <span className="text-[#B9722A]">avant de partir.</span>
             </h1>
             <p className="mt-4 max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-lg">
               Yango, Heetch, taxi compteur, woro-woro ou gbaka : {PRODUCT.displayName} compare le
