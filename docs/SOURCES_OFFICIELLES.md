@@ -55,14 +55,19 @@ entreprises sont autorisées** à opérer comme VTC en Côte d'Ivoire :
 - L'atelier ARTI/Ministère sur les textes VTC (transports.gouv.ci)
   confirme que le corpus réglementaire existe et se consolide.
 
-## Priorités d'exploitation (proposées)
+## Priorités d'exploitation — état au 16/08/2026 (soir)
 
-1. **Uber + note du 28/01/2025 dans la table `operators`** — un geste,
-   effet immédiat sur la crédibilité (statuts sourcés à l'écran).
-2. **Télécharger le GTFS Abidjan** et l'archiver dans l'infrastructure
+1. **FAIT — sources renforcées dans `operators`** : Yango et Heetch citent
+   désormais la note ARTI/DGTTC du 28/01/2025, vérifiée le 16/08/2026.
+   **Uber n'est PAS publié** : le registre portait un fait plus récent
+   (cessation d'activités en CI le 25/09/2025) — la note de janvier lui
+   est antérieure. Le système de statuts datés a joué son rôle.
+2. **Télécharger le GTFS Abidjan** et l'archiver sur notre serveur
    (licence libre) — puis étudier l'intégration « lignes gbaka » avec
-   étiquette de millésime.
-3. **Courrier type à la DGTTC** pour la grille taxi compteur (DEP-002).
+   étiquette de millésime. (Commande prête, exécution par le décideur.)
+3. **FAIT — courrier type DGTTC rédigé** : `docs/COURRIER_DGTTC.md`
+   (grille taxi compteur + assiette de la taxe de 4 % ; variantes
+   ARTI/AMUGA en note). À personnaliser et envoyer par le décideur.
 4. Inventaire de `amuga.ci/statistiques/` depuis un navigateur.
 
 Sources : recherches du 16/08/2026 — amuga.ci, arti.ci, transports.gouv.ci,
