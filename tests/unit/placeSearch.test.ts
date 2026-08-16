@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { searchPlaces } from '@/features/search/placeSearch';
+import { nearestPlace, searchPlaces } from '@/features/search/placeSearch';
+import { COMMUNES } from '@/demo/scenario';
 
 /**
  * Recherche de lieu en tapant : accents ignorés, classement par pertinence
@@ -49,5 +50,21 @@ describe('searchPlaces', () => {
 
   it('limite respectée', () => {
     expect(searchPlaces('a', 3)).toHaveLength(3);
+  });
+});
+
+describe('nearestPlace — « Ma position », calcul local', () => {
+  it('sur un lieu connu : ce lieu', () => {
+    const plateau = COMMUNES.find((c) => c.id === 'plateau')!;
+    expect(nearestPlace(plateau.lat, plateau.lng)?.id).toBe('plateau');
+  });
+
+  it('à côté d’un lieu connu : le plus proche', () => {
+    const cocody = COMMUNES.find((c) => c.id === 'cocody')!;
+    expect(nearestPlace(cocody.lat + 0.005, cocody.lng - 0.005)?.id).toBe('cocody');
+  });
+
+  it('hors d’Abidjan (Paris) : null — jamais d’à-peu-près', () => {
+    expect(nearestPlace(48.85, 2.35)).toBeNull();
   });
 });

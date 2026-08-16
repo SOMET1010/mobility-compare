@@ -24,6 +24,32 @@ function strip(s: string): string {
     .trim();
 }
 
+const R_TERRE_KM = 6371;
+function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(bLat - aLat);
+  const dLng = rad(bLng - aLng);
+  const s =
+    Math.sin(dLat / 2) ** 2 + Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R_TERRE_KM * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+/**
+ * Lieu connu le plus proche d'une position — calcul ENTIÈREMENT local :
+ * la position ne quitte jamais l'appareil (aucun envoi réseau ici).
+ * Null si l'on est manifestement hors d'Abidjan (> 35 km du plus proche).
+ */
+export function nearestPlace(lat: number, lng: number): PlaceHit | null {
+  let best: { hit: PlaceHit; d: number } | null = null;
+  for (const c of COMMUNES) {
+    const d = haversineKm(lat, lng, c.lat, c.lng);
+    if (!best || d < best.d) {
+      best = { hit: { id: c.id, name: c.name, commune: c.commune }, d };
+    }
+  }
+  return best && best.d <= 35 ? best.hit : null;
+}
+
 /** Lieux correspondant à la saisie, du plus pertinent au moins pertinent. */
 export function searchPlaces(query: string, limit = 8): PlaceHit[] {
   const q = strip(query);

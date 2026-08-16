@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { AdSlot } from '@/components/AdSlot';
 import { PlaceField } from '@/components/PlaceField';
+import { UseMyLocation } from '@/components/UseMyLocation';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -141,7 +142,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-5 pb-10 pt-6 sm:py-20 lg:py-28">
+        <div className="relative mx-auto max-w-6xl px-5 pb-8 pt-5 sm:py-12 lg:py-16">
           <div className="lg:max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -157,28 +158,6 @@ export default function Home() {
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
             <div className="mt-5 sm:mt-6">
               <TripWidget />
-            </div>
-            <div className="mt-3 flex items-center gap-4 text-sm">
-              <Link
-                to="/methode#faq"
-                className="font-semibold text-primary underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                Questions fréquentes
-              </Link>
-              <a
-                href="#comment"
-                className="inline-flex items-center gap-1.5 font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-3.5 w-3.5"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Comment ça marche
-              </a>
             </div>
             <p className="mt-4 inline-flex items-start gap-2 text-xs leading-snug text-muted-foreground">
               <svg
@@ -405,13 +384,22 @@ function TripWidget() {
         </button>
       </div>
 
+      <div className="mt-2 flex items-center justify-between gap-3 px-1">
+        <UseMyLocation onFound={setFrom} />
+        {from === to && (
+          <span className="text-[12px] font-medium text-[#9A3412]">
+            Choisissez une autre destination.
+          </span>
+        )}
+      </div>
+
       <button
         type="button"
         disabled={from === to}
         onClick={() => navigate(`/comparer?de=${from}&a=${to}&tri=PRICE_TIME`)}
         className="mt-2.5 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {from === to ? 'Choisissez deux communes différentes' : 'Comparer les 4 modes →'}
+        Comparer les 4 modes →
       </button>
     </div>
   );

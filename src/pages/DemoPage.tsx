@@ -19,6 +19,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { PlaceField } from '@/components/PlaceField';
+import { UseMyLocation } from '@/components/UseMyLocation';
 import { AdSlot } from '@/components/AdSlot';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
@@ -50,10 +51,18 @@ const fmtCo2 = (g: number) =>
   g >= 1000 ? `${(g / 1000).toFixed(1).replace('.', ',')} kg` : `${g} g`;
 
 const BADGE_LABEL: Record<BadgeCode, string> = {
-  CHEAPEST: 'Moins cher',
-  FASTEST: 'Plus rapide',
-  BEST_VALUE: 'Meilleur rapport',
+  CHEAPEST: '💰 Moins cher',
+  FASTEST: '⚡ Plus rapide',
+  BEST_VALUE: '⭐ Meilleur rapport',
 };
+
+/**
+ * Minutes porte-à-porte : durée + attente. C'est sur CE total que le
+ * classement départage (domain/ranking) — l'écran doit montrer le même
+ * nombre que le moteur, pas la durée en véhicule seule.
+ */
+const minTotal = (o: { durationSeconds: number | null; waitSeconds: number | null }) =>
+  Math.round(((o.durationSeconds ?? 0) + (o.waitSeconds ?? 0)) / 60);
 
 const GLYPH: Record<DemoMode, GlyphShape> = {
   VTC: 'vtc',
@@ -334,8 +343,7 @@ export default function DemoPage() {
     const lines = cmp.ranking.ranked.map((r) => {
       const p = fareAmount(r.option);
       const star = r.position === 1 ? '★ ' : '';
-      const mins = Math.round(r.option.durationSeconds! / 60);
-      return `${star}${MODE_META[r.option.mode].label} : ${p !== null ? `${fmt(p)} FCFA` : '—'} · ${mins} min`;
+      return `${star}${MODE_META[r.option.mode].label} : ${p !== null ? `${fmt(p)} FCFA` : '—'} · ${minTotal(r.option)} min`;
     });
     const text = [
       `${cmp.corridor.from} → ${cmp.corridor.to} (${critLabel})`,
@@ -436,11 +444,14 @@ export default function DemoPage() {
               </button>
             </div>
 
-            {fromId === toId && (
-              <p className="mt-2 text-[12px] font-medium" style={{ color: WARN }}>
-                Choisissez deux communes différentes.
-              </p>
-            )}
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <UseMyLocation onFound={setFromId} />
+              {fromId === toId && (
+                <p className="text-[12px] font-medium" style={{ color: WARN }}>
+                  Choisissez une autre destination.
+                </p>
+              )}
+            </div>
 
             <Button
               className="mt-4 h-12 w-full text-base"
@@ -637,7 +648,10 @@ export default function DemoPage() {
                           {price !== null ? fmt(price) : '—'}
                         </span>
                         <span className="text-[11px] font-semibold text-muted-foreground">
-                          FCFA · {Math.round(top.option.durationSeconds! / 60)} min
+                          FCFA · {minTotal(top.option)} min
+                          {top.option.waitSeconds
+                            ? ` dont ${Math.round(top.option.waitSeconds / 60)} d’attente`
+                            : ''}
                         </span>
                       </span>
                       <Chevron />
@@ -697,8 +711,13 @@ export default function DemoPage() {
                           FCFA
                         </span>
                         <span className="mt-1 block text-[12px] tabular-nums text-muted-foreground">
-                          {Math.round(r.option.durationSeconds! / 60)} min
+                          {minTotal(r.option)} min
                         </span>
+                        {r.option.waitSeconds ? (
+                          <span className="block text-[10px] tabular-nums text-muted-foreground">
+                            dont {Math.round(r.option.waitSeconds / 60)} d’attente
+                          </span>
+                        ) : null}
                       </span>
                       <Chevron />
                       {(() => {
@@ -1054,10 +1073,16 @@ function DetailView({
         </dd>
         <dt className="text-muted-foreground">Distance</dt>
         <dd className="text-right font-semibold tabular-nums">{km1(cmp.corridor.km)} km</dd>
-        <dt className="text-muted-foreground">Durée estimée</dt>
-        <dd className="text-right font-semibold tabular-nums">
-          {Math.round(o.durationSeconds! / 60)} min
-        </dd>
+        <dt className="text-muted-foreground">Durée porte-à-porte</dt>
+        <dd className="text-right font-semibold tabular-nums">{minTotal(o)} min</dd>
+        {o.waitSeconds ? (
+          <>
+            <dt className="pl-3 text-muted-foreground">dont attente</dt>
+            <dd className="text-right font-semibold tabular-nums">
+              {Math.round(o.waitSeconds / 60)} min
+            </dd>
+          </>
+        ) : null}
         <dt className="text-muted-foreground">Empreinte carbone</dt>
         <dd className="text-right font-semibold tabular-nums">
           ≈ {fmtCo2(estimateCo2Grams(o.mode, cmp.corridor.km))} CO₂

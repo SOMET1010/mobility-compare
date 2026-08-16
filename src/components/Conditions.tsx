@@ -31,7 +31,7 @@ export function ConditionsBar() {
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 border-b bg-muted/60 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 border-b bg-muted px-3 py-1 text-[11.5px] font-medium text-foreground/75">
       {weather && (
         <span className="inline-flex items-center gap-1.5">
           <svg
@@ -59,7 +59,10 @@ export function ConditionsBar() {
           style={{ backgroundColor: TRAFFIC_TINT[traffic.level] }}
         />
         Circulation {traffic.label.toLowerCase()}
-        <span className="opacity-60">(profil type)</span>
+        <span className="opacity-60">
+          (habituelle à{' '}
+          {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})
+        </span>
       </span>
     </div>
   );
