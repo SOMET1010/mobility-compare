@@ -522,9 +522,8 @@ export default function DemoPage() {
             </div>
 
             <p className="mt-6 text-[11px] leading-snug text-muted-foreground">
-              Distances : <b>routières réelles</b> (OpenStreetMap, calculées sur notre propre
-              serveur) entre points de repère de quartier. Prix et durées :{' '}
-              <b style={{ color: WARN }}>estimations</b>, affinées par les relevés terrain.
+              Distances <b>routières réelles</b> (OpenStreetMap). Prix et durées :{' '}
+              <b style={{ color: WARN }}>estimations</b>.
             </p>
           </section>
         )}
@@ -869,9 +868,7 @@ export default function DemoPage() {
                   >
                     Waze
                   </a>
-                  <span className="opacity-70">
-                    (apps externes — votre destination leur est transmise)
-                  </span>
+                  <span className="opacity-70">(votre destination leur est transmise)</span>
                 </div>
               </>
             )}

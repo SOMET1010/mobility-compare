@@ -28,25 +28,10 @@ const HERO_IMAGE: string | null = '/hero-abidjan.webp';
 /** Accents multicolores des stats (comme la maquette), accordés à la palette. */
 type StatIcon = 'route' | 'shield' | 'eye' | 'people';
 const STATS: { value: string; label: string; icon: StatIcon; tint: string }[] = [
-  { value: '4', label: 'modes comparés sur un même trajet', icon: 'route', tint: '#5C6B2E' },
-  {
-    value: '0',
-    label: 'sponsor, promo ou commission dans le classement',
-    icon: 'shield',
-    tint: '#B9722A',
-  },
-  {
-    value: '100 %',
-    label: 'du calcul de prix visible, étape par étape',
-    icon: 'eye',
-    tint: '#3F8F8B',
-  },
-  {
-    value: 'Neutre',
-    label: 'méthodologie équitable et transparente',
-    icon: 'people',
-    tint: '#7C6BA8',
-  },
+  { value: '4', label: 'modes comparés', icon: 'route', tint: '#5C6B2E' },
+  { value: '0', label: 'pub dans le classement', icon: 'shield', tint: '#B9722A' },
+  { value: '100 %', label: 'du calcul visible', icon: 'eye', tint: '#3F8F8B' },
+  { value: 'Neutre', label: 'par construction', icon: 'people', tint: '#7C6BA8' },
 ];
 
 const STAT_ICONS: Record<StatIcon, JSX.Element> = {
@@ -118,40 +103,9 @@ const MODES: { icon: GlyphShape; name: string; note: string }[] = [
 ];
 
 const STEPS: { n: string; title: string; body: string }[] = [
-  {
-    n: '1',
-    title: 'Choisissez votre trajet',
-    body: 'Un point de départ, une destination dans l’agglomération d’Abidjan.',
-  },
-  {
-    n: '2',
-    title: 'Comparez les modes',
-    body: 'Prix, durée et meilleur compromis, tous les modes côte à côte, classés selon votre priorité.',
-  },
-  {
-    n: '3',
-    title: 'Vérifiez le calcul',
-    body: 'Chaque tarif s’ouvre sur son détail : base, distance, temps, suppléments. Rien n’est caché.',
-  },
-];
-
-const ROADMAP: { tag: string; title: string; body: string; done?: boolean }[] = [
-  {
-    tag: 'Aujourd’hui',
-    title: 'Abidjan — version pilote',
-    body: 'Le parcours complet et les moteurs de calcul, sur un échantillon de corridors.',
-    done: true,
-  },
-  {
-    tag: 'Ensuite',
-    title: 'Données réelles',
-    body: 'Itinéraires calculés, grilles officielles et relevés de terrain remplacent la simulation.',
-  },
-  {
-    tag: 'Demain',
-    title: 'Échelle nationale',
-    body: 'Extension aux villes de Côte d’Ivoire, puis aux bus, BRT, ferry lagunaire, vélo et marche.',
-  },
+  { n: '1', title: 'Choisissez votre trajet', body: 'Départ, arrivée — c’est tout.' },
+  { n: '2', title: 'Comparez', body: 'Les 4 modes côte à côte, classés selon votre priorité.' },
+  { n: '3', title: 'Vérifiez', body: 'Chaque prix s’ouvre sur son calcul. Rien de caché.' },
 ];
 
 /* ------------------------------------------------------------------ page */
@@ -198,9 +152,7 @@ export default function Home() {
               <span className="text-[#B9722A]">avant de partir.</span>
             </h1>
             <p className="mt-4 max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-lg">
-              Yango, Heetch, taxi compteur, woro-woro ou gbaka : {PRODUCT.displayName} compare le
-              prix, la durée et le meilleur choix sur un même écran. À Abidjan aujourd’hui, en Côte
-              d’Ivoire demain.
+              Yango, Heetch, taxi, woro-woro, gbaka — prix et durées sur un seul écran.
             </p>
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
             <div className="mt-5 sm:mt-6">
@@ -242,7 +194,7 @@ export default function Home() {
                 <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
                 <path d="M9 12l2 2 4-4" />
               </svg>
-              Version pilote — prix indicatifs, chaque calcul reste visible et vérifiable.
+              Version pilote — prix indicatifs, calcul vérifiable.
             </p>
 
             {/* Mobile : bande visuelle, remontée près du contenu */}
@@ -282,54 +234,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PROBLÈME / RÉPONSE */}
-      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-          <div>
-            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#B9722A]" />
-              Le problème
-            </span>
-            <h2 className="mt-3 text-[1.55rem] font-bold leading-[1.2] sm:text-3xl">
-              À Abidjan, choisir son mode de transport se fait à l’aveugle.
-            </h2>
-            <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-muted-foreground">
-              VTC, taxi compteur, woro-woro, gbaka : des prix qui ne se comparent pas, des temps
-              qu’on découvre en route, et chaque acteur qui défend son offre. Aucun repère neutre
-              pour trancher.
-            </p>
-          </div>
-          <div>
-            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              La réponse
-            </span>
-            <h2 className="mt-3 text-[1.55rem] font-bold leading-[1.2] sm:text-3xl">
-              Un comparateur neutre, d’intérêt public.
-            </h2>
-            <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-muted-foreground">
-              {PRODUCT.displayName} met tous les modes à plat sur le même trajet et affiche le
-              calcul en clair. Il ne vend pas de courses : il aide à décider. Sa neutralité est une
-              règle du système, pas un argument.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* MODES */}
       <section className="border-y bg-muted/40">
-        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
           <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-[#5C6B2E]" />
             Les modes couverts
           </span>
-          <h2 className="mt-3 text-[1.55rem] font-bold leading-[1.2] sm:text-3xl">
-            Les mobilités réelles d’Abidjan, ensemble.
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
-            Comparées côte à côte — pas seulement les applications.
-          </p>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {MODES.map((m) => (
               <div key={m.name} className="flex items-center gap-3 rounded-xl border bg-card p-3.5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#5C6B2E]/12 text-[#5C6B2E]">
@@ -378,44 +290,17 @@ export default function Home() {
             </div>
             <div className="space-y-5 text-white/75">
               <p>
-                Le classement n’a <strong className="text-white">aucun accès</strong> à un
-                identifiant de sponsor, de promotion ou de commission. Un opérateur ne peut pas
-                acheter sa place — la structure même du système l’interdit.
+                Personne ne peut acheter sa place dans le classement — ni sponsor, ni promotion, ni
+                commission. Vérifié automatiquement à chaque livraison.
               </p>
-              <p>
-                Ce n’est pas déclaratif : une vérification automatique bloque la publication si un
-                tel levier commercial est introduit dans le moteur de classement. La neutralité est
-                testée à chaque livraison.
-              </p>
-              <p>
-                Et quand une donnée manque, {PRODUCT.displayName} le dit — plutôt que d’afficher une
-                estimation déguisée en certitude.
-              </p>
+              <Link
+                to="/methode"
+                className="inline-block font-semibold text-white underline underline-offset-4 transition hover:text-white/80"
+              >
+                Comment c’est garanti →
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* FEUILLE DE ROUTE */}
-      <section className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
-        <h2 className="text-2xl font-bold sm:text-3xl">L’ambition</h2>
-        <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
-          Une plateforme pensée pour l’échelle nationale, livrée par étapes honnêtes.
-        </p>
-        <div className="mt-6 grid gap-4 sm:gap-6 md:grid-cols-3">
-          {ROADMAP.map((r) => (
-            <div key={r.title} className="rounded-2xl border bg-card p-6">
-              <span
-                className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  r.done ? 'bg-[#5C6B2E]/15 text-[#5C6B2E]' : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {r.tag}
-              </span>
-              <div className="mt-4 font-semibold">{r.title}</div>
-              <p className="mt-2 text-sm text-muted-foreground">{r.body}</p>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -423,10 +308,6 @@ export default function Home() {
       <section className="border-t bg-muted/40">
         <div className="mx-auto max-w-6xl px-5 py-12 text-center sm:py-16">
           <h2 className="text-2xl font-bold sm:text-3xl">Comparez votre premier trajet</h2>
-          <p className="mx-auto mt-3 max-w-xl text-[15px] leading-[1.6] text-muted-foreground">
-            De la recherche au détail du calcul, en quelques secondes. Prix indicatifs, en
-            calibration terrain.
-          </p>
           <Link
             to="/comparer"
             className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#26301C] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-muted active:brightness-110"
@@ -441,16 +322,21 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
           <Wordmark className="text-base" testId />
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium">
-              <span
-                className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  IS_BACKEND_CONFIGURED ? 'bg-[#5C6B2E]' : 'bg-muted-foreground'
-                }`}
-              />
-              {IS_BACKEND_CONFIGURED ? 'Backend configure' : 'Backend non configure'}
-            </span>
-            <span className="rounded-full border px-2.5 py-1 font-medium">Identité provisoire</span>
-            <span className="rounded-full border px-2.5 py-1 font-medium">Données simulées</span>
+            {/* Alerte d'état honnête : visible uniquement quand le backend manque. */}
+            {!IS_BACKEND_CONFIGURED && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+                Backend non configure
+              </span>
+            )}
+            <span className="rounded-full border px-2.5 py-1 font-medium">Version pilote</span>
+            <span className="rounded-full border px-2.5 py-1 font-medium">Prix indicatifs</span>
+            <Link
+              to="/methode"
+              className="rounded-full border px-2.5 py-1 font-medium underline-offset-2 transition hover:text-foreground hover:underline"
+            >
+              Notre méthode
+            </Link>
             <Link
               to="/conditions"
               className="rounded-full border px-2.5 py-1 font-medium underline-offset-2 transition hover:text-foreground hover:underline"
@@ -460,10 +346,8 @@ export default function Home() {
           </div>
         </div>
         <div className="mx-auto max-w-6xl px-5 pb-10 text-[11px] leading-relaxed text-muted-foreground">
-          {PRODUCT.displayName} — {PRODUCT.scope.city}, {PRODUCT.scope.countryName}. Version pilote
-          : prix indicatifs en attente des grilles officielles et des relevés de terrain ; le moteur
-          de tarification et le classement, eux, sont réels et testés. Nom, identité visuelle et
-          hébergement sont provisoires.
+          {PRODUCT.displayName} — {PRODUCT.scope.city}, {PRODUCT.scope.countryName}. Nom et identité
+          provisoires.
         </div>
       </footer>
     </div>
