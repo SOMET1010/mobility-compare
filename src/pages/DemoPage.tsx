@@ -27,7 +27,6 @@ import {
   tripKey,
   type SavedTrip,
 } from '@/features/trips/savedTrips';
-import { Conditions } from '@/components/Conditions';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { submitContribution } from '@/features/contributions/submit';
 import { fetchApprovedCounts, type ObservationCounts } from '@/features/contributions/stats';
@@ -744,10 +743,6 @@ export default function DemoPage() {
                 </figcaption>
               </figure>
             )}
-
-            <div className="mt-3">
-              <Conditions />
-            </div>
 
             <details className="group mt-3 rounded-xl border bg-card">
               <summary className="cursor-pointer select-none px-4 py-3 text-[13px] font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">

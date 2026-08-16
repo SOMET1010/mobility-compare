@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
@@ -6,13 +6,8 @@ import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
 import { Assistant } from '@/components/Assistant';
+import { Conditions } from '@/components/Conditions';
 import { COMMUNES } from '@/demo/scenario';
-import {
-  estimateTraffic,
-  fetchWeatherAbidjan,
-  TRAFFIC_TINT,
-  type WeatherNow,
-} from '@/demo/ecosystem';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -209,6 +204,10 @@ export default function Home() {
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
             <div className="mt-5 sm:mt-6">
               <TripWidget />
+            </div>
+            {/* Conditions du moment — les tuiles vivent ici, sur l'accueil (source unique) */}
+            <div className="mt-3 max-w-md">
+              <Conditions />
             </div>
             <div className="mt-3 flex items-center gap-4 text-sm">
               <Link
@@ -471,24 +470,14 @@ export default function Home() {
 }
 
 /**
- * Widget de comparaison du hero : départ → arrivée → Comparer, avec les
- * conditions du moment (météo réelle Open-Meteo, trafic profil type).
- * C'est l'entrée principale du produit — le comparateur en un geste.
+ * Widget de comparaison du hero : départ → arrivée → Comparer.
+ * C'est l'entrée principale du produit — le comparateur en un geste. Les
+ * conditions du moment (météo, circulation) sont les tuiles juste en dessous.
  */
 function TripWidget() {
   const navigate = useNavigate();
   const [from, setFrom] = useState('cocody');
   const [to, setTo] = useState('plateau');
-  const [weather, setWeather] = useState<WeatherNow | null>(null);
-  const traffic = estimateTraffic(new Date());
-
-  useEffect(() => {
-    const ctrl = new AbortController();
-    fetchWeatherAbidjan(ctrl.signal).then((w) => {
-      if (!ctrl.signal.aborted) setWeather(w);
-    });
-    return () => ctrl.abort();
-  }, []);
 
   const selectCls =
     'w-full appearance-none bg-transparent text-[15px] font-bold focus-visible:outline-none';
@@ -568,36 +557,6 @@ function TripWidget() {
       >
         {from === to ? 'Choisissez deux communes différentes' : 'Comparer les 4 modes →'}
       </button>
-
-      {/* Conditions du moment : météo réelle + trafic type */}
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-        {weather && (
-          <span className="inline-flex items-center gap-1 font-medium">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 text-[#B9722A]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2" />
-            </svg>
-            {weather.tempC} °C · {weather.label} <span className="opacity-60">(réel)</span>
-          </span>
-        )}
-        <span className="inline-flex items-center gap-1.5 font-medium">
-          <span
-            aria-hidden="true"
-            className="inline-block h-2 w-2 rounded-full"
-            style={{ backgroundColor: TRAFFIC_TINT[traffic.level] }}
-          />
-          Circulation {{ FLUIDE: 'fluide', DENSE: 'dense', SATURE: 'saturée' }[traffic.level]}{' '}
-          <span className="opacity-60">(profil type)</span>
-        </span>
-      </div>
     </div>
   );
 }
