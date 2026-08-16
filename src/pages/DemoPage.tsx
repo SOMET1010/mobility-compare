@@ -822,12 +822,37 @@ export default function DemoPage() {
             <InstallPrompt />
 
             {fromCommune && toCommune && (
-              <figure className="mt-4 overflow-hidden rounded-2xl border">
-                <StreetMap from={fromCommune} to={toCommune} />
-                <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
-                  Fond © OpenStreetMap · tracé indicatif
-                </figcaption>
-              </figure>
+              <>
+                <figure className="mt-4 overflow-hidden rounded-2xl border">
+                  <StreetMap from={fromCommune} to={toCommune} />
+                  <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
+                    Fond © OpenStreetMap · tracé indicatif
+                  </figcaption>
+                </figure>
+                {/* Navigation externe — au choix de l'usager (la destination est transmise à l'app choisie) */}
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+                  <span className="font-semibold">S’y rendre :</span>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${toCommune.lat},${toCommune.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                  >
+                    Google Maps
+                  </a>
+                  <a
+                    href={`https://waze.com/ul?ll=${toCommune.lat},${toCommune.lng}&navigate=yes`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                  >
+                    Waze
+                  </a>
+                  <span className="opacity-70">
+                    (apps externes — votre destination leur est transmise)
+                  </span>
+                </div>
+              </>
             )}
 
             <div className="mt-3">

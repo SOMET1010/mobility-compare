@@ -7,8 +7,12 @@
 >
 > **Statut des positions** : centroïdes approchés (±1 km), posés de mémoire
 > géographique — suffisants pour une estimation « à vol d'oiseau × facteur
-> route », mais **à confirmer sur carte** (OpenStreetMap) ou lors de la
-> campagne de relevés terrain (DEP-004). Cocher au fur et à mesure.
+> route », mais **à confirmer via OpenStreetMap**. La vérification est
+> automatisée : `node scripts/geocoder-quartiers.mjs` (depuis une machine
+> connectée) interroge Nominatim (1 req/s, politique d'usage respectée) et
+> imprime le bloc corrigé à coller dans `scenario.ts`, avec l'écart en mètres
+> pour chaque lieu. Les écarts > 1,5 km sont signalés pour contrôle manuel
+> (homonymes). À défaut, cocher à la main lors des relevés terrain (DEP-004).
 >
 > **Adresse exacte = plus tard, et c'est voulu** : la précision à l'adresse
 > exige le routage OSRM (DEP-001, infra prête) — et l'adresse précise est une
