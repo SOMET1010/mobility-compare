@@ -16,6 +16,7 @@ import {
   testAi,
   type AiConfigStatus,
 } from '@/features/assistant/adminApi';
+import { getAudience, type AudienceDay } from '@/features/audience/adminApi';
 
 /**
  * Écran de modération — PROTÉGÉ par jeton de modérateur.
@@ -230,11 +231,118 @@ export default function Moderation() {
               })}
             </div>
 
+            <AudiencePanel token={token} />
+
             <AiConfigPanel token={token} />
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * Tableau de bord d'audience — compteurs souverains et anonymes.
+ * Visites = sessions de navigation, pas des personnes : sans cookie ni
+ * identifiant, le même visiteur revenu le lendemain compte pour une
+ * nouvelle visite. C'est dit tel quel, sur l'écran comme ici.
+ */
+function AudiencePanel({ token }: { token: string }) {
+  const [jours, setJours] = useState<readonly AudienceDay[] | null>(null);
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAudience(token).then((res) => {
+      if (cancelled) return;
+      if (res.ok) setJours(res.jours);
+      else setErreur(res.error);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  const aujourdHui = new Date().toISOString().slice(0, 10);
+  const ilYA7 = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+  const somme = (liste: readonly AudienceDay[]) =>
+    liste.reduce((acc, d) => ({ visites: acc.visites + d.visites, vues: acc.vues + d.vues }), {
+      visites: 0,
+      vues: 0,
+    });
+  const tous = jours ?? [];
+  const totalJour = somme(tous.filter((d) => d.jour === aujourdHui));
+  const total7 = somme(tous.filter((d) => d.jour >= ilYA7));
+  const total30 = somme(tous);
+
+  const parPage = new Map<string, { visites: number; vues: number }>();
+  for (const d of tous) {
+    const cur = parPage.get(d.page) ?? { visites: 0, vues: 0 };
+    parPage.set(d.page, { visites: cur.visites + d.visites, vues: cur.vues + d.vues });
+  }
+  const pagesTriees = [...parPage.entries()].sort((a, b) => b[1].vues - a[1].vues);
+
+  return (
+    <section className="mt-8 rounded-2xl border bg-card p-5">
+      <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        Audience — compteur souverain
+      </h2>
+
+      {erreur && <p className="mt-2 text-[12.5px] text-muted-foreground">{erreur}</p>}
+      {jours === null && !erreur && (
+        <p className="mt-2 text-[12.5px] text-muted-foreground">Chargement…</p>
+      )}
+
+      {jours !== null && (
+        <>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            {(
+              [
+                ["Aujourd'hui", totalJour],
+                ['7 jours', total7],
+                ['30 jours', total30],
+              ] as const
+            ).map(([libelle, t]) => (
+              <div key={libelle} className="rounded-xl border bg-background px-2 py-3">
+                <p className="text-xl font-extrabold tabular-nums">{XOF.format(t.visites)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  visites · {XOF.format(t.vues)} vues
+                </p>
+                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {libelle}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {pagesTriees.length > 0 && (
+            <div className="mt-4">
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Par page (30 jours)
+              </p>
+              {pagesTriees.map(([page, t]) => (
+                <div
+                  key={page}
+                  className="flex items-baseline justify-between border-b py-1 text-[12.5px] last:border-b-0"
+                >
+                  <span className="font-mono">{page}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {XOF.format(t.visites)} visites · {XOF.format(t.vues)} vues
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+        Compté chez nous, sans cookie, sans adresse IP, sans identifiant : une <b>visite</b> est une
+        session de navigation, pas une personne — un visiteur revenu le lendemain compte pour une
+        nouvelle visite. Les navigateurs demandant à ne pas être suivis ne sont pas comptés. Repère
+        CDC §13.7 : aucune monétisation avant une audience mensuelle mesurée de 10 000.
+      </p>
+    </section>
   );
 }
 

@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { createQueryClient } from '@/lib/queryClient';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Assistant } from '@/components/Assistant';
+import { trackPage } from '@/features/audience/beacon';
 import { Toaster } from '@/components/ui/sonner';
 import Home from '@/pages/Home';
 import DemoPage from '@/pages/DemoPage';
@@ -19,6 +21,15 @@ const queryClient = createQueryClient();
 function LegacyDemoRedirect() {
   const { search } = useLocation();
   return <Navigate to={{ pathname: '/comparer', search }} replace />;
+}
+
+/** Compteur d'audience anonyme : un signal par page affichée, rien d'autre. */
+function AudienceBeacon() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    trackPage(pathname);
+  }, [pathname]);
+  return null;
 }
 
 /**
@@ -49,6 +60,7 @@ export default function App() {
           </Routes>
           {/* Un seul point de montage pour l'assistant : présent sur tout le site */}
           <Assistant />
+          <AudienceBeacon />
         </BrowserRouter>
         <Toaster />
       </QueryClientProvider>
