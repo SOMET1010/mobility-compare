@@ -31,3 +31,17 @@ desktop 1366px).
 Un contenu = **un composant, un point de montage par écran**. Toute envie d'en
 afficher « une petite version ailleurs » se traite en réutilisant le composant
 (au besoin avec une prop `compact`), jamais en recodant une variante.
+
+## Décisions de conception prises en autonomie (16 août 2026)
+
+La thèse produit : **l'écran de résultats est une réponse, pas une liste.**
+
+1. **La réponse d'abord** — l'encadré conseil est devenu la carte-réponse :
+   mode gagnant, prix en gros, durée, touchable vers le calcul complet.
+2. **Changer de trajet depuis le titre** — « Yopougon → Plateau ✎ » ramène à
+   la recherche ; plus besoin de descendre chercher un bouton.
+3. **Onboarding en un écran** — trois points, un bouton « C'est parti » ;
+   trois écrans à lire avant de comparer contredisaient le produit-réponse.
+4. **Registre de langue** — vouvoiement conservé (respectueux à tout âge),
+   formules impersonnelles quand c'est naturel (« On va où ? ») ; pas de
+   nouchi forcé. À réévaluer avec de vrais retours d'usagers.

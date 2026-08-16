@@ -474,7 +474,27 @@ export default function DemoPage() {
           <section aria-label="Résultats">
             <div className="mb-4 mt-1 flex items-baseline justify-between gap-3">
               <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-                {cmp.corridor.from} → {cmp.corridor.to}
+                <button
+                  type="button"
+                  onClick={() => setView('search')}
+                  aria-label="Modifier le trajet"
+                  title="Modifier le trajet"
+                  className="inline-flex items-center gap-2 rounded-lg text-left underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {cmp.corridor.from} → {cmp.corridor.to}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 shrink-0 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                  </svg>
+                </button>
                 <button
                   type="button"
                   onClick={starCurrent}
@@ -523,28 +543,53 @@ export default function DemoPage() {
                 </button>
               ))}
             </div>
-            {/* Pourquoi le n°1 */}
-            {cmp.ranking.ranked[0] && (
-              <div
-                className="mb-4 rounded-xl border p-4"
-                style={{
-                  borderColor: `color-mix(in oklab, ${AMBER} 45%, transparent)`,
-                  backgroundColor: `color-mix(in oklab, ${AMBER} 8%, transparent)`,
-                }}
-              >
-                <div
-                  className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider"
-                  style={{ color: WARN }}
-                >
-                  <span aria-hidden="true">★</span> Notre conseil
-                </div>
-                <p className="mt-1.5 text-sm">
-                  <b>{MODE_META[cmp.ranking.ranked[0].option.mode].label}</b> — le meilleur choix «{' '}
-                  {CRITERIA.find((c) => c.code === criterion)?.label} » sur ce trajet. Le calcul
-                  complet est dans sa fiche.
-                </p>
-              </div>
-            )}
+            {/* La réponse d'abord : le gagnant du critère, prix en gros, touchable */}
+            {cmp.ranking.ranked[0] &&
+              (() => {
+                const top = cmp.ranking.ranked[0];
+                const price = fareAmount(top.option);
+                const meta = MODE_META[top.option.mode];
+                return (
+                  <button
+                    type="button"
+                    onClick={() => openDetail(top.option.optionId)}
+                    className="mb-4 w-full rounded-2xl border p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    style={{
+                      borderColor: `color-mix(in oklab, ${AMBER} 45%, transparent)`,
+                      backgroundColor: `color-mix(in oklab, ${AMBER} 8%, transparent)`,
+                    }}
+                  >
+                    <span
+                      className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider"
+                      style={{ color: WARN }}
+                    >
+                      <span aria-hidden="true">★</span> Notre conseil ·{' '}
+                      {CRITERIA.find((c) => c.code === criterion)?.label}
+                    </span>
+                    <span className="mt-2.5 flex items-center gap-3">
+                      <ModeChip mode={top.option.mode} />
+                      <span className="min-w-0">
+                        <span className="block text-lg font-extrabold leading-tight">
+                          {meta.label}
+                        </span>
+                        <span className="text-[12px] text-muted-foreground">{meta.note}</span>
+                      </span>
+                      <span className="ml-auto shrink-0 text-right">
+                        <span className="block text-2xl font-extrabold tabular-nums leading-none">
+                          {price !== null ? fmt(price) : '—'}
+                        </span>
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          FCFA · {Math.round(top.option.durationSeconds! / 60)} min
+                        </span>
+                      </span>
+                      <Chevron />
+                    </span>
+                    <span className="mt-2 block text-[11px] text-muted-foreground">
+                      Touchez pour voir le calcul complet
+                    </span>
+                  </button>
+                );
+              })()}
 
             <div className="flex flex-col gap-2.5">
               {(() => {
