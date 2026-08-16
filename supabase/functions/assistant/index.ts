@@ -117,14 +117,30 @@ async function callModel(
   messages: { role: string; content: string }[],
   maxTokens: number,
 ): Promise<{ ok: true; reply: string } | { ok: false; error: string }> {
-  try {
-    const upstream = await fetch(`${cfg.baseUrl}/chat/completions`, {
+  const request = (withTemperature: boolean) =>
+    fetch(`${cfg.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${cfg.apiKey}` },
-      body: JSON.stringify({ model: cfg.model, messages, temperature: 0.6, max_tokens: maxTokens }),
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        max_tokens: maxTokens,
+        ...(withTemperature ? { temperature: 0.6 } : {}),
+      }),
     });
+  try {
+    let upstream = await request(true);
+    let detail = '';
     if (!upstream.ok) {
-      const detail = await upstream.text().catch(() => '');
+      detail = await upstream.text().catch(() => '');
+      // Certains modèles (Kimi K2/K3…) imposent leur température : on la
+      // retire et on laisse le fournisseur appliquer la sienne.
+      if (upstream.status === 400 && detail.includes('temperature')) {
+        upstream = await request(false);
+        if (!upstream.ok) detail = await upstream.text().catch(() => '');
+      }
+    }
+    if (!upstream.ok) {
       console.error('assistant upstream', upstream.status, detail.slice(0, 300));
       const friendly: Record<number, string> = {
         401: 'Clé refusée par le fournisseur — recopiez-la ou créez-en une nouvelle dans la console.',
