@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -15,7 +15,7 @@ import {
   type DemoCriterion,
   type DemoMode,
 } from '@/demo/scenario';
-import { Wordmark } from '@/components/BrandMark';
+import { SiteHeader } from '@/components/SiteHeader';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
 import {
@@ -171,33 +171,20 @@ function ConfidenceNote() {
 type Section = 'app' | 'realvs' | 'about';
 type View = 'search' | 'results' | 'detail' | 'contribute';
 
-function AppBar() {
+/** Bandeau d'honnêteté — accordé à la palette (crème/encre, pointes ocre). */
+function HonestyBanner() {
   return (
-    <div className="sticky top-0 z-20">
-      <div className="border-b border-white/10 bg-[#26301C]/90 text-white backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-2.5 sm:px-6">
-          <Wordmark className="text-base" />
-          <Link
-            to="/"
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-          >
-            Quitter
-          </Link>
-        </div>
-      </div>
-      {/* Bandeau d'honnêteté — accordé à la palette (crème/encre, pointes ocre). */}
-      <div
-        className="flex items-center justify-center gap-2 border-b border-[#B9722A]/40 bg-[#F3EEDF]/95 px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-[#26301C] backdrop-blur"
-        role="alert"
-      >
-        <span aria-hidden="true" className="text-[#B9722A]">
-          ●
-        </span>{' '}
-        {SIMULATION_BANNER}{' '}
-        <span aria-hidden="true" className="text-[#B9722A]">
-          ●
-        </span>
-      </div>
+    <div
+      className="flex items-center justify-center gap-2 border-b border-[#B9722A]/40 bg-[#F3EEDF]/95 px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-[#26301C] backdrop-blur"
+      role="alert"
+    >
+      <span aria-hidden="true" className="text-[#B9722A]">
+        ●
+      </span>{' '}
+      {SIMULATION_BANNER}{' '}
+      <span aria-hidden="true" className="text-[#B9722A]">
+        ●
+      </span>
     </div>
   );
 }
@@ -345,7 +332,16 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppBar />
+      <SiteHeader
+        links={[
+          { to: '/observatoire', label: 'Observatoire' },
+          { to: '/methode', label: 'Méthode' },
+          { to: '/partenaires', label: 'Partenaires' },
+          { to: '/compte', label: 'Compte' },
+        ]}
+        cta={null}
+        banner={<HonestyBanner />}
+      />
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
         {/* Navigation de sections */}
         <div className="mb-6 grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">

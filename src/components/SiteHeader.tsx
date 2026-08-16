@@ -1,13 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Wordmark } from '@/components/BrandMark';
 
 /**
- * Barre supérieure commune aux pages vitrine (Accueil, Méthode, Partenaires).
- * Compacte, liens secondaires repliés en burger sous 640 px, resserrée au scroll.
- * Le CTA « Voir la démo » reste toujours visible.
+ * Barre supérieure commune à TOUTES les pages — l'unique système d'en-tête du
+ * site (audit UI/UX, constat n°4). Compacte, liens secondaires repliés en
+ * burger sous 640 px, resserrée au scroll.
+ *
+ * - `cta`   : bouton toujours visible ; « Voir la démo » par défaut, `null`
+ *             pour le masquer (sur la démo elle-même).
+ * - `banner`: bande collante rendue sous la barre — le bandeau d'honnêteté de
+ *             la démo, par exemple.
  */
-export function SiteHeader({ links }: { links: { to: string; label: string }[] }) {
+export function SiteHeader({
+  links,
+  cta = { to: '/demo', label: 'Voir la démo' },
+  banner,
+}: {
+  links: { to: string; label: string }[];
+  cta?: { to: string; label: string } | null;
+  banner?: ReactNode;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -44,12 +57,14 @@ export function SiteHeader({ links }: { links: { to: string; label: string }[] }
               {l.label}
             </Link>
           ))}
-          <Link
-            to="/demo"
-            className="rounded-lg bg-[#B9722A] px-3 py-2 font-semibold text-[#26301C] transition hover:brightness-105 sm:px-3.5"
-          >
-            Voir la démo
-          </Link>
+          {cta && (
+            <Link
+              to={cta.to}
+              className="rounded-lg bg-[#B9722A] px-3 py-2 font-semibold text-[#26301C] transition hover:brightness-105 sm:px-3.5"
+            >
+              {cta.label}
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
@@ -85,6 +100,7 @@ export function SiteHeader({ links }: { links: { to: string; label: string }[] }
           ))}
         </div>
       )}
+      {banner}
     </header>
   );
 }
