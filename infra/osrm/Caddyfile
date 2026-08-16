@@ -7,5 +7,12 @@
 		not header X-Routage-Jeton {$JETON_ROUTAGE}
 	}
 	respond @sans_jeton 401
+
+	# Recherche d'adresses et de lieux (Nominatim auto-hébergé)
+	handle_path /geocodage/* {
+		reverse_proxy nominatim:8080
+	}
+
+	# Par défaut : calcul d'itinéraires (OSRM)
 	reverse_proxy osrm:5000
 }

@@ -25,6 +25,27 @@ services:
       timeout: 5s
       retries: 3
 
+  # Géocodage auto-hébergé (recherche d'adresses et de lieux) — même extrait
+  # OpenStreetMap que le routage, réutilisé tel quel. Premier démarrage :
+  # import de la base (~20-60 min), puis service de recherche. Jamais exposé
+  # directement : Caddy le sert sous /geocodage/* , jeton obligatoire.
+  # Les recherches des usagers ne quittent JAMAIS notre infrastructure.
+  nominatim:
+    image: mediagis/nominatim:4.4
+    environment:
+      PBF_PATH: /osm/ivory-coast-latest.osm.pbf
+      NOMINATIM_PASSWORD: ${MDP_GEOCODAGE:-geocodage-interne}
+      IMPORT_STYLE: full
+      THREADS: '4'
+      # Base figée après import : plus légère, lecture seule — l'actualisation
+      # passe par une réimportation (même cadence que les données OSRM).
+      FREEZE: 'true'
+    volumes:
+      - ./data:/osm:ro
+      - geocodage_data:/var/lib/postgresql/14/main
+    shm_size: 1g
+    restart: unless-stopped
+
   # Exposition publique sécurisée — activée seulement quand un domaine existe :
   #   DOMAINE_ROUTAGE=routage.mondomaine.ci JETON_ROUTAGE=<secret> \
   #   docker compose --profile public up -d
@@ -48,3 +69,4 @@ services:
 
 volumes:
   caddy_data:
+  geocodage_data:
