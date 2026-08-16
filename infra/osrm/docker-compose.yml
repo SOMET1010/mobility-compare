@@ -24,3 +24,24 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  # Exposition publique sécurisée — activée seulement quand un domaine existe :
+  #   DOMAINE_ROUTAGE=routage.mondomaine.ci JETON_ROUTAGE=<secret> \
+  #   docker compose --profile public up -d
+  # TLS automatique (Let's Encrypt) ; toute requête sans le jeton → 401.
+  caddy:
+    image: caddy:2
+    profiles: ['public']
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAINE_ROUTAGE: ${DOMAINE_ROUTAGE:?definir DOMAINE_ROUTAGE}
+      JETON_ROUTAGE: ${JETON_ROUTAGE:?definir JETON_ROUTAGE}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    restart: unless-stopped
+
+volumes:
+  caddy_data:

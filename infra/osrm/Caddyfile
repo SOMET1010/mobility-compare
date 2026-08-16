@@ -1,0 +1,11 @@
+# Garde-barrière devant OSRM — TLS automatique (Let's Encrypt) + jeton.
+# Activé seulement avec : --profile public (voir docker-compose.yml).
+# Le frontend n'appelle JAMAIS ce service : seul notre serveur (Edge
+# Function) le fait, avec le jeton en en-tête.
+{$DOMAINE_ROUTAGE} {
+	@sans_jeton {
+		not header X-Routage-Jeton {$JETON_ROUTAGE}
+	}
+	respond @sans_jeton 401
+	reverse_proxy osrm:5000
+}
