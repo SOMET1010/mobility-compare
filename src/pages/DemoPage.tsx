@@ -574,7 +574,7 @@ export default function DemoPage() {
                 </button>
               </h1>
               <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                ≈ {km1(cmp.corridor.km)} km · {cmp.options.length} modes
+                ≈ {km1(cmp.corridor.km)} km
               </span>
             </div>
 
@@ -633,17 +633,14 @@ export default function DemoPage() {
                         <span className="text-[12px] text-muted-foreground">{meta.note}</span>
                       </span>
                       <span className="ml-auto shrink-0 text-right">
-                        <span className="block text-2xl font-extrabold tabular-nums leading-none">
+                        <span className="block text-4xl font-extrabold tabular-nums leading-none">
                           {price !== null ? fmt(price) : '—'}
                         </span>
-                        <span className="text-[10px] font-semibold text-muted-foreground">
+                        <span className="text-[11px] font-semibold text-muted-foreground">
                           FCFA · {Math.round(top.option.durationSeconds! / 60)} min
                         </span>
                       </span>
                       <Chevron />
-                    </span>
-                    <span className="mt-2 block text-[11px] text-muted-foreground">
-                      Touchez pour voir le calcul complet
                     </span>
                   </button>
                 );
@@ -693,7 +690,7 @@ export default function DemoPage() {
                         <Badges codes={codes} />
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block text-lg font-extrabold tabular-nums leading-none">
+                        <span className="block text-2xl font-extrabold tabular-nums leading-none">
                           {price !== null ? fmt(price) : '—'}
                         </span>
                         <span className="text-[10px] font-semibold text-muted-foreground">
@@ -701,9 +698,6 @@ export default function DemoPage() {
                         </span>
                         <span className="mt-1 block text-[12px] tabular-nums text-muted-foreground">
                           {Math.round(r.option.durationSeconds! / 60)} min
-                        </span>
-                        <span className="mt-0.5 block text-[10px] tabular-nums text-muted-foreground">
-                          ≈ {fmtCo2(estimateCo2Grams(r.option.mode, cmp.corridor.km))} CO₂
                         </span>
                       </span>
                       <Chevron />
@@ -1102,20 +1096,17 @@ function DetailView({
             ))}
           </ul>
           <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
-            Statuts lus en base, vérifiés le{' '}
+            Vérifié le{' '}
             {modeOperators[0]?.status_verified_at
               ? new Date(modeOperators[0].status_verified_at).toLocaleDateString('fr-FR')
               : '—'}{' '}
-            ({modeOperators[0]?.status_source ?? 'source à renseigner'}). Usage nominatif descriptif
-            — aucune affiliation.
+            ({modeOperators[0]?.status_source ?? 'source à renseigner'}) · aucune affiliation.
           </p>
         </div>
       )}
 
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-        Empreinte carbone : <b>estimation indicative</b> (facteurs génériques par passager ×
-        distance simulée). Ordre de grandeur, non mesuré à Abidjan — les modes partagés émettent
-        moins par personne grâce au taux d’occupation.
+        Empreinte carbone : <b>estimation indicative</b>, non mesurée à Abidjan.
       </p>
 
       {trace && (
@@ -1140,8 +1131,8 @@ function DetailView({
             </div>
           </div>
           <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
-            Dans le produit réel, cette trace citera l’itinéraire OSRM, la grille tarifaire datée et
-            le nombre d’observations terrain. Ici, tout est <b style={{ color: WARN }}>simulé</b>.
+            Trace <b style={{ color: WARN }}>simulée</b> — le produit réel citera grille datée et
+            relevés terrain.
           </p>
         </>
       )}
