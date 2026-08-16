@@ -159,8 +159,8 @@ function ConfidenceNote() {
     >
       <span aria-hidden="true">⚠︎</span>
       <span>
-        Prix &amp; durées : exemples. Indice de confiance terrain : <b>0</b> (aucune observation
-        réelle — DEP-004).
+        Prix et durées donnés à titre indicatif — pas encore confirmés par des relevés sur le
+        terrain.
       </span>
     </div>
   );
@@ -337,12 +337,9 @@ export default function DemoPage() {
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
         {view === 'search' && (
           <section aria-label="Recherche">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Étape 1 · Recherche
-            </p>
-            <h1 className="mb-1 mt-1 text-2xl font-extrabold tracking-tight">Où allez-vous ?</h1>
+            <h1 className="mb-1 text-2xl font-extrabold tracking-tight">On va où ?</h1>
             <p className="mb-4 text-sm text-muted-foreground">
-              Choisissez une origine et une destination à Abidjan.
+              Choisissez le départ et l’arrivée — on compare les prix pour vous.
             </p>
 
             {/* Sélecteurs origine → destination */}
@@ -467,18 +464,14 @@ export default function DemoPage() {
             </div>
 
             <p className="mt-6 text-[11px] leading-snug text-muted-foreground">
-              Positions des communes = <b>réelles</b>. Distances, durées et prix ={' '}
-              <b style={{ color: WARN }}>estimations simulées</b> (à vol d’oiseau × facteur route,
-              sans routage OSRM — DEP-001).
+              Les prix et durées affichés sont des <b style={{ color: WARN }}>estimations</b> — ils
+              s’affineront avec de vrais relevés faits sur le terrain.
             </p>
           </section>
         )}
 
         {view === 'results' && cmp && (
           <section aria-label="Résultats">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Étape 2 · Comparaison
-            </p>
             <div className="mb-4 mt-1 flex items-baseline justify-between gap-3">
               <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
                 {cmp.corridor.from} → {cmp.corridor.to}
@@ -543,12 +536,12 @@ export default function DemoPage() {
                   className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider"
                   style={{ color: WARN }}
                 >
-                  <span aria-hidden="true">★</span> Recommandé · pourquoi ?
+                  <span aria-hidden="true">★</span> Notre conseil
                 </div>
                 <p className="mt-1.5 text-sm">
-                  <b>{MODE_META[cmp.ranking.ranked[0].option.mode].label}</b> arrive 1<sup>er</sup>{' '}
-                  sur « {CRITERIA.find((c) => c.code === criterion)?.label} » :{' '}
-                  <span className="tabular-nums">{cmp.ranking.ranked[0].sortExplanation}</span>.
+                  <b>{MODE_META[cmp.ranking.ranked[0].option.mode].label}</b> — le meilleur choix «{' '}
+                  {CRITERIA.find((c) => c.code === criterion)?.label} » sur ce trajet. Le calcul
+                  complet est dans sa fiche.
                 </p>
               </div>
             )}
@@ -651,13 +644,13 @@ export default function DemoPage() {
                   <>
                     {vtc.length > 0 && (
                       <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                        VTC · cœur du comparateur
+                        VTC
                       </p>
                     )}
                     {vtc.map((r) => renderCard(r))}
                     {others.length > 0 && (
                       <p className="mt-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Aussi sur ce trajet · taxi, woro-woro, gbaka
+                        Aussi sur ce trajet
                       </p>
                     )}
                     {others.map((r) => renderCard(r))}
@@ -677,7 +670,7 @@ export default function DemoPage() {
 
             <div className="mt-5 grid grid-cols-2 gap-2">
               <Button variant="outline" onClick={() => setView('contribute')}>
-                + Contribuer un tarif
+                + Partager un prix payé
               </Button>
               <Button variant="outline" onClick={share}>
                 <svg
@@ -703,7 +696,7 @@ export default function DemoPage() {
               <figure className="mt-4 overflow-hidden rounded-2xl border">
                 <StreetMap from={fromCommune} to={toCommune} />
                 <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
-                  Fond © OpenStreetMap · tracé direct, sans calcul d’itinéraire (DEP-001)
+                  Fond © OpenStreetMap · tracé indicatif
                 </figcaption>
               </figure>
             )}
@@ -731,10 +724,9 @@ export default function DemoPage() {
                   </p>
                 )}
                 <p className="text-[11px] leading-snug text-muted-foreground">
-                  Ordre d’affichage : VTC d’abord (périmètre prioritaire V1). Les positions et
-                  badges « moins cher / plus rapide / meilleur rapport » restent calculés par un
-                  classement <b>neutre</b> sur tous les modes — aucun levier commercial, l’ordre
-                  éditorial ne les modifie pas (invariant I3).
+                  Ordre d’affichage : les VTC d’abord. Les badges « moins cher / plus rapide /
+                  meilleur rapport » restent calculés de façon <b>neutre</b> sur tous les modes —
+                  aucun opérateur ne peut acheter sa place.
                 </p>
                 <Link
                   to="/methode#faq"
@@ -857,9 +849,6 @@ function DetailView({
       >
         ← Retour à la comparaison
       </button>
-      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-        Étape 3 · Résultat
-      </p>
 
       <div className="my-3 flex items-center gap-3.5">
         <ModeChip mode={o.mode} size={56} />
@@ -867,7 +856,7 @@ function DetailView({
           <div className="text-xl font-extrabold">{m.label}</div>
           <div className="text-[12px] text-muted-foreground">
             {m.note}
-            {m.kind === 'FLAT' ? ' · tarif forfaitaire (modèle simplifié)' : ''}
+            {m.kind === 'FLAT' ? ' · tarif fixe' : ''}
           </div>
         </div>
         <div className="ml-auto text-right">
@@ -937,7 +926,7 @@ function DetailView({
       {modeOperators.length > 0 && (
         <div className="my-3 rounded-xl border bg-card p-4">
           <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Opérateurs (invariant I4 — statut vérifié, daté, sourcé)
+            Opérateurs — statut d’agrément vérifié
           </div>
           <ul className="mt-2 space-y-1.5">
             {modeOperators.map((op) => (
@@ -977,7 +966,7 @@ function DetailView({
         <>
           <Separator className="my-4" />
           <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Trace du calcul (invariant I2)
+            Le calcul, ligne par ligne
           </div>
           <div
             className="mt-2 overflow-x-auto rounded-xl p-4 font-mono text-[11.5px] leading-relaxed"
@@ -1063,7 +1052,7 @@ function ContributeView({
         ← Retour à la comparaison
       </button>
       <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-        Contribuer un tarif · {IS_BACKEND_CONFIGURED ? 'relevé réel' : 'simulation'}
+        Partager un prix payé · {IS_BACKEND_CONFIGURED ? 'relevé réel' : 'simulation'}
       </p>
       <h2 className="mb-1 mt-1 text-xl font-extrabold">
         {cmp.corridor.from} → {cmp.corridor.to}

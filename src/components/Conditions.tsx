@@ -47,7 +47,7 @@ export function Conditions() {
         )}
         {weather === null && (
           <div className="mt-1.5 text-[12px] font-medium text-muted-foreground">
-            Indisponible pour le moment — rien à afficher plutôt qu’une estimation déguisée.
+            Météo indisponible pour le moment.
           </div>
         )}
         {weather !== 'loading' && weather !== null && (
@@ -89,7 +89,7 @@ export function Conditions() {
         </div>
         <div className="mt-0.5 text-[11px] text-muted-foreground">{traffic.window}</div>
         <div className="mt-1.5 text-[9px] leading-snug text-muted-foreground">
-          Simulé — pas de mesure temps réel (DEP-009). N’ajuste pas les durées.
+          Profil horaire type d’Abidjan — pas encore de mesure en direct.
         </div>
       </div>
     </div>

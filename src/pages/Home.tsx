@@ -192,13 +192,13 @@ export default function Home() {
               {PRODUCT.scope.countryName} · Mobilité urbaine
             </span>
             <h1 className="mt-4 text-[1.9rem] font-extrabold leading-[1.12] tracking-tight sm:text-5xl sm:leading-[1.05] lg:text-6xl">
-              Comparez tous vos trajets urbains. <span className="text-primary">En toute</span>{' '}
-              <span className="text-[#B9722A]">neutralité.</span>
+              Combien coûte <span className="text-primary">votre trajet</span>{' '}
+              <span className="text-[#B9722A]">aujourd’hui ?</span>
             </h1>
             <p className="mt-4 max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-lg">
-              {PRODUCT.displayName} compare d’abord les VTC — prix, temps et meilleur compromis — et
-              met aussi le taxi compteur, le woro-woro et le gbaka sur le même écran. À Abidjan
-              aujourd’hui, en Côte d’Ivoire demain.
+              Yango, Heetch, taxi compteur, woro-woro ou gbaka : {PRODUCT.displayName} compare le
+              prix, la durée et le meilleur choix sur un même écran. À Abidjan aujourd’hui, en Côte
+              d’Ivoire demain.
             </p>
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
             <div className="mt-5 sm:mt-6">

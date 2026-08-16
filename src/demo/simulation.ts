@@ -15,7 +15,7 @@
  */
 
 /** Bandeau permanent du comparateur : honnête sur le statut, sans se déclarer « démo ». */
-export const SIMULATION_BANNER = 'VERSION PILOTE — PRIX INDICATIFS, EN CALIBRATION TERRAIN';
+export const SIMULATION_BANNER = 'VERSION PILOTE — PRIX INDICATIFS, À CONFIRMER SUR LE TERRAIN';
 
 /**
  * Fournisseur de routage inscrit dans la trace des calculs de démonstration.
