@@ -293,6 +293,33 @@ Deno.serve(async (req) => {
         }
       }
     }
+    // Modèle inconnu ? Lister les modèles réellement accessibles avec cette clé,
+    // pour que l'admin choisisse sans deviner.
+    if (probe.error.startsWith('Modèle introuvable')) {
+      try {
+        const res = await fetch(`${cfg.baseUrl}/models`, {
+          headers: { authorization: `Bearer ${cfg.apiKey}` },
+        });
+        if (res.ok) {
+          const list = (await res.json()) as { data?: { id?: string }[] };
+          const ids = (list.data ?? [])
+            .map((m) => m.id)
+            .filter((id): id is string => typeof id === 'string')
+            .slice(0, 15);
+          if (ids.length > 0) {
+            return new Response(
+              JSON.stringify({
+                ok: false,
+                error: `Modèle « ${cfg.model} » introuvable. Disponibles avec votre clé : ${ids.join(' · ')}`,
+              }),
+              { status: 200, headers },
+            );
+          }
+        }
+      } catch {
+        // silencieux : on retombe sur le message générique
+      }
+    }
     return new Response(JSON.stringify({ ok: false, error: probe.error }), {
       status: 200,
       headers,
