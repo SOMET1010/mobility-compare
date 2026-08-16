@@ -352,6 +352,7 @@ function TripWidget() {
           value={from}
           onChange={setFrom}
           wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
+          allowAddresses
         />
         <PlaceField
           label="Arrivée"
@@ -359,6 +360,7 @@ function TripWidget() {
           value={to}
           onChange={setTo}
           wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
+          allowAddresses
         />
         <button
           type="button"
@@ -396,7 +398,11 @@ function TripWidget() {
       <button
         type="button"
         disabled={from === to}
-        onClick={() => navigate(`/comparer?de=${from}&a=${to}&tri=PRICE_TIME`)}
+        onClick={() =>
+          navigate(
+            `/comparer?de=${encodeURIComponent(from)}&a=${encodeURIComponent(to)}&tri=PRICE_TIME`,
+          )
+        }
         className="mt-2.5 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Comparer les 4 modes →

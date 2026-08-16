@@ -9,12 +9,14 @@ import {
   COMMUNES,
   CRITERIA,
   comparePair,
+  comparePoints,
   estimateCo2Grams,
   MODE_META,
   type DemoComparison,
   type DemoCriterion,
   type DemoMode,
 } from '@/demo/scenario';
+import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
@@ -211,7 +213,8 @@ const QUICK_TRIPS: { from: string; to: string }[] = [
 
 const KNOWN = new Set(COMMUNES.map((c) => c.id));
 const KNOWN_CRIT = new Set(CRITERIA.map((c) => c.code));
-const isCommune = (v: string | null): v is string => v !== null && KNOWN.has(v);
+/** Identifiant acceptable : quartier connu OU adresse `g~…` valide. */
+const isCommune = (v: string | null): v is string => v !== null && resolvePoint(v) !== null;
 const asCrit = (v: string | null): DemoCriterion =>
   v && KNOWN_CRIT.has(v as DemoCriterion) ? (v as DemoCriterion) : 'PRICE_TIME';
 
@@ -236,7 +239,8 @@ export default function DemoPage() {
     typeof window === 'undefined' ? [] : loadFavorites(window.localStorage),
   );
   useEffect(() => {
-    if (deepLinked) setRecents(pushRecent(window.localStorage, { fromId: urlFrom, toId: urlTo }));
+    if (deepLinked && KNOWN.has(urlFrom) && KNOWN.has(urlTo))
+      setRecents(pushRecent(window.localStorage, { fromId: urlFrom, toId: urlTo }));
     // Dépendances vides à dessein : n'enregistrer que le trajet d'arrivée.
   }, []);
 
@@ -249,15 +253,16 @@ export default function DemoPage() {
 
   // Distance routière EN DIRECT (notre serveur, via l'Edge Function
   // `itineraire`). Tant qu'elle n'est pas arrivée — ou si le serveur est
-  // injoignable — la matrice précalculée répond instantanément (même source
-  // OpenStreetMap, invariant I1 : jamais d'attente, jamais de valeur inventée).
+  // injoignable — la matrice précalculée (quartiers) ou le repli vol
+  // d'oiseau (adresses) répond instantanément (invariant I1 : jamais
+  // d'attente, jamais de valeur inventée).
   const [liveKm, setLiveKm] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
     setLiveKm(null);
-    const a = COMMUNES.find((c) => c.id === fromId);
-    const b = COMMUNES.find((c) => c.id === toId);
-    if (!a || !b || a.id === b.id) return;
+    const a = resolvePoint(fromId);
+    const b = resolvePoint(toId);
+    if (!a || !b || fromId === toId) return;
     fetchRoadRoute({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }).then((r) => {
       if (!cancelled && r) setLiveKm(r.km);
     });
@@ -266,10 +271,16 @@ export default function DemoPage() {
     };
   }, [fromId, toId]);
 
-  const cmp: DemoComparison | null = useMemo(
-    () => comparePair(fromId, toId, criterion, liveKm ?? undefined),
-    [fromId, toId, criterion, liveKm],
-  );
+  // Deux quartiers connus → chemin habituel (matrice + direct). Au moins
+  // une adresse libre → corridor de points (distance serveur, repli estimé).
+  const bothLieux = KNOWN.has(fromId) && KNOWN.has(toId);
+  const cmp: DemoComparison | null = useMemo(() => {
+    if (bothLieux) return comparePair(fromId, toId, criterion, liveKm ?? undefined);
+    const a = resolvePoint(fromId);
+    const b = resolvePoint(toId);
+    if (!a || !b || fromId === toId) return null;
+    return comparePoints(a.name, b.name, liveKm ?? roadEstimateKm(a, b), criterion);
+  }, [bothLieux, fromId, toId, criterion, liveKm]);
 
   // Opérateurs publiés (invariant I4 — lus en base, jamais en dur).
   const [operators, setOperators] = useState<Operator[] | null>(null);
@@ -292,6 +303,9 @@ export default function DemoPage() {
     let cancelled = false;
     setObsCounts(null);
     setObserved(null);
+    // Les relevés terrain sont indexés par quartier : un trajet d'adresses
+    // libres n'en a pas (absence honnête, pas de rapprochement approximatif).
+    if (!(KNOWN.has(fromId) && KNOWN.has(toId))) return;
     fetchApprovedCounts(fromId, toId).then((c) => {
       if (!cancelled) setObsCounts(c);
     });
@@ -303,8 +317,8 @@ export default function DemoPage() {
     };
   }, [fromId, toId]);
 
-  const fromCommune = COMMUNES.find((c) => c.id === fromId);
-  const toCommune = COMMUNES.find((c) => c.id === toId);
+  const fromCommune = resolvePoint(fromId);
+  const toCommune = resolvePoint(toId);
 
   /** Reflète le trajet dans l'URL (lien partageable / rechargeable). */
   function syncUrl(from: string, to: string, crit: DemoCriterion) {
@@ -317,7 +331,8 @@ export default function DemoPage() {
     setCriterion(crit);
     setView('results');
     syncUrl(from, to, crit);
-    setRecents(pushRecent(window.localStorage, { fromId: from, toId: to }));
+    if (KNOWN.has(from) && KNOWN.has(to))
+      setRecents(pushRecent(window.localStorage, { fromId: from, toId: to }));
   }
 
   function pickCriterion(crit: DemoCriterion) {
@@ -326,7 +341,7 @@ export default function DemoPage() {
   }
 
   async function share() {
-    const url = `${window.location.origin}/comparer?de=${fromId}&a=${toId}&tri=${criterion}`;
+    const url = `${window.location.origin}/comparer?de=${encodeURIComponent(fromId)}&a=${encodeURIComponent(toId)}&tri=${criterion}`;
     try {
       await navigator.clipboard.writeText(url);
       toast('Lien copié', { description: `${fromId} → ${toId} · ${url}` });
@@ -338,7 +353,7 @@ export default function DemoPage() {
   /** Message WhatsApp : la réponse (prix + durées) directement dans le texte. */
   function shareWhatsApp() {
     if (!cmp) return;
-    const url = `${window.location.origin}/comparer?de=${fromId}&a=${toId}&tri=${criterion}`;
+    const url = `${window.location.origin}/comparer?de=${encodeURIComponent(fromId)}&a=${encodeURIComponent(toId)}&tri=${criterion}`;
     const critLabel = CRITERIA.find((c) => c.code === criterion)?.label ?? '';
     const lines = cmp.ranking.ranked.map((r) => {
       const p = fareAmount(r.option);
@@ -355,7 +370,7 @@ export default function DemoPage() {
 
   /** Partage Facebook : la carte riche (og:image) fait le travail visuel. */
   function shareFacebook() {
-    const url = `${window.location.origin}/comparer?de=${fromId}&a=${toId}&tri=${criterion}`;
+    const url = `${window.location.origin}/comparer?de=${encodeURIComponent(fromId)}&a=${encodeURIComponent(toId)}&tri=${criterion}`;
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       '_blank',
@@ -564,25 +579,27 @@ export default function DemoPage() {
                     <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  onClick={starCurrent}
-                  aria-pressed={currentIsFavorite}
-                  aria-label={currentIsFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill={currentIsFavorite ? '#B9722A' : 'none'}
-                    stroke={currentIsFavorite ? '#B9722A' : 'currentColor'}
-                    strokeWidth={1.8}
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+                {bothLieux && (
+                  <button
+                    type="button"
+                    onClick={starCurrent}
+                    aria-pressed={currentIsFavorite}
+                    aria-label={currentIsFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <path d="M12 3l2.7 5.8 6.3.8-4.6 4.4 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.6l6.3-.8z" />
-                  </svg>
-                </button>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill={currentIsFavorite ? '#B9722A' : 'none'}
+                      stroke={currentIsFavorite ? '#B9722A' : 'currentColor'}
+                      strokeWidth={1.8}
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 3l2.7 5.8 6.3.8-4.6 4.4 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.6l6.3-.8z" />
+                    </svg>
+                  </button>
+                )}
               </h1>
               <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
                 ≈ {km1(cmp.corridor.km)} km
@@ -849,9 +866,15 @@ export default function DemoPage() {
                 Lien
               </Button>
             </div>
-            <Button variant="outline" className="mt-2 w-full" onClick={() => setView('contribute')}>
-              + Partager un prix payé
-            </Button>
+            {bothLieux && (
+              <Button
+                variant="outline"
+                className="mt-2 w-full"
+                onClick={() => setView('contribute')}
+              >
+                + Partager un prix payé
+              </Button>
+            )}
             <InstallPrompt />
 
             {fromCommune && toCommune && (
@@ -977,7 +1000,15 @@ function CommuneSelect({
   value: string;
   onChange: (id: string) => void;
 }) {
-  return <PlaceField label={label} dotClass={dotClass} value={value} onChange={onChange} />;
+  return (
+    <PlaceField
+      label={label}
+      dotClass={dotClass}
+      value={value}
+      onChange={onChange}
+      allowAddresses
+    />
+  );
 }
 
 function DetailView({

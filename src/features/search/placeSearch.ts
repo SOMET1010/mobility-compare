@@ -24,6 +24,60 @@ function strip(s: string): string {
     .trim();
 }
 
+/**
+ * Identifiants de POINT LIBRE (adresse trouvée par notre géocodeur) :
+ * `g~lat~lng~label` — sérialisables dans l'URL comme les identifiants de
+ * quartier, donc partage et lien profond fonctionnent à l'identique.
+ */
+const PREFIXE_ADRESSE = 'g~';
+
+export interface ResolvedPoint {
+  readonly name: string;
+  readonly lat: number;
+  readonly lng: number;
+  /** Identifiant de quartier connu, ou null pour une adresse libre. */
+  readonly placeId: string | null;
+}
+
+/** Fabrique l'identifiant d'un point libre (adresse). */
+export function makeAddressId(lat: number, lng: number, label: string): string {
+  return `${PREFIXE_ADRESSE}${lat.toFixed(5)}~${lng.toFixed(5)}~${encodeURIComponent(label)}`;
+}
+
+/** Un identifiant est-il un point libre (adresse) ? */
+export function isAddressId(id: string): boolean {
+  return id.startsWith(PREFIXE_ADRESSE);
+}
+
+/**
+ * Résout un identifiant — quartier connu ou adresse `g~…` — vers un point
+ * nommé. Null si inconnu ou malformé (jamais d'à-peu-près).
+ */
+export function resolvePoint(id: string): ResolvedPoint | null {
+  const lieu = COMMUNES.find((c) => c.id === id);
+  if (lieu) return { name: lieu.name, lat: lieu.lat, lng: lieu.lng, placeId: lieu.id };
+  if (!isAddressId(id)) return null;
+  const parts = id.slice(PREFIXE_ADRESSE.length).split('~');
+  if (parts.length < 3) return null;
+  const lat = Number(parts[0]);
+  const lng = Number(parts[1]);
+  let name: string;
+  try {
+    name = decodeURIComponent(parts.slice(2).join('~'));
+  } catch {
+    return null;
+  }
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || !name.trim()) return null;
+  // Bornes Côte d'Ivoire : un lien forgé hors périmètre est rejeté.
+  if (lat < 4.2 || lat > 10.9 || lng < -8.7 || lng > -2.3) return null;
+  return { name: name.trim(), lat, lng, placeId: null };
+}
+
+/** Repli local : vol d'oiseau × facteur route (estimation, arrondie à 0,1 km). */
+export function roadEstimateKm(a: ResolvedPoint, b: ResolvedPoint): number {
+  return Math.max(0.5, Math.round(haversineKm(a.lat, a.lng, b.lat, b.lng) * 1.35 * 10) / 10);
+}
+
 const R_TERRE_KM = 6371;
 function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const rad = (d: number) => (d * Math.PI) / 180;

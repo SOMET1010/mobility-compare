@@ -488,7 +488,16 @@ export function buildPairCorridor(
       : null;
   const km = live ?? pairDistanceKm(fromId, toId);
   if (km === null) return null;
+  return buildCorridorFromKm({ id: a.id, name: a.name }, { id: b.id, name: b.name }, km);
+}
 
+/** Extrémité de corridor : un quartier connu ou un point libre nommé. */
+interface CorridorEndpoint {
+  readonly id: string;
+  readonly name: string;
+}
+
+function buildCorridorFromKm(a: CorridorEndpoint, b: CorridorEndpoint, km: number): DemoCorridor {
   const airport = a.id === 'aeroport' || b.id === 'aeroport';
   const meteredFees: readonly FixedFeeSpec[] | undefined = airport
     ? [{ code: 'AIRPORT', label: 'Supplément aéroport (exemple)', amount: 1000 }]
@@ -557,4 +566,25 @@ export function comparePair(
 ): DemoComparison | null {
   const corridor = buildPairCorridor(fromId, toId, kmOverride);
   return corridor ? compareCorridor(corridor, criterion) : null;
+}
+
+/**
+ * Comparaison entre deux POINTS LIBRES nommés (adresses du géocodeur).
+ * La distance est fournie par l'appelant : serveur de routage en direct,
+ * ou repli vol d'oiseau × facteur route. Distance invalide → null,
+ * jamais de comparaison inventée.
+ */
+export function comparePoints(
+  fromLabel: string,
+  toLabel: string,
+  km: number,
+  criterion: DemoCriterion = 'PRICE_TIME',
+): DemoComparison | null {
+  if (!Number.isFinite(km) || km <= 0 || !fromLabel.trim() || !toLabel.trim()) return null;
+  const corridor = buildCorridorFromKm(
+    { id: 'point-depart', name: fromLabel.trim() },
+    { id: 'point-arrivee', name: toLabel.trim() },
+    Math.round(km * 10) / 10,
+  );
+  return compareCorridor(corridor, criterion);
 }
