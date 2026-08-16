@@ -1,4 +1,13 @@
-# Quartiers du comparateur — points de repère à confirmer
+# Quartiers du comparateur — positions vérifiées OSM
+
+> **✅ Vérification faite le 16/08/2026** : le décideur a exécuté
+> `scripts/geocoder-quartiers.mjs` (Nominatim/OpenStreetMap) et les 29
+> positions ont été remplacées par les coordonnées géocodées — sauf
+> **Anyama**, où Nominatim visait un homonyme à 16 km à l'est : le point de
+> repère de l'axe nord (5.494, -4.052) est conservé, à confirmer sur place.
+> À noter : « Riviera » (5.379, -3.975) est géocodée un peu à l'ouest de
+> l'usage courant (axe Riviera 2/3) — acceptable au niveau quartier, à
+> affiner si les usagers le signalent.
 
 > **Pourquoi** (remarque du décideur) : les communes d'Abidjan sont vastes —
 > Cocody s'étend sur ~12 km, Yopougon est la plus grande commune d'Afrique.
