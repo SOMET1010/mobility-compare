@@ -45,3 +45,12 @@ La thèse produit : **l'écran de résultats est une réponse, pas une liste.**
 4. **Registre de langue** — vouvoiement conservé (respectueux à tout âge),
    formules impersonnelles quand c'est naturel (« On va où ? ») ; pas de
    nouchi forcé. À réévaluer avec de vrais retours d'usagers.
+5. **Le résultat circule par WhatsApp** — bouton dédié : le message contient
+   la réponse (tous les prix, gagnant étoilé, mention « indicatifs ») et le
+   lien profond du trajet. C'est ainsi qu'un comparateur se propage à Abidjan.
+6. **Installation en un geste** — manifest au nom MOBILIS, icônes PNG 192/512
+   générées, invite discrète « Ajouter à l'écran d'accueil » sous les
+   résultats (Chrome/Android), jamais en interstitiel.
+7. **Yango et Heetch visibles dès l'en-tête de section VTC** — pastilles aux
+   couleurs de marque (données du registre I4). Les prix par opérateur
+   attendent les grilles réelles : on n'invente pas d'écart de prix.

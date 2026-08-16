@@ -16,6 +16,7 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { SiteHeader } from '@/components/SiteHeader';
+import { InstallPrompt } from '@/components/InstallPrompt';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
 import {
@@ -300,6 +301,25 @@ export default function DemoPage() {
     } catch {
       toast('Lien du trajet', { description: url });
     }
+  }
+
+  /** Message WhatsApp : la réponse (prix + durées) directement dans le texte. */
+  function shareWhatsApp() {
+    if (!cmp) return;
+    const url = `${window.location.origin}/comparer?de=${fromId}&a=${toId}&tri=${criterion}`;
+    const critLabel = CRITERIA.find((c) => c.code === criterion)?.label ?? '';
+    const lines = cmp.ranking.ranked.map((r) => {
+      const p = fareAmount(r.option);
+      const star = r.position === 1 ? '★ ' : '';
+      const mins = Math.round(r.option.durationSeconds! / 60);
+      return `${star}${MODE_META[r.option.mode].label} : ${p !== null ? `${fmt(p)} FCFA` : '—'} · ${mins} min`;
+    });
+    const text = [
+      `${cmp.corridor.from} → ${cmp.corridor.to} (${critLabel})`,
+      ...lines,
+      `Prix indicatifs — comparés sur MOBILIS : ${url}`,
+    ].join('\n');
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   }
 
   function swap() {
@@ -688,8 +708,25 @@ export default function DemoPage() {
                 return (
                   <>
                     {vtc.length > 0 && (
-                      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                      <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                         VTC
+                        {operators
+                          ?.filter((op) => op.mode === 'VTC')
+                          .map((op) => (
+                            <span
+                              key={op.id}
+                              className="inline-flex items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[10px] font-bold normal-case tracking-normal text-foreground"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="inline-block h-1.5 w-1.5 rounded-full"
+                                style={{
+                                  backgroundColor: op.brand_color ?? 'hsl(var(--muted-foreground))',
+                                }}
+                              />
+                              {op.label}
+                            </span>
+                          ))}
                       </p>
                     )}
                     {vtc.map((r) => renderCard(r))}
@@ -714,8 +751,20 @@ export default function DemoPage() {
             ))}
 
             <div className="mt-5 grid grid-cols-2 gap-2">
-              <Button variant="outline" onClick={() => setView('contribute')}>
-                + Partager un prix payé
+              <Button
+                variant="outline"
+                onClick={shareWhatsApp}
+                className="border-[#25D366]/40 text-[#128C4A] hover:bg-[#25D366]/10 hover:text-[#128C4A]"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="mr-1.5 h-4 w-4"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2a10 10 0 0 0-8.63 15.03L2 22l5.13-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.04.8.81-2.97-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.13c-.25-.13-1.46-.72-1.68-.8-.23-.08-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.53.06-.25-.13-1.04-.39-1.99-1.23-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.1-.5.12-.12.25-.3.37-.44.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.44.06-.67.31-.22.25-.87.85-.87 2.07 0 1.22.9 2.4 1.02 2.57.13.16 1.76 2.68 4.25 3.76.6.26 1.06.41 1.42.53.6.19 1.14.16 1.57.1.48-.07 1.46-.6 1.67-1.18.2-.57.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28z" />
+                </svg>
+                WhatsApp
               </Button>
               <Button variant="outline" onClick={share}>
                 <svg
@@ -728,14 +777,16 @@ export default function DemoPage() {
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+                  <rect x="9" y="9" width="11" height="11" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
-                Partager
+                Copier le lien
               </Button>
             </div>
+            <Button variant="outline" className="mt-2 w-full" onClick={() => setView('contribute')}>
+              + Partager un prix payé
+            </Button>
+            <InstallPrompt />
 
             {fromCommune && toCommune && (
               <figure className="mt-4 overflow-hidden rounded-2xl border">

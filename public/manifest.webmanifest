@@ -1,7 +1,7 @@
 {
-  "name": "MobilityCompare (identité provisoire)",
-  "short_name": "MobilityCompare",
-  "description": "Comparateur neutre de mobilités urbaines — Abidjan. Nom et identité provisoires (ADR-001 / DEP-007).",
+  "name": "MOBILIS (nom provisoire)",
+  "short_name": "MOBILIS",
+  "description": "Comparateur neutre des mobilités d'Abidjan — VTC, taxi compteur, woro-woro, gbaka. Nom et identité provisoires (ADR-001 / DEP-007).",
   "lang": "fr",
   "start_url": "/",
   "scope": "/",
@@ -10,10 +10,22 @@
   "theme_color": "#26301C",
   "icons": [
     {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
       "src": "/icon-app.svg",
       "type": "image/svg+xml",
       "sizes": "any",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
