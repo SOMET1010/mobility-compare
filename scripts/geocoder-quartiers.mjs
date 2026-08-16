@@ -2,8 +2,10 @@
  * Géocodage OSM des lieux du comparateur — remplace les points de repère
  * « de mémoire » par les coordonnées Nominatim (OpenStreetMap).
  *
- * Usage (depuis votre machine, avec Internet) :
- *   node scripts/geocoder-quartiers.mjs
+ * Usage (depuis votre machine, avec Internet, depuis un clone du dépôt
+ * mobility-compare — PAS julaba-app) :
+ *   node --experimental-strip-types scripts/geocoder-quartiers.mjs
+ * (Node 22 ; à partir de Node 23 l'option est inutile)
  *
  * Règles d'usage du Nominatim public respectées : 1 requête/seconde,
  * User-Agent identifiable, une seule passe (pas d'autocomplete).
