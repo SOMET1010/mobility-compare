@@ -23,7 +23,7 @@ const OPEN_DEPS: { code: string; title: string; body: string }[] = [
   {
     code: 'DEP-001',
     title: 'Routage réel (OSRM)',
-    body: 'Aujourd’hui la distance est estimée à vol d’oiseau × facteur route. Le calcul par les rues remplacera cette estimation.',
+    body: 'Les distances entre quartiers sont désormais les distances routières réelles (matrice OpenStreetMap/OSRM précalculée entre les 29 points de repère). Le calcul à l’adresse exacte attend le serveur de routage auto-hébergé.',
   },
   {
     code: 'DEP-002',

@@ -136,12 +136,17 @@ describe('recherche libre origine → destination (simulée, sans OSRM)', () => 
     expect(pairDistanceKm('atlantide', 'cocody')).toBeNull();
   });
 
-  it('la distance estimée est positive et symétrique', () => {
+  it('la distance routière est positive, orientée mais du même ordre dans les deux sens', () => {
+    // Distances routières RÉELLES (matrice OSRM/OSM) : A→B peut différer de
+    // B→A (sens uniques), mais les deux sens restent comparables.
     const ab = pairDistanceKm('yopougon', 'koumassi');
     const ba = pairDistanceKm('koumassi', 'yopougon');
     expect(ab).not.toBeNull();
+    expect(ba).not.toBeNull();
     expect(ab!).toBeGreaterThan(0);
-    expect(ab).toBe(ba);
+    expect(ba!).toBeGreaterThan(0);
+    const ratio = Math.max(ab!, ba!) / Math.min(ab!, ba!);
+    expect(ratio).toBeLessThan(2.5);
   });
 
   it('est déterministe : deux comparaisons identiques donnent le même résultat', () => {

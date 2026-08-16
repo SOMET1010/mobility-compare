@@ -502,8 +502,9 @@ export default function DemoPage() {
             </div>
 
             <p className="mt-6 text-[11px] leading-snug text-muted-foreground">
-              Les prix et durées affichés sont des <b style={{ color: WARN }}>estimations</b> — ils
-              s’affineront avec de vrais relevés faits sur le terrain.
+              Distances : <b>routières réelles</b> (OpenStreetMap) entre points de repère de
+              quartier. Prix et durées : <b style={{ color: WARN }}>estimations</b>, affinées par
+              les relevés terrain.
             </p>
           </section>
         )}

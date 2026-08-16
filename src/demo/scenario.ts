@@ -17,6 +17,7 @@ import { computeFare, validateFareGrid, type FareGrid } from '@/domain/pricing/d
 import { fixedClock } from '@/domain/pricing/clock';
 import { rankOptions, type RankableOption, type RankingResult } from '@/domain/ranking';
 import { DEMO_ROUTING_PROVIDER, DEMO_TIME_VALUE_XOF_PER_MIN } from './simulation';
+import { roadDistanceKm } from './distances';
 
 export type DemoMode = 'VTC' | 'TAXI' | 'WORO' | 'GBAKA';
 
@@ -437,11 +438,17 @@ function haversineKm(a: Commune, b: Commune): number {
 /** Facteur route : le trajet réel est plus long que la ligne droite. Estimation. */
 const ROAD_FACTOR = 1.35;
 
-/** Distance ROUTE estimée (km, simulée) entre deux communes. `null` si invalide. */
+/**
+ * Distance ROUTE (km) entre deux lieux. D'abord la matrice routière RÉELLE
+ * précalculée (OSRM/OpenStreetMap — voir distances.ts) ; à défaut, le repli
+ * vol d'oiseau × facteur route (estimation).
+ */
 export function pairDistanceKm(fromId: string, toId: string): number | null {
   const a = communeById.get(fromId);
   const b = communeById.get(toId);
   if (!a || !b || a.id === b.id) return null;
+  const reel = roadDistanceKm(fromId, toId);
+  if (reel !== null) return reel;
   return Math.round(haversineKm(a, b) * ROAD_FACTOR * 10) / 10;
 }
 
