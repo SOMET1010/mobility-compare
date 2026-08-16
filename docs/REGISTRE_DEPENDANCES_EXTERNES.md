@@ -26,8 +26,7 @@ Côte d'Ivoire de Geofabrik, chaîne `osrm-extract`/`partition`/`customize`
 (algorithme MLD), puis OSRM v5.27.1 en service via `docker compose`
 (écoute locale uniquement). Exposition publique sécurisée : reverse proxy
 Caddy, TLS automatique (Let's Encrypt) sur le nom d'hôte fourni par
-l'hébergeur, jeton d'accès obligatoire — toute requête sans jeton reçoit
-401. Seul client autorisé : l'Edge Function `itineraire` (jeton dans la
+l'hébergeur, jeton d'accès obligatoire — toute requête sans jeton reçoit 401. Seul client autorisé : l'Edge Function `itineraire` (jeton dans la
 table `routing_config`, RLS sans politique — service role uniquement,
 jamais dans le navigateur ni le dépôt). Chaîne complète vérifiée le jour
 même : fonction → serveur → `{"disponible":true,"distance_m":8722,"duree_s":764}`
@@ -118,15 +117,19 @@ Procédure détaillée : `docs/CONFIGURATION_SUPABASE.md` §3.
 
 ## DEP-007 — Nom commercial et Sender ID
 
-|                           |                                                              |
-| ------------------------- | ------------------------------------------------------------ |
-| **Bloque**                | Dépôt du Sender ID, réservation du domaine, charte graphique |
-| **Responsable**           | Le décideur                                                  |
-| **Source attendue**       | Décision                                                     |
-| **Critère d'acceptation** | ADR-001 close ; `product.ts` mis à jour                      |
-| **Statut**                | OUVERTE                                                      |
+|                           |                                                                     |
+| ------------------------- | ------------------------------------------------------------------- |
+| **Bloque**                | Dépôt du Sender ID, réservation du domaine, charte graphique        |
+| **Responsable**           | Le décideur                                                         |
+| **Source attendue**       | Décision                                                            |
+| **Critère d'acceptation** | ADR-001 close ; `product.ts` mis à jour                             |
+| **Statut**                | **NOM DÉCIDÉ (16/08/2026) : MOBILIS** — restent domaine + Sender ID |
 
-Le délai administratif du Sender ID court **à partir de la décision de marque**, pas du développement : 5 jours ouvrés annoncés côté Orange, 15 côté MTN. Plus l'arbitrage tarde, plus il contraint la date de mise en service de l'authentification.
+ADR-001 close : le nom commercial est **MOBILIS** (Sender ID `MOBILIS`,
+7 caractères). Restent à engager, dans l'ordre : réservation du domaine
+(`mobilis.ci` à vérifier), dépôt du Sender ID (5 j ouvrés Orange, 15 j MTN),
+vérification de marque OAPI recommandée. Risque d'homonymie (ATM Mobilis,
+Algérie) documenté et accepté par le décideur.
 
 ---
 
@@ -139,6 +142,11 @@ Le délai administratif du Sender ID court **à partir de la décision de marque
 | **Source attendue**       | Réponses d'Orange CI, MTN CI, Moov CI et agrégateurs               |
 | **Critère d'acceptation** | Les 10 questions de `SPEC_Module_OTP_SMS` §10.2 obtiennent réponse |
 | **Statut**                | OUVERTE                                                            |
+
+Piste du décideur (16/08/2026) : utiliser **provisoirement la passerelle
+ANSUT** (Agence Nationale du Service Universel des Télécommunications)
+pour les tests SMS/WhatsApp, avant le choix des fournisseurs définitifs.
+À qualifier : conditions d'accès, tarifs, compatibilité Sender ID.
 
 ---
 
@@ -204,7 +212,7 @@ budget d'inférence.
 | 004 | Relevés terrain             | À désigner  | H3, H4, confiance    |
 | 005 | Playwright                  | Décideur    | Parcours navigateur  |
 | 006 | Clés Supabase, PostGIS      | Décideur    | **Levée 15/08/2026** |
-| 007 | Nom commercial              | Décideur    | Sender ID, domaine   |
+| 007 | Nom commercial              | Décideur    | **Nom décidé 16/08** |
 | 008 | Fournisseurs SMS            | À désigner  | Choix, budget OTP    |
 | 009 | Trafic temps réel           | À désigner  | Durées ajustées      |
 | 010 | Assistant IA serveur        | Décideur    | **Levée 16/08/2026** |

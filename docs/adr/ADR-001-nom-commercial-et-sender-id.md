@@ -1,7 +1,7 @@
 # ADR-001 — Nom commercial et Sender ID
 
-- **Statut** : OUVERTE
-- **Date** : 1er aout 2026
+- **Statut** : **DÉCIDÉE (16 août 2026)** — le nom commercial est **MOBILIS**
+- **Date** : 1er aout 2026 (ouverture) · 16 août 2026 (décision)
 - **Decideur** : Le décideur
 
 ## Contexte
@@ -72,3 +72,25 @@ contraint la date de mise en service.
 Cette ADR sera close par une decision explicite fixant le nom commercial. Elle devra
 alors etre suivie, dans l'ordre : mise a jour de `product.ts`, depot du Sender ID,
 reservation du domaine.
+
+## Décision de clôture (16 août 2026)
+
+Le décideur fixe le nom commercial : **MOBILIS**.
+
+- **Sender ID** : `MOBILIS` (7 caractères — conforme à la limite de 11).
+  Le dépôt auprès des opérateurs peut être engagé (délais annoncés :
+  5 jours ouvrés Orange, 15 jours MTN).
+- **Domaine** : réservation à engager — vérifier la disponibilité de
+  `mobilis.ci` auprès d'un registrar accrédité `.ci` (NETIM, AfriRegister…),
+  avec repli du type `mobilis-ci.com` ou `getmobilis.ci` si pris.
+- **Risque documenté et accepté** : des homonymes existent ailleurs
+  (notamment ATM Mobilis, opérateur télécom algérien). Le périmètre visé
+  étant la Côte d'Ivoire et la catégorie « comparateur de mobilité », le
+  décideur assume ce risque. Une vérification de marque (OAPI) reste
+  recommandée avant tout dépôt de marque formel.
+- **Noms techniques inchangés** : le dépôt Git (`mobility-compare`), les
+  paquets et fonctions gardent leurs noms génériques — les règles de
+  confinement ci-dessus rendent ce découplage sans coût, et un renommage
+  du dépôt casserait le déploiement en place.
+- `product.ts` affiche déjà MOBILIS (nom de travail devenu définitif) :
+  aucun changement de code requis.
