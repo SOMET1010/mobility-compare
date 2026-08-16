@@ -149,7 +149,7 @@ En attendant, l'UI affiche un profil horaire type d'Abidjan, étiqueté « simul
 | **Responsable**           | Le décideur (clé d'API du fournisseur)                              |
 | **Source attendue**       | Hébergement backend + budget d'inférence + charte d'usage           |
 | **Critère d'acceptation** | Réponses générées côté serveur, journalisées sans données sensibles |
-| **Statut**                | **PARTIELLEMENT LEVÉE (16/08/2026)**                                |
+| **Statut**                | **LEVÉE (16/08/2026)** — clé posée, testée en réel (kimi-k3)        |
 
 Levée technique : Edge Function `assistant` déployée (fournisseur Kimi/Moonshot,
 API compatible OpenAI), charte intégrée côté serveur (aucun prix inventé,
