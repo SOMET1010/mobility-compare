@@ -18,7 +18,7 @@ import {
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
-import { PlaceOptions } from '@/components/PlaceOptions';
+import { PlaceField } from '@/components/PlaceField';
 import { AdSlot } from '@/components/AdSlot';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
@@ -964,23 +964,7 @@ function CommuneSelect({
   value: string;
   onChange: (id: string) => void;
 }) {
-  return (
-    <label className="flex items-center gap-3 rounded-xl px-1 py-1">
-      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotClass}`} aria-hidden="true" />
-      <span className="flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="-ml-0.5 w-full bg-transparent text-[15px] font-bold focus-visible:outline-none"
-        >
-          <PlaceOptions />
-        </select>
-      </span>
-    </label>
-  );
+  return <PlaceField label={label} dotClass={dotClass} value={value} onChange={onChange} />;
 }
 
 function DetailView({

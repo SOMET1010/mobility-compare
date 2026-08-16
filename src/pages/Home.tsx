@@ -7,7 +7,7 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { AdSlot } from '@/components/AdSlot';
-import { PlaceOptions } from '@/components/PlaceOptions';
+import { PlaceField } from '@/components/PlaceField';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -364,44 +364,23 @@ function TripWidget() {
   const [from, setFrom] = useState('cocody');
   const [to, setTo] = useState('plateau');
 
-  const selectCls =
-    'w-full appearance-none bg-transparent text-[15px] font-bold focus-visible:outline-none';
-
   return (
     <div className="max-w-md rounded-2xl border bg-card/95 p-3.5 shadow-xl backdrop-blur">
       <div className="relative flex flex-col gap-1.5">
-        <label className="flex items-center gap-2.5 rounded-xl bg-muted/50 px-3 py-2">
-          <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#5C6B2E]" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-              Départ
-            </span>
-            <select
-              aria-label="Départ"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className={selectCls}
-            >
-              <PlaceOptions />
-            </select>
-          </span>
-        </label>
-        <label className="flex items-center gap-2.5 rounded-xl bg-muted/50 px-3 py-2">
-          <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#B9722A]" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-              Arrivée
-            </span>
-            <select
-              aria-label="Arrivée"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className={selectCls}
-            >
-              <PlaceOptions />
-            </select>
-          </span>
-        </label>
+        <PlaceField
+          label="Départ"
+          dotClass="bg-[#5C6B2E]"
+          value={from}
+          onChange={setFrom}
+          wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
+        />
+        <PlaceField
+          label="Arrivée"
+          dotClass="bg-[#B9722A]"
+          value={to}
+          onChange={setTo}
+          wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
+        />
         <button
           type="button"
           onClick={() => {
