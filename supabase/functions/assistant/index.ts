@@ -264,11 +264,39 @@ Deno.serve(async (req) => {
         headers,
       });
     }
-    const probe = await callModel(cfg, [{ role: 'user', content: 'Réponds uniquement : OK' }], 8);
-    return new Response(
-      JSON.stringify(probe.ok ? { ok: true, model: cfg.model } : { ok: false, error: probe.error }),
-      { status: 200, headers },
-    );
+    const PING: { role: string; content: string }[] = [
+      { role: 'user', content: 'Réponds uniquement : OK' },
+    ];
+    const probe = await callModel(cfg, PING, 8);
+    if (probe.ok) {
+      return new Response(JSON.stringify({ ok: true, model: cfg.model }), {
+        status: 200,
+        headers,
+      });
+    }
+    // Auto-réparation : les deux plateformes Moonshot (.ai / .cn) ont des clés
+    // incompatibles. Si la clé est refusée, on tente l'autre plateforme ; si
+    // elle y répond, on corrige l'adresse enregistrée.
+    if (cfg.source === 'base') {
+      const MOONSHOT = ['https://api.moonshot.ai/v1', 'https://api.moonshot.cn/v1'];
+      for (const alt of MOONSHOT.filter((u) => u !== cfg.baseUrl)) {
+        const retry = await callModel({ ...cfg, baseUrl: alt }, PING, 8);
+        if (retry.ok) {
+          await admin
+            .from('assistant_config')
+            .update({ base_url: alt, updated_at: new Date().toISOString() })
+            .eq('id', 'default');
+          return new Response(
+            JSON.stringify({ ok: true, model: cfg.model, switched_base_url: alt }),
+            { status: 200, headers },
+          );
+        }
+      }
+    }
+    return new Response(JSON.stringify({ ok: false, error: probe.error }), {
+      status: 200,
+      headers,
+    });
   }
 
   /* -------------------------------------------------------- conversation */

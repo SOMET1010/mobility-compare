@@ -52,9 +52,15 @@ export function setAiConfig(
   return call(token, { action: 'set_config', ...cfg });
 }
 
-/** Appel minimal au modèle pour valider clé + modèle + adresse. */
+/**
+ * Appel minimal au modèle pour valider clé + modèle + adresse. Si la clé
+ * appartient à l'autre plateforme Moonshot, le serveur corrige l'adresse
+ * tout seul et le signale via `switched_base_url`.
+ */
 export function testAi(
   token: string,
-): Promise<AdminResult<{ ok: boolean; model?: string; error?: string }>> {
+): Promise<
+  AdminResult<{ ok: boolean; model?: string; error?: string; switched_base_url?: string }>
+> {
   return call(token, { action: 'test' });
 }

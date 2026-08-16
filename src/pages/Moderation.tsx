@@ -282,7 +282,12 @@ function AiConfigPanel({ token }: { token: string }) {
     const probe = await testAi(token);
     setBusy(false);
     if (probe.ok && probe.value.ok) {
-      toast('Clé valide ✓', { description: `Le modèle ${probe.value.model} a répondu.` });
+      toast('Clé valide ✓', {
+        description: probe.value.switched_base_url
+          ? `Votre clé appartient à l'autre plateforme Moonshot — adresse corrigée automatiquement (${probe.value.switched_base_url}).`
+          : `Le modèle ${probe.value.model} a répondu.`,
+      });
+      if (probe.value.switched_base_url) void load();
     } else {
       toast('La clé enregistrée ne fonctionne pas', {
         description: probe.ok ? probe.value.error : probe.error,
@@ -299,7 +304,12 @@ function AiConfigPanel({ token }: { token: string }) {
       return;
     }
     if (res.value.ok) {
-      toast('Clé valide ✓', { description: `Le modèle ${res.value.model} a répondu.` });
+      toast('Clé valide ✓', {
+        description: res.value.switched_base_url
+          ? `Votre clé appartient à l'autre plateforme Moonshot — adresse corrigée automatiquement (${res.value.switched_base_url}).`
+          : `Le modèle ${res.value.model} a répondu.`,
+      });
+      if (res.value.switched_base_url) void load();
     } else {
       toast('La clé ne fonctionne pas', { description: res.value.error });
     }
