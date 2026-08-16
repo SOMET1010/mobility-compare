@@ -468,12 +468,26 @@ function flatFareFor(mode: 'WORO' | 'GBAKA', km: number): number {
   return Math.min(hi, Math.max(lo, step));
 }
 
-/** Construit un corridor SIMULÉ pour une paire origine → destination. */
-export function buildPairCorridor(fromId: string, toId: string): DemoCorridor | null {
+/**
+ * Construit un corridor SIMULÉ pour une paire origine → destination.
+ * `kmOverride` : distance routière calculée en direct par notre serveur
+ * (Edge Function `itineraire`) — prioritaire sur la matrice précalculée
+ * quand elle est valide, ignorée sinon.
+ */
+export function buildPairCorridor(
+  fromId: string,
+  toId: string,
+  kmOverride?: number,
+): DemoCorridor | null {
   const a = communeById.get(fromId);
   const b = communeById.get(toId);
-  const km = pairDistanceKm(fromId, toId);
-  if (!a || !b || km === null) return null;
+  if (!a || !b || a.id === b.id) return null;
+  const live =
+    kmOverride !== undefined && Number.isFinite(kmOverride) && kmOverride > 0
+      ? Math.round(kmOverride * 10) / 10
+      : null;
+  const km = live ?? pairDistanceKm(fromId, toId);
+  if (km === null) return null;
 
   const airport = a.id === 'aeroport' || b.id === 'aeroport';
   const meteredFees: readonly FixedFeeSpec[] | undefined = airport
@@ -531,12 +545,16 @@ export function estimateCo2Grams(mode: DemoMode, km: number): number {
   return Math.round(CO2_FACTOR_G_PER_KM[mode] * km);
 }
 
-/** Comparaison d'une paire origine → destination (recherche libre, simulée). */
+/**
+ * Comparaison d'une paire origine → destination (recherche libre, simulée).
+ * `kmOverride` : distance routière en direct (serveur) — voir buildPairCorridor.
+ */
 export function comparePair(
   fromId: string,
   toId: string,
   criterion: DemoCriterion = 'PRICE_TIME',
+  kmOverride?: number,
 ): DemoComparison | null {
-  const corridor = buildPairCorridor(fromId, toId);
+  const corridor = buildPairCorridor(fromId, toId, kmOverride);
   return corridor ? compareCorridor(corridor, criterion) : null;
 }

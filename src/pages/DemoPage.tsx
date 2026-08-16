@@ -31,6 +31,7 @@ import {
   type SavedTrip,
 } from '@/features/trips/savedTrips';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
+import { fetchRoadRoute } from '@/features/routing/itineraire';
 import { submitContribution } from '@/features/contributions/submit';
 import { fetchApprovedCounts, type ObservationCounts } from '@/features/contributions/stats';
 import { fetchPairAggregates, type ObservedAggregate } from '@/features/contributions/aggregate';
@@ -237,9 +238,28 @@ export default function DemoPage() {
     setFavorites(toggleFavorite(window.localStorage, currentTrip));
   }
 
+  // Distance routière EN DIRECT (notre serveur, via l'Edge Function
+  // `itineraire`). Tant qu'elle n'est pas arrivée — ou si le serveur est
+  // injoignable — la matrice précalculée répond instantanément (même source
+  // OpenStreetMap, invariant I1 : jamais d'attente, jamais de valeur inventée).
+  const [liveKm, setLiveKm] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setLiveKm(null);
+    const a = COMMUNES.find((c) => c.id === fromId);
+    const b = COMMUNES.find((c) => c.id === toId);
+    if (!a || !b || a.id === b.id) return;
+    fetchRoadRoute({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }).then((r) => {
+      if (!cancelled && r) setLiveKm(r.km);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fromId, toId]);
+
   const cmp: DemoComparison | null = useMemo(
-    () => comparePair(fromId, toId, criterion),
-    [fromId, toId, criterion],
+    () => comparePair(fromId, toId, criterion, liveKm ?? undefined),
+    [fromId, toId, criterion, liveKm],
   );
 
   // Opérateurs publiés (invariant I4 — lus en base, jamais en dur).
@@ -502,9 +522,9 @@ export default function DemoPage() {
             </div>
 
             <p className="mt-6 text-[11px] leading-snug text-muted-foreground">
-              Distances : <b>routières réelles</b> (OpenStreetMap) entre points de repère de
-              quartier. Prix et durées : <b style={{ color: WARN }}>estimations</b>, affinées par
-              les relevés terrain.
+              Distances : <b>routières réelles</b> (OpenStreetMap, calculées sur notre propre
+              serveur) entre points de repère de quartier. Prix et durées :{' '}
+              <b style={{ color: WARN }}>estimations</b>, affinées par les relevés terrain.
             </p>
           </section>
         )}
