@@ -2,17 +2,36 @@
  * Géocodage OSM des lieux du comparateur — remplace les points de repère
  * « de mémoire » par les coordonnées Nominatim (OpenStreetMap).
  *
- * Usage (depuis votre machine, avec Internet, depuis un clone du dépôt
- * mobility-compare — PAS julaba-app) :
- *   node --experimental-strip-types scripts/geocoder-quartiers.mjs
- * (Node 22 ; à partir de Node 23 l'option est inutile)
+ * Usage (machine connectée, depuis un clone du dépôt mobility-compare) :
+ *   node scripts/geocoder-quartiers.mjs
  *
- * Règles d'usage du Nominatim public respectées : 1 requête/seconde,
- * User-Agent identifiable, une seule passe (pas d'autocomplete).
- * Sortie : le bloc COMMUNES prêt à coller dans src/demo/scenario.ts,
+ * Autonome : lit src/demo/scenario.ts comme du texte (aucune dépendance).
+ * Politique du Nominatim public respectée : 1 requête/seconde, User-Agent
+ * identifiable, une seule passe (pas d'autocomplete).
+ * Sortie : le bloc COMMUNES corrigé à coller dans src/demo/scenario.ts,
  * avec l'écart en mètres par rapport à la position actuelle.
  */
-import { COMMUNES } from '../src/demo/scenario.ts';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const racine = join(dirname(fileURLToPath(import.meta.url)), '..');
+const source = readFileSync(join(racine, 'src/demo/scenario.ts'), 'utf8');
+
+const LIGNE =
+  /\{\s*id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*commune:\s*'([^']+)',\s*lat:\s*([\d.]+),\s*lng:\s*(-[\d.]+)\s*\}/g;
+const lieux = [...source.matchAll(LIGNE)].map((m) => ({
+  id: m[1],
+  name: m[2],
+  commune: m[3],
+  lat: parseFloat(m[4]),
+  lng: parseFloat(m[5]),
+}));
+if (lieux.length === 0) {
+  console.error('Aucun lieu trouvé dans src/demo/scenario.ts — lancez depuis le dépôt mobility-compare.');
+  process.exit(1);
+}
+console.log(`${lieux.length} lieux à vérifier via Nominatim (1 req/s)…\n`);
 
 const UA = 'comparateur-mobilite-abidjan/1.0 (verification quartiers)';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -28,9 +47,9 @@ function distM(a, b) {
   return Math.round(2 * R * Math.asin(Math.sqrt(s)));
 }
 
-const results = [];
-for (const place of COMMUNES) {
-  const q = encodeURIComponent(`${place.name}, ${place.commune}, Abidjan, Côte d'Ivoire`);
+const resultats = [];
+for (const lieu of lieux) {
+  const q = encodeURIComponent(`${lieu.name}, ${lieu.commune}, Abidjan, Côte d'Ivoire`);
   const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=ci`;
   try {
     const res = await fetch(url, { headers: { 'User-Agent': UA } });
@@ -39,27 +58,27 @@ for (const place of COMMUNES) {
     if (hit) {
       const lat = Math.round(parseFloat(hit.lat) * 1000) / 1000;
       const lng = Math.round(parseFloat(hit.lon) * 1000) / 1000;
-      const ecart = distM(place, { lat, lng });
-      results.push({ ...place, lat, lng, ecart, ok: true });
-      console.log(`✓ ${place.name.padEnd(20)} ${lat}, ${lng}  (écart ${ecart} m)`);
+      const ecart = distM(lieu, { lat, lng });
+      resultats.push({ ...lieu, lat, lng, ecart });
+      console.log(`✓ ${lieu.name.padEnd(20)} ${lat}, ${lng}  (écart ${ecart} m)`);
     } else {
-      results.push({ ...place, ecart: null, ok: false });
-      console.log(`✗ ${place.name.padEnd(20)} introuvable — position actuelle conservée`);
+      resultats.push({ ...lieu, ecart: null });
+      console.log(`✗ ${lieu.name.padEnd(20)} introuvable — position actuelle conservée`);
     }
-  } catch (e) {
-    results.push({ ...place, ecart: null, ok: false });
-    console.log(`✗ ${place.name.padEnd(20)} erreur réseau — position actuelle conservée`);
+  } catch {
+    resultats.push({ ...lieu, ecart: null });
+    console.log(`✗ ${lieu.name.padEnd(20)} erreur réseau — position actuelle conservée`);
   }
-  await sleep(1100); // politique Nominatim : 1 req/s maximum
+  await sleep(1100);
 }
 
 console.log('\n--- Bloc à coller dans src/demo/scenario.ts ---\n');
-for (const p of results) {
+for (const p of resultats) {
   console.log(
     `  { id: '${p.id}', name: '${p.name}', commune: '${p.commune}', lat: ${p.lat}, lng: ${p.lng} },`,
   );
 }
-const gros = results.filter((p) => p.ecart !== null && p.ecart > 1500);
+const gros = resultats.filter((p) => p.ecart !== null && p.ecart > 1500);
 if (gros.length > 0) {
   console.log('\n⚠ Écarts > 1,5 km à vérifier à la main (le géocodage peut viser un homonyme) :');
   for (const p of gros) console.log(`  - ${p.name} : ${p.ecart} m`);
