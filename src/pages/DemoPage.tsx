@@ -436,14 +436,14 @@ export default function DemoPage() {
       const economie = fareAmount(rapide.option)! - prixGagnant;
       const surplus = minTotal(gagnant.option) - minTotal(rapide.option);
       if (economie > 0 && surplus > 0) {
-        return `${fmt(economie)} FCFA de moins que le ${MODE_META[rapide.option.mode].label}, pour ${surplus} min de plus.`;
+        return `Économisez ${fmt(economie)} F · +${surplus} min vs ${MODE_META[rapide.option.mode].label}`;
       }
     }
     if (econome.option.optionId !== gagnant.option.optionId) {
       const surcout = prixGagnant - fareAmount(econome.option)!;
       const gain = minTotal(econome.option) - minTotal(gagnant.option);
       if (surcout > 0 && gain > 0) {
-        return `${gain} min de gagnées pour ${fmt(surcout)} FCFA de plus que le ${MODE_META[econome.option.mode].label}.`;
+        return `Gagnez ${gain} min · +${fmt(surcout)} F vs ${MODE_META[econome.option.mode].label}`;
       }
     }
     return null;
@@ -684,7 +684,7 @@ export default function DemoPage() {
                   className={
                     'flex-1 rounded-lg px-2 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
                     (criterion === cr.code
-                      ? 'bg-background text-foreground shadow-sm'
+                      ? 'bg-background font-bold text-foreground shadow-sm ring-1 ring-[#B9722A]/45'
                       : 'text-muted-foreground hover:text-foreground')
                   }
                 >
@@ -692,6 +692,9 @@ export default function DemoPage() {
                 </button>
               ))}
             </div>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Toutes les options
+            </p>
             <div className="flex flex-col gap-2.5">
               {(() => {
                 const renderCard = (r: (typeof cmp.ranking.ranked)[number]) => {
@@ -749,7 +752,7 @@ export default function DemoPage() {
                         <span className="text-[10px] font-semibold text-muted-foreground">
                           FCFA
                         </span>
-                        <span className="mt-1 block text-[12px] tabular-nums text-muted-foreground">
+                        <span className="mt-0.5 block text-[14px] font-bold tabular-nums text-foreground/80">
                           {minTotal(r.option)} min
                         </span>
                         {r.option.waitSeconds ? (
@@ -760,39 +763,28 @@ export default function DemoPage() {
                       </span>
                       <Chevron />
                       {winner && insight && (
-                        <span className="block basis-full border-t pt-2 text-[12px] font-medium leading-snug text-foreground/80">
-                          <b>Pourquoi ce choix ?</b> {insight}
+                        <span className="-mt-1 block basis-full text-[12.5px] font-bold leading-snug text-[#5C6B2E]">
+                          {insight}
                         </span>
                       )}
                       {(() => {
                         const ops = operators?.filter((op) => op.mode === r.option.mode) ?? [];
                         const agg = observed?.[r.option.mode];
-                        if (ops.length === 0 && (!agg || agg.count === 0)) return null;
-                        if (!agg || agg.count === 0)
-                          return (
-                            <span className="-mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
-                              <OperatorChips ops={ops} />
-                            </span>
-                          );
+                        const releves = agg && agg.count > 0 ? agg : null;
+                        if (ops.length === 0 && !releves) return null;
                         return (
-                          <span className="-mt-1 block basis-full border-t pt-1.5 text-[10.5px] font-medium leading-snug text-[#5C6B2E]">
-                            {ops.length > 0 && (
-                              <span className="mb-1 flex flex-wrap items-center gap-1.5">
-                                <OperatorChips ops={ops} />
+                          <span className="-mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
+                            {ops.length > 0 && <OperatorChips ops={ops} />}
+                            {releves && (
+                              <span
+                                title="Prix réellement payés, déposés par des usagers puis modérés"
+                                className="inline-flex items-center gap-1 rounded-full bg-[#5C6B2E]/10 px-2 py-0.5 text-[10.5px] font-bold tabular-nums text-[#5C6B2E]"
+                              >
+                                ✓{' '}
+                                {releves.medianXof !== null
+                                  ? `~${fmt(releves.medianXof)} F observé (${releves.count})`
+                                  : `${releves.count} relevé${releves.count > 1 ? 's' : ''} terrain`}
                               </span>
-                            )}
-                            {agg.medianXof !== null ? (
-                              <>
-                                🌱 Observé sur ce trajet : ~
-                                <b className="tabular-nums">{fmt(agg.medianXof)} FCFA</b> (médiane
-                                de {agg.count} relevés modérés)
-                              </>
-                            ) : (
-                              <>
-                                🌱 {agg.count} relevé{agg.count > 1 ? 's' : ''} réel
-                                {agg.count > 1 ? 's' : ''} sur ce trajet — médiane affichée à partir
-                                de 5
-                              </>
                             )}
                           </span>
                         );
