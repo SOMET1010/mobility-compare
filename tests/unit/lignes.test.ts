@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanLineName, dedupeLines } from '@/features/transit/lignes';
+import { cleanLineName, dedupeLines, fmtWalk } from '@/features/transit/lignes';
 
 /**
  * Lignes cartographiées : le nom s'affiche sans son préfixe de mode (la
@@ -37,5 +37,22 @@ describe('dedupeLines', () => {
       { nom: 'gbaka : Adjamé → Niangon', mode: 'GBAKA', ref: '' },
     ]);
     expect(lignes).toHaveLength(2);
+  });
+});
+
+describe('fmtWalk — marche affichée sans fausse précision', () => {
+  it('arrondit au pas de 50 m, plancher 50 m', () => {
+    expect(fmtWalk(118)).toBe('~100 m');
+    expect(fmtWalk(304)).toBe('~300 m');
+    expect(fmtWalk(12)).toBe('~50 m');
+  });
+
+  it('passe en kilomètres au-delà de 1 000 m', () => {
+    expect(fmtWalk(1180)).toBe('~1,2 km');
+  });
+
+  it('valeur absente ou invalide : null (rien d’affiché)', () => {
+    expect(fmtWalk(undefined)).toBeNull();
+    expect(fmtWalk(-5)).toBeNull();
   });
 });

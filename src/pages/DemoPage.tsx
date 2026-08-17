@@ -17,7 +17,7 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
-import { cleanLineName, fetchLignes, type LigneProche } from '@/features/transit/lignes';
+import { cleanLineName, fetchLignes, fmtWalk, type LigneProche } from '@/features/transit/lignes';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
@@ -805,19 +805,30 @@ export default function DemoPage() {
                 <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                   Lignes passant près de ce trajet
                 </p>
-                <ul className="mt-2 space-y-1.5">
-                  {lignesProches.slice(0, 6).map((l) => (
-                    <li
-                      key={`${l.mode}-${l.nom}`}
-                      className="flex items-baseline gap-2 text-[13px]"
-                    >
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                        {LIGNE_META[l.mode]?.emoji ?? '🚏'} {LIGNE_META[l.mode]?.label ?? l.mode}
-                        {l.ref ? ` ${l.ref}` : ''}
-                      </span>
-                      <span className="min-w-0 truncate font-medium">{cleanLineName(l.nom)}</span>
-                    </li>
-                  ))}
+                <ul className="mt-2 space-y-2">
+                  {lignesProches.slice(0, 6).map((l) => {
+                    const montee = fmtWalk(l.montee_m);
+                    const descente = fmtWalk(l.descente_m);
+                    return (
+                      <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
+                        <div className="flex items-baseline gap-2">
+                          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                            {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
+                            {LIGNE_META[l.mode]?.label ?? l.mode}
+                            {l.ref ? ` ${l.ref}` : ''}
+                          </span>
+                          <span className="min-w-0 truncate font-medium">
+                            {cleanLineName(l.nom)}
+                          </span>
+                        </div>
+                        {montee && descente && (
+                          <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                            🚶 montée {montee} du départ · descente {descente} de l’arrivée
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
                   Réseau cartographié (OpenStreetMap) — tracés réels, sans horaires ni tarifs.

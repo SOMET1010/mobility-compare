@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
   if (error || !Array.isArray(data)) return json({ disponible: false }, 503);
 
   const lignes = data.filter(
-    (l): l is { nom: string; mode: string; ref: string } =>
+    (l): l is { nom: string; mode: string; ref: string; montee_m: number; descente_m: number } =>
       typeof l?.nom === 'string' && typeof l?.mode === 'string',
   );
   return json({ disponible: true, lignes });

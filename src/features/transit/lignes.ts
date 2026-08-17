@@ -13,6 +13,18 @@ export interface LigneProche {
   readonly nom: string;
   readonly mode: string;
   readonly ref: string;
+  /** Marche du départ au point de ligne le plus proche (mètres). */
+  readonly montee_m?: number;
+  /** Marche du point de ligne le plus proche à l'arrivée (mètres). */
+  readonly descente_m?: number;
+}
+
+/** ~300 m / ~1,2 km — arrondi au pas de 50 m, jamais faussement précis. */
+export function fmtWalk(m: number | undefined): string | null {
+  if (typeof m !== 'number' || !Number.isFinite(m) || m < 0) return null;
+  const arrondi = Math.max(50, Math.round(m / 50) * 50);
+  if (arrondi >= 1000) return `~${(arrondi / 1000).toFixed(1).replace('.', ',')} km`;
+  return `~${arrondi} m`;
 }
 
 /** « gbaka : Adjamé → Lokoa » → « Adjamé → Lokoa » (le mode a sa pastille). */
