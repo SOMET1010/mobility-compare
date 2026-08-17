@@ -54,15 +54,15 @@ export function UseMyLocation({ onFound }: { onFound: (id: string) => void }) {
       <span
         aria-hidden="true"
         className={
-          'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/12 text-[16px]' +
+          'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/12 text-base' +
           (busy ? ' animate-pulse' : '')
         }
       >
         📍
       </span>
       <span className="min-w-0">
-        <span className="block text-[15px] font-semibold text-primary">Ma position</span>
-        <span className="block text-[11px] text-muted-foreground">
+        <span className="block text-emph font-semibold text-primary">Ma position</span>
+        <span className="block text-label text-muted-foreground">
           {busy
             ? 'Recherche en cours (jusqu’à 8 s)…'
             : 'Trouvée sur votre téléphone — jamais envoyée'}

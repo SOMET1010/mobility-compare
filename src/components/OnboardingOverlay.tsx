@@ -1,4 +1,5 @@
 import { ModeGlyph } from '@/components/ModeGlyph';
+import { COULEURS } from '@/config/couleurs';
 
 /**
  * Accueil de première visite — UN SEUL écran, trois points, un bouton.
@@ -63,7 +64,7 @@ export function OnboardingOverlay({ onDone }: { onDone: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="Bienvenue sur MOBILIS"
-      className="fixed inset-0 z-[1200] flex items-end justify-center bg-[#26301C]/60 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-[1200] flex items-end justify-center bg-brand-ink/60 backdrop-blur-sm sm:items-center"
     >
       <div className="w-full max-w-md rounded-t-3xl bg-background p-6 pb-8 shadow-2xl sm:rounded-3xl sm:pb-6">
         <div className="mb-5 mt-1 flex items-center justify-center gap-3">
@@ -72,8 +73,8 @@ export function OnboardingOverlay({ onDone }: { onDone: () => void }) {
               key={m}
               className="grid h-12 w-12 place-items-center rounded-2xl"
               style={{
-                color: i % 2 ? '#B9722A' : '#5C6B2E',
-                backgroundColor: `color-mix(in oklab, ${i % 2 ? '#B9722A' : '#5C6B2E'} 14%, transparent)`,
+                color: i % 2 ? COULEURS.ochre : COULEURS.olive,
+                backgroundColor: `color-mix(in oklab, ${i % 2 ? COULEURS.ochre : COULEURS.olive} 14%, transparent)`,
               }}
             >
               <ModeGlyph shape={m} className="h-7 w-7" />
@@ -86,7 +87,7 @@ export function OnboardingOverlay({ onDone }: { onDone: () => void }) {
         <ul className="mx-auto mt-4 max-w-sm space-y-2.5">
           {POINTS.map((p) => (
             <li key={p.icon} className="flex items-start gap-2.5 text-sm leading-snug">
-              <span className="mt-0.5 shrink-0 text-[#5C6B2E]">{ICONS[p.icon]}</span>
+              <span className="mt-0.5 shrink-0 text-brand-olive">{ICONS[p.icon]}</span>
               <span className="text-muted-foreground">{p.text}</span>
             </li>
           ))}
@@ -94,7 +95,7 @@ export function OnboardingOverlay({ onDone }: { onDone: () => void }) {
         <button
           type="button"
           onClick={onDone}
-          className="mt-6 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-95"
+          className="mt-6 w-full rounded-xl bg-brand-ochre px-6 py-3 text-base font-semibold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ochre focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-95"
         >
           C’est parti →
         </button>

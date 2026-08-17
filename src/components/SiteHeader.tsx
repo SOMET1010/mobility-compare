@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Wordmark } from '@/components/BrandMark';
 
 /**
@@ -23,6 +23,7 @@ export function SiteHeader({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { pathname } = useLocation();
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -32,7 +33,7 @@ export function SiteHeader({
 
   return (
     <header
-      className={`sticky top-0 z-30 border-b border-white/10 bg-[#26301C]/90 backdrop-blur transition-shadow duration-200 ${
+      className={`sticky top-0 z-30 border-b border-white/10 bg-brand-ink/90 backdrop-blur transition-shadow duration-200 ${
         scrolled ? 'shadow-lg shadow-black/10' : ''
       }`}
     >
@@ -52,7 +53,13 @@ export function SiteHeader({
             <Link
               key={l.to}
               to={l.to}
-              className="hidden rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white sm:block"
+              aria-current={pathname === l.to ? 'page' : undefined}
+              className={
+                'hidden rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white sm:block ' +
+                (pathname === l.to
+                  ? 'font-semibold text-white underline decoration-brand-ochre decoration-2 underline-offset-4'
+                  : 'text-white/70')
+              }
             >
               {l.label}
             </Link>
@@ -60,7 +67,7 @@ export function SiteHeader({
           {cta && (
             <Link
               to={cta.to}
-              className="rounded-lg bg-[#B9722A] px-3 py-2 font-semibold text-[#26301C] transition hover:brightness-105 sm:px-3.5"
+              className="rounded-lg bg-brand-ochre px-3 py-2 font-semibold text-brand-ink transition hover:brightness-105 sm:px-3.5"
             >
               {cta.label}
             </Link>
@@ -93,7 +100,13 @@ export function SiteHeader({
               key={l.to}
               to={l.to}
               onClick={() => setMenuOpen(false)}
-              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+              aria-current={pathname === l.to ? 'page' : undefined}
+              className={
+                'block rounded-lg px-3 py-2.5 text-sm font-medium transition hover:bg-white/10 hover:text-white ' +
+                (pathname === l.to
+                  ? 'font-semibold text-white underline decoration-brand-ochre decoration-2 underline-offset-4'
+                  : 'text-white/80')
+              }
             >
               {l.label}
             </Link>

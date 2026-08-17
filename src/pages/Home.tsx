@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { COULEURS } from '@/config/couleurs';
 import { Link, useNavigate } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
@@ -29,8 +30,8 @@ const HERO_IMAGE: string | null = '/hero-abidjan.webp';
 /** Accents multicolores des stats (comme la maquette), accordés à la palette. */
 type StatIcon = 'route' | 'shield' | 'eye' | 'people';
 const STATS: { value: string; label: string; icon: StatIcon; tint: string }[] = [
-  { value: '4', label: 'modes comparés', icon: 'route', tint: '#5C6B2E' },
-  { value: '0', label: 'pub dans le classement', icon: 'shield', tint: '#B9722A' },
+  { value: '4', label: 'modes comparés', icon: 'route', tint: COULEURS.olive },
+  { value: '0', label: 'pub dans le classement', icon: 'shield', tint: COULEURS.ochre },
   { value: '100 %', label: 'du calcul visible', icon: 'eye', tint: '#3F8F8B' },
   { value: 'Neutre', label: 'par construction', icon: 'people', tint: '#7C6BA8' },
 ];
@@ -144,15 +145,15 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-6xl px-5 pb-8 pt-5 sm:py-12 lg:py-16">
           <div className="lg:max-w-xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-3 py-1 text-label font-bold uppercase tracking-widest text-primary backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {PRODUCT.scope.countryName} · Mobilité urbaine
             </span>
-            <h1 className="mt-4 text-[1.9rem] font-extrabold leading-[1.12] tracking-tight sm:text-5xl sm:leading-[1.05] lg:text-6xl">
+            <h1 className="mt-4 text-3xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl sm:leading-[1.05] lg:text-6xl">
               On va où ? <span className="text-primary">Comparez</span>{' '}
-              <span className="text-[#B9722A]">avant de partir.</span>
+              <span className="text-brand-ochre">avant de partir.</span>
             </h1>
-            <p className="mt-4 max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-lg">
+            <p className="mt-4 max-w-md text-emph leading-[1.6] text-muted-foreground sm:text-lg">
               Yango, Heetch, taxi, woro-woro, gbaka — prix et durées sur un seul écran.
             </p>
             {/* Widget de comparaison — l'action principale, directement dans le hero */}
@@ -180,7 +181,7 @@ export default function Home() {
             <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-2xl border shadow-lg lg:hidden">
               <HeroPhoto />
               <ConvergingModes />
-              <span className="absolute bottom-2 right-3 rounded-full bg-black/35 px-2 py-0.5 text-[9px] font-medium text-white/90">
+              <span className="absolute bottom-2 right-3 rounded-full bg-black/35 px-2 py-0.5 text-tiny font-medium text-white/90">
                 Visuel provisoire
               </span>
             </div>
@@ -204,7 +205,7 @@ export default function Home() {
                   </span>
                   <span className="text-xl font-extrabold leading-none sm:text-2xl">{s.value}</span>
                 </div>
-                <div className="mt-2 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                <div className="mt-2 text-label leading-snug text-muted-foreground sm:text-xs">
                   {s.label}
                 </div>
               </div>
@@ -216,14 +217,14 @@ export default function Home() {
       {/* MODES */}
       <section className="border-y bg-muted/40">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
-          <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#5C6B2E]" />
+          <span className="inline-flex items-center gap-2 text-label font-bold uppercase tracking-widest text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-olive" />
             Les modes couverts
           </span>
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {MODES.map((m) => (
               <div key={m.name} className="flex items-center gap-3 rounded-xl border bg-card p-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#5C6B2E]/12 text-[#5C6B2E]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-olive/12 text-brand-olive">
                   <ModeGlyph shape={m.icon} className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
@@ -242,7 +243,7 @@ export default function Home() {
         <div className="mt-6 grid gap-4 sm:gap-6 md:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="relative rounded-2xl border bg-card p-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#B9722A] text-sm font-bold text-[#26301C]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-ochre text-sm font-bold text-brand-ink">
                 {s.n}
               </div>
               <div className="mt-4 font-semibold">{s.title}</div>
@@ -258,7 +259,7 @@ export default function Home() {
       </div>
 
       {/* NEUTRALITÉ */}
-      <section className="bg-[#26301C] text-white">
+      <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
           <div className="grid gap-8 md:grid-cols-[1fr,1.2fr] md:items-center md:gap-16">
             <div>
@@ -289,7 +290,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold sm:text-3xl">Comparez votre premier trajet</h2>
           <Link
             to="/comparer"
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#26301C] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-muted active:brightness-110"
+            className="mt-6 inline-flex items-center justify-center rounded-xl bg-brand-ink px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ink focus-visible:ring-offset-2 focus-visible:ring-offset-muted active:brightness-110"
           >
             Comparer un trajet →
           </Link>
@@ -300,7 +301,7 @@ export default function Home() {
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
           <Wordmark className="text-base" testId />
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-label text-muted-foreground">
             {/* Alerte d'état honnête : visible uniquement quand le backend manque. */}
             {!IS_BACKEND_CONFIGURED && (
               <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium">
@@ -324,7 +325,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        <div className="mx-auto max-w-6xl px-5 pb-10 text-[11px] leading-relaxed text-muted-foreground">
+        <div className="mx-auto max-w-6xl px-5 pb-10 text-label leading-relaxed text-muted-foreground">
           {PRODUCT.displayName} — {PRODUCT.scope.city}, {PRODUCT.scope.countryName}. Nom et identité
           provisoires.
         </div>
@@ -375,14 +376,14 @@ function TripWidget() {
       <div className="relative flex flex-col gap-1.5">
         <PlaceTrigger
           label="Départ"
-          dotClass="bg-[#5C6B2E]"
+          dotClass="bg-brand-olive"
           value={from}
           onPress={() => setSheet('from')}
           wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
         />
         <PlaceTrigger
           label="Arrivée"
-          dotClass="bg-[#B9722A]"
+          dotClass="bg-brand-ochre"
           value={to}
           onPress={() => setSheet('to')}
           wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
@@ -412,7 +413,7 @@ function TripWidget() {
       </div>
 
       {from === to && (
-        <p className="mt-2 px-1 text-[12px] font-medium text-[#9A3412]">
+        <p className="mt-2 px-1 text-note font-medium text-warn">
           Choisissez une autre destination.
         </p>
       )}
@@ -421,7 +422,7 @@ function TripWidget() {
         type="button"
         disabled={from === to}
         onClick={() => comparer(from, to)}
-        className="mt-2.5 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-2.5 w-full rounded-xl bg-brand-ochre px-6 py-3 text-base font-semibold text-white shadow-lg shadow-brand-ochre/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ochre focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Comparer les 4 modes →
       </button>
@@ -498,10 +499,10 @@ function HeroPhoto() {
 function ConvergingModes() {
   const hub = { x: 60, y: 52 };
   const nodes: { shape: GlyphShape; x: number; y: number; tint: string }[] = [
-    { shape: 'vtc', x: 22, y: 22, tint: '#B9722A' },
-    { shape: 'gbaka', x: 54, y: 14, tint: '#5C6B2E' },
-    { shape: 'taxi', x: 84, y: 24, tint: '#B9722A' },
-    { shape: 'woro', x: 24, y: 70, tint: '#5C6B2E' },
+    { shape: 'vtc', x: 22, y: 22, tint: COULEURS.ochre },
+    { shape: 'gbaka', x: 54, y: 14, tint: COULEURS.olive },
+    { shape: 'taxi', x: 84, y: 24, tint: COULEURS.ochre },
+    { shape: 'woro', x: 24, y: 70, tint: COULEURS.olive },
   ];
   // Courbe fluide : quitte la pastille à l'horizontale, rejoint le point central.
   const flow = (n: { x: number; y: number }) => {
@@ -536,7 +537,7 @@ function ConvergingModes() {
         style={{ left: `${hub.x}%`, top: `${hub.y}%` }}
       >
         <span className="grid h-6 w-6 place-items-center rounded-full bg-white/25 backdrop-blur">
-          <span className="block h-3.5 w-3.5 rounded-full border-2 border-white bg-[#B9722A] shadow" />
+          <span className="block h-3.5 w-3.5 rounded-full border-2 border-white bg-brand-ochre shadow" />
         </span>
       </span>
       {nodes.map((n) => (
@@ -547,7 +548,7 @@ function ConvergingModes() {
             left: `${n.x}%`,
             top: `${n.y}%`,
             color: n.tint,
-            backgroundColor: `color-mix(in oklab, ${n.tint} 22%, #F3EEDF)`,
+            backgroundColor: `color-mix(in oklab, ${n.tint} 22%, ${COULEURS.paper})`,
             border: `2px solid color-mix(in oklab, ${n.tint} 45%, #ffffff)`,
           }}
         >

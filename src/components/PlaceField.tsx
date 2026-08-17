@@ -42,10 +42,10 @@ export function PlaceTrigger({
     >
       <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotClass}`} aria-hidden="true" />
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <span className="block text-tiny font-bold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
-        <span className="block truncate text-[15px] font-bold">{selected?.name ?? 'Choisir…'}</span>
+        <span className="block truncate text-emph font-bold">{selected?.name ?? 'Choisir…'}</span>
       </span>
       <svg
         viewBox="0 0 24 24"
@@ -84,6 +84,8 @@ export function PlaceSheet({
   // Clavier ouvert d'emblée, page arrière figée.
   useEffect(() => {
     inputRef.current?.focus();
+    // Clavier virtuel : garder le champ en vue quel que soit l'appareil.
+    inputRef.current?.scrollIntoView({ block: 'nearest' });
     const avant = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -164,7 +166,7 @@ export function PlaceSheet({
                 <path d="M19 12H5M5 12l7-7M5 12l7 7" />
               </svg>
             </button>
-            <span className="text-[13.5px] font-bold">{label}</span>
+            <span className="text-body font-bold">{label}</span>
           </div>
           <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5">
             <svg
@@ -192,7 +194,7 @@ export function PlaceSheet({
               placeholder="Quartier, gare, adresse…"
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
-              className="w-full bg-transparent text-[15px] font-semibold placeholder:font-medium placeholder:text-muted-foreground focus-visible:outline-none"
+              className="w-full bg-transparent text-emph font-semibold placeholder:font-medium placeholder:text-muted-foreground focus-visible:outline-none"
             />
             {query && (
               <button
@@ -202,7 +204,7 @@ export function PlaceSheet({
                   inputRef.current?.focus();
                 }}
                 aria-label="Effacer"
-                className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted-foreground/20 text-[11px] text-foreground/70 transition hover:bg-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted-foreground/20 text-label text-foreground/70 transition hover:bg-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 ✕
               </button>
@@ -221,7 +223,7 @@ export function PlaceSheet({
               )}
               {recents.length > 0 && (
                 <div className="border-b">
-                  <p className="px-4 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <p className="px-4 pb-1 pt-3 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                     Récents
                   </p>
                   {recents.map((r) => (
@@ -231,7 +233,7 @@ export function PlaceSheet({
               )}
               {placeGroups().map((g) => (
                 <div key={g.label}>
-                  <p className="sticky top-0 bg-muted/95 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur">
+                  <p className="sticky top-0 bg-muted/95 px-4 py-1.5 text-tiny font-bold uppercase tracking-wider text-muted-foreground backdrop-blur">
                     {g.label}
                   </p>
                   {g.places.map((p) => (
@@ -246,7 +248,7 @@ export function PlaceSheet({
                 <SheetRow key={h.id} name={h.name} sub={h.commune} onPick={() => onPick(h.id)} />
               ))}
               {adressesTriees.length > 0 && (
-                <p className="border-t bg-muted/60 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="border-t bg-muted/60 px-4 py-1.5 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                   Adresses
                 </p>
               )}
@@ -259,7 +261,7 @@ export function PlaceSheet({
                 />
               ))}
               {lieux.length === 0 && adressesTriees.length === 0 && (
-                <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
+                <p className="px-4 py-6 text-center text-body text-muted-foreground">
                   Aucun lieu trouvé — essayez le nom de la commune
                   {query.trim().length < 3 ? ' (adresses dès 3 lettres)' : ''}.
                 </p>
@@ -280,9 +282,9 @@ function SheetRow({ name, sub, onPick }: { name: string; sub?: string; onPick: (
       onClick={onPick}
       className="flex w-full items-baseline justify-between gap-3 px-4 py-3.5 text-left transition hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
-      <span className="min-w-0 truncate text-[15px] font-semibold">{name}</span>
+      <span className="min-w-0 truncate text-emph font-semibold">{name}</span>
       {sub && sub !== name && (
-        <span className="max-w-[40%] shrink-0 truncate text-[11.5px] text-muted-foreground">
+        <span className="max-w-[40%] shrink-0 truncate text-label text-muted-foreground">
           {sub}
         </span>
       )}

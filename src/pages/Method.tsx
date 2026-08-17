@@ -66,15 +66,15 @@ export default function Method() {
         ]}
       />
 
-      <section className="bg-[var(--brand-ink)] text-white">
+      <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-sprout">
             Méthode &amp; transparence
           </p>
           <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl sm:leading-tight">
             Comment MOBILIS calcule — et pourquoi on peut le vérifier.
           </h1>
-          <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-white/70 sm:text-lg">
+          <p className="mt-4 max-w-2xl text-emph leading-[1.6] text-white/70 sm:text-lg">
             Aucune boîte noire : chaque prix expose sa formule, le classement est neutre par
             construction, et ce qui n’est pas prouvé est signalé comme tel.
           </p>
@@ -85,7 +85,7 @@ export default function Method() {
         {/* Prix */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">Le prix, étape par étape</h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-emph leading-[1.6] text-muted-foreground">
             Chaque course produit une <b>trace de calcul</b> (invariant I2) : la démonstration
             l’affiche en clair, ligne par ligne.
           </p>
@@ -154,7 +154,7 @@ export default function Method() {
         {/* Dépendances */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">Ce qu’il reste à brancher</h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-emph leading-[1.6] text-muted-foreground">
             La démonstration tourne sur des données simulées. Voici, honnêtement, ce qui la rendra
             réelle.
           </p>
@@ -248,7 +248,7 @@ export default function Method() {
           </p>
           <Link
             to="/comparer"
-            className="mt-5 inline-flex items-center justify-center rounded-xl bg-[var(--brand-ink)] px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ink)] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-110"
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-brand-ink px-7 py-3 text-base font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ink focus-visible:ring-offset-2 focus-visible:ring-offset-background active:brightness-110"
           >
             Ouvrir le comparateur →
           </Link>
@@ -256,7 +256,7 @@ export default function Method() {
       </div>
 
       <footer className="border-t">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-10 text-[12px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-10 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <Wordmark className="text-base" />
           <p>
             {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Identité, nom et hébergement

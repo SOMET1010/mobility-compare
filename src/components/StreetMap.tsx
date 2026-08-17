@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { COULEURS } from '@/config/couleurs';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -15,8 +16,8 @@ export interface MapPoint {
   readonly name: string;
 }
 
-const ORIGIN = '#5C6B2E';
-const DEST = '#B9722A';
+const ORIGIN = COULEURS.olive;
+const DEST = COULEURS.ochre;
 
 /** Un tracé de ligne à dessiner : ses segments de [lat, lng] et sa couleur. */
 export interface TraceLayer {
@@ -76,7 +77,7 @@ export function StreetMap({
     if (changePoint) {
       L.circleMarker(L.latLng(changePoint.lat, changePoint.lng), {
         radius: 7,
-        color: '#26301C',
+        color: COULEURS.ink,
         weight: 2.5,
         fillColor: '#ffffff',
         fillOpacity: 1,

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { COULEURS } from '@/config/couleurs';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { PlaceSheet, PlaceTrigger } from '@/components/PlaceField';
+import { Segmented } from '@/components/Segmented';
 import { AdSlot } from '@/components/AdSlot';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
@@ -108,6 +110,10 @@ const SERVICES: readonly { code: ServiceType; label: string }[] = [
   { code: 'LIVRAISON', label: '📦 Envoyer un colis' },
 ];
 
+/** Options prêtes pour le composant Segmented. */
+const SERVICE_OPTS = SERVICES.map((s) => ({ value: s.code, label: s.label }));
+const CRIT_OPTS = CRITERIA.map((c) => ({ value: c.code, label: CRIT_TAB[c.code] }));
+
 function fareAmount(o: RankableOption): number | null {
   return o.fare.available ? o.fare.value.amount : null;
 }
@@ -126,11 +132,11 @@ const HEADLINE: Record<BadgeCode, string> = {
 
 /* ---------------------------------------------------------------- primitives */
 
-const AMBER = '#B9722A';
-const WARN = '#9A3412';
+const AMBER = COULEURS.ochre;
+const WARN = COULEURS.warn;
 /** Couleurs des tracés de lignes sur la carte (étape 1 / étape 2). */
-const TRACE1 = '#1E5AA8';
-const TRACE2 = '#7C3AED';
+const TRACE1 = COULEURS.trace1;
+const TRACE2 = COULEURS.trace2;
 
 function ModeChip({ mode, size = 44 }: { mode: DemoMode; size?: number }) {
   const m = MODE_META[mode];
@@ -174,7 +180,7 @@ function Badges({ codes }: { codes: BadgeCode[] }) {
       {codes.map((c) => (
         <span
           key={c}
-          className="rounded-full bg-primary/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary"
+          className="rounded-full bg-primary/12 px-2 py-0.5 text-tiny font-bold uppercase tracking-wide text-primary"
         >
           {BADGE_LABEL[c]}
         </span>
@@ -190,7 +196,7 @@ function OperatorChips({ ops }: { ops: Operator[] }) {
       {ops.map((op) => (
         <span
           key={op.id}
-          className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2 py-0.5 text-[10.5px] font-bold text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2 py-0.5 text-tiny font-bold text-foreground"
         >
           <span
             aria-hidden="true"
@@ -202,7 +208,7 @@ function OperatorChips({ ops }: { ops: Operator[] }) {
             <span
               aria-label="Plateforme agréée"
               title="Plateforme agréée"
-              className="text-[#5C6B2E]"
+              className="text-brand-olive"
             >
               ✓
             </span>
@@ -216,7 +222,7 @@ function OperatorChips({ ops }: { ops: Operator[] }) {
 function ConfidenceNote() {
   return (
     <div
-      className="flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[12px] font-medium"
+      className="flex items-start gap-2 rounded-xl border px-3 py-2.5 text-note font-medium"
       style={{
         borderColor: `color-mix(in oklab, ${WARN} 35%, transparent)`,
         color: WARN,
@@ -592,28 +598,13 @@ export default function DemoPage() {
         {view === 'search' && (
           <section aria-label="Recherche">
             {/* Personne ou colis — même comparateur, modes différents */}
-            <div
-              className="mb-4 flex gap-1 rounded-xl bg-muted p-1"
-              role="group"
-              aria-label="Type de prestation"
-            >
-              {SERVICES.map((s) => (
-                <button
-                  key={s.code}
-                  type="button"
-                  onClick={() => pickService(s.code)}
-                  aria-pressed={service === s.code}
-                  className={
-                    'flex-1 rounded-lg px-2 py-2 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                    (service === s.code
-                      ? 'bg-background font-bold text-foreground shadow-sm ring-1 ring-[#B9722A]/45'
-                      : 'text-muted-foreground hover:text-foreground')
-                  }
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              className="mb-4"
+              ariaLabel="Type de prestation"
+              options={SERVICE_OPTS}
+              value={service}
+              onChange={pickService}
+            />
             <h1 className="mb-1 text-2xl font-extrabold tracking-tight">
               {service === 'LIVRAISON' ? 'On envoie où ?' : 'On va où ?'}
             </h1>
@@ -627,14 +618,14 @@ export default function DemoPage() {
             <div className="relative flex flex-col gap-2 rounded-2xl border bg-card p-3">
               <PlaceTrigger
                 label={service === 'LIVRAISON' ? 'Enlèvement' : 'Départ'}
-                dotClass="bg-[#5C6B2E]"
+                dotClass="bg-brand-olive"
                 value={fromId}
                 onPress={() => setSheet('from')}
               />
               <div className="ml-1 h-3 border-l border-dashed" />
               <PlaceTrigger
                 label={service === 'LIVRAISON' ? 'Livraison' : 'Arrivée'}
-                dotClass="bg-[#B9722A]"
+                dotClass="bg-brand-ochre"
                 value={toId}
                 onPress={() => setSheet('to')}
               />
@@ -660,7 +651,7 @@ export default function DemoPage() {
             </div>
 
             {fromId === toId && (
-              <p className="mt-2 text-[12px] font-medium" style={{ color: WARN }}>
+              <p className="mt-2 text-note font-medium" style={{ color: WARN }}>
                 Choisissez une autre destination.
               </p>
             )}
@@ -675,7 +666,7 @@ export default function DemoPage() {
 
             {favorites.length > 0 && (
               <>
-                <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mb-2 mt-6 text-label font-bold uppercase tracking-wider text-muted-foreground">
                   ★ Vos favoris
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -688,7 +679,7 @@ export default function DemoPage() {
                         key={tripKey(t)}
                         type="button"
                         onClick={() => showResults(t.fromId, t.toId, criterion)}
-                        className="rounded-full border border-[#B9722A]/50 bg-[#B9722A]/8 px-3 py-1.5 text-[12.5px] font-medium transition hover:border-[#B9722A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="rounded-full border border-brand-ochre/50 bg-brand-ochre/8 px-3 py-1.5 text-note font-medium transition hover:border-brand-ochre focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {from.name} → {to.name}
                       </button>
@@ -700,7 +691,7 @@ export default function DemoPage() {
 
             {recents.length > 0 && (
               <>
-                <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mb-2 mt-6 text-label font-bold uppercase tracking-wider text-muted-foreground">
                   Récents
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -713,7 +704,7 @@ export default function DemoPage() {
                         key={tripKey(t)}
                         type="button"
                         onClick={() => showResults(t.fromId, t.toId, criterion)}
-                        className="rounded-full border bg-card px-3 py-1.5 text-[12.5px] font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="rounded-full border bg-card px-3 py-1.5 text-note font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {from.name} → {to.name}
                       </button>
@@ -724,7 +715,7 @@ export default function DemoPage() {
             )}
 
             {/* Trajets fréquents */}
-            <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="mb-2 mt-6 text-label font-bold uppercase tracking-wider text-muted-foreground">
               Trajets fréquents
             </p>
             <div className="flex flex-wrap gap-2">
@@ -736,7 +727,7 @@ export default function DemoPage() {
                     key={`${t.from}-${t.to}`}
                     type="button"
                     onClick={() => showResults(t.from, t.to, criterion)}
-                    className="rounded-full border bg-card px-3 py-1.5 text-[12.5px] font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-full border bg-card px-3 py-1.5 text-note font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {from.name} → {to.name}
                   </button>
@@ -744,7 +735,7 @@ export default function DemoPage() {
               })}
             </div>
 
-            <p className="mt-6 text-[11px] leading-snug text-muted-foreground">
+            <p className="mt-6 text-label leading-snug text-muted-foreground">
               Distances <b>routières réelles</b> (OpenStreetMap). Prix et durées :{' '}
               <b style={{ color: WARN }}>estimations</b>.
             </p>
@@ -787,8 +778,8 @@ export default function DemoPage() {
                     <svg
                       viewBox="0 0 24 24"
                       className="h-5 w-5"
-                      fill={currentIsFavorite ? '#B9722A' : 'none'}
-                      stroke={currentIsFavorite ? '#B9722A' : 'currentColor'}
+                      fill={currentIsFavorite ? COULEURS.ochre : 'none'}
+                      stroke={currentIsFavorite ? COULEURS.ochre : 'currentColor'}
                       strokeWidth={1.8}
                       strokeLinejoin="round"
                       aria-hidden="true"
@@ -804,53 +795,23 @@ export default function DemoPage() {
             </div>
 
             {/* Personne ou colis */}
-            <div
-              className="mb-2 flex gap-1 rounded-xl bg-muted p-1"
-              role="group"
-              aria-label="Type de prestation"
-            >
-              {SERVICES.map((s) => (
-                <button
-                  key={s.code}
-                  type="button"
-                  onClick={() => pickService(s.code)}
-                  aria-pressed={service === s.code}
-                  className={
-                    'flex-1 rounded-lg px-2 py-1.5 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                    (service === s.code
-                      ? 'bg-background font-bold text-foreground shadow-sm ring-1 ring-[#B9722A]/45'
-                      : 'text-muted-foreground hover:text-foreground')
-                  }
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              className="mb-2"
+              ariaLabel="Type de prestation"
+              options={SERVICE_OPTS}
+              value={service}
+              onChange={pickService}
+            />
 
             {/* Sélecteur de critère — collant pendant le défilement */}
-            <div
-              className="sticky top-0 z-30 mb-3 flex gap-1 rounded-xl bg-muted p-1 shadow-sm"
-              role="group"
-              aria-label="Trier par"
-            >
-              {CRITERIA.map((cr) => (
-                <button
-                  key={cr.code}
-                  type="button"
-                  onClick={() => pickCriterion(cr.code)}
-                  aria-pressed={criterion === cr.code}
-                  className={
-                    'flex-1 rounded-lg px-2 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                    (criterion === cr.code
-                      ? 'bg-background font-bold text-foreground shadow-sm ring-1 ring-[#B9722A]/45'
-                      : 'text-muted-foreground hover:text-foreground')
-                  }
-                >
-                  {CRIT_TAB[cr.code]}
-                </button>
-              ))}
-            </div>
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Segmented
+              className="sticky top-0 z-30 mb-3 shadow-sm"
+              ariaLabel="Trier par"
+              options={CRIT_OPTS}
+              value={criterion}
+              onChange={pickCriterion}
+            />
+            <p className="mb-2 text-label font-bold uppercase tracking-widest text-muted-foreground">
               Toutes les options{service === 'LIVRAISON' ? ' · envoi de colis' : ''}
             </p>
             <div className="flex flex-col gap-2.5">
@@ -875,7 +836,7 @@ export default function DemoPage() {
                     >
                       {winner && (
                         <span
-                          className="-mb-1 flex basis-full items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest"
+                          className="-mb-1 flex basis-full items-center gap-1.5 text-tiny font-bold uppercase tracking-widest"
                           style={{ color: WARN }}
                         >
                           <span aria-hidden="true">★</span> Recommandé ·{' '}
@@ -884,12 +845,12 @@ export default function DemoPage() {
                       )}
                       <ModeChip mode={r.option.mode} />
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2 text-[15px] font-bold">
+                        <span className="flex items-center gap-2 text-emph font-bold">
                           <span
-                            className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-extrabold tabular-nums"
+                            className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-label font-extrabold tabular-nums"
                             style={
                               winner
-                                ? { backgroundColor: AMBER, color: '#26301C' }
+                                ? { backgroundColor: AMBER, color: COULEURS.ink }
                                 : {
                                     backgroundColor: 'hsl(var(--muted))',
                                     color: 'hsl(var(--muted-foreground))',
@@ -900,28 +861,26 @@ export default function DemoPage() {
                           </span>
                           {m.label}
                         </span>
-                        <span className="text-[12px] text-muted-foreground">{m.note}</span>
+                        <span className="text-note text-muted-foreground">{m.note}</span>
                         <Badges codes={codes} />
                       </span>
                       <span className="shrink-0 text-right">
                         <span className="block text-2xl font-extrabold tabular-nums leading-none">
                           {price !== null ? fmt(price) : '—'}
                         </span>
-                        <span className="text-[10px] font-semibold text-muted-foreground">
-                          FCFA
-                        </span>
-                        <span className="mt-0.5 block text-[14px] font-bold tabular-nums text-foreground/80">
+                        <span className="text-tiny font-semibold text-muted-foreground">FCFA</span>
+                        <span className="mt-0.5 block text-sm font-bold tabular-nums text-foreground/80">
                           {minTotal(r.option)} min
                         </span>
                         {r.option.waitSeconds ? (
-                          <span className="block text-[10px] tabular-nums text-muted-foreground">
+                          <span className="block text-tiny tabular-nums text-muted-foreground">
                             dont {Math.round(r.option.waitSeconds / 60)} d’attente
                           </span>
                         ) : null}
                       </span>
                       <Chevron />
                       {winner && insight && (
-                        <span className="-mt-1 block basis-full text-[12.5px] font-bold leading-snug text-[#5C6B2E]">
+                        <span className="-mt-1 block basis-full text-note font-bold leading-snug text-brand-olive">
                           {insight}
                         </span>
                       )}
@@ -936,7 +895,7 @@ export default function DemoPage() {
                             {releves && (
                               <span
                                 title="Prix réellement payés, déposés par des usagers puis modérés"
-                                className="inline-flex items-center gap-1 rounded-full bg-[#5C6B2E]/10 px-2 py-0.5 text-[10.5px] font-bold tabular-nums text-[#5C6B2E]"
+                                className="inline-flex items-center gap-1 rounded-full bg-brand-olive/10 px-2 py-0.5 text-tiny font-bold tabular-nums text-brand-olive"
                               >
                                 ✓{' '}
                                 {releves.medianXof !== null
@@ -962,7 +921,7 @@ export default function DemoPage() {
               transit &&
               (transit.lignes.length > 0 || transit.correspondances.length > 0) && (
                 <div className="mt-4 rounded-2xl border bg-card p-4">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
                     {transit.lignes.length > 0
                       ? '🚌 Lignes utiles pour ce trajet'
                       : 'Pas de ligne directe — avec une correspondance'}
@@ -976,7 +935,7 @@ export default function DemoPage() {
                     return (
                       <>
                         {meilleure && marche !== null && transit.lignes.length > 1 && (
-                          <p className="mt-2 text-[12.5px] font-bold leading-snug text-[#5C6B2E]">
+                          <p className="mt-2 text-note font-bold leading-snug text-brand-olive">
                             ★ Meilleure ligne :{' '}
                             {LIGNE_META[meilleure.mode]?.label ?? meilleure.mode}
                             {meilleure.ref ? ` ${meilleure.ref}` : ''} — seulement {fmtWalk(marche)}{' '}
@@ -991,7 +950,7 @@ export default function DemoPage() {
                             const tracable = typeof l.id === 'number';
                             const active = tracable && traceSel?.key === `l:${l.id}`;
                             return (
-                              <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
+                              <li key={`${l.mode}-${l.nom}`} className="text-body">
                                 <button
                                   type="button"
                                   onClick={() => toggleTrace(l)}
@@ -1000,16 +959,16 @@ export default function DemoPage() {
                                   className={
                                     '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
                                     (active
-                                      ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
+                                      ? 'bg-trace-1/10 ring-1 ring-trace-1/40'
                                       : best
-                                        ? 'bg-[#5C6B2E]/8 ring-1 ring-[#5C6B2E]/25'
+                                        ? 'bg-brand-olive/8 ring-1 ring-brand-olive/25'
                                         : tracable
                                           ? 'hover:bg-muted/40'
                                           : 'cursor-default')
                                   }
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-tiny font-bold">
                                       {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
                                       {LIGNE_META[l.mode]?.label ?? l.mode}
                                       {l.ref ? ` ${l.ref}` : ''}
@@ -1020,12 +979,12 @@ export default function DemoPage() {
                                     {tracable && <Chevron />}
                                   </div>
                                   {montee && descente && (
-                                    <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                    <p className="mt-0.5 text-label tabular-nums text-muted-foreground">
                                       🚶 {montee} au départ · {descente} à l’arrivée
                                     </p>
                                   )}
                                   {active && (
-                                    <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
+                                    <p className="mt-0.5 text-label font-semibold text-trace-1">
                                       {traceLayers
                                         ? 'Tracé affiché sur la carte ↓ (toucher pour retirer)'
                                         : 'Chargement du tracé…'}
@@ -1040,7 +999,7 @@ export default function DemoPage() {
                           <button
                             type="button"
                             onClick={() => setShowAllLines((v) => !v)}
-                            className="mt-2 text-[12px] font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="mt-2 text-note font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             {showAllLines
                               ? 'Réduire ↑'
@@ -1054,7 +1013,7 @@ export default function DemoPage() {
                   {transit.correspondances.length > 0 && (
                     <>
                       {transit.lignes.length > 0 && (
-                        <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <p className="mt-3 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                           Ou avec une correspondance
                         </p>
                       )}
@@ -1065,7 +1024,7 @@ export default function DemoPage() {
                           const active =
                             tracable && traceSel?.key === `c:${c.ligne1_id}:${c.ligne2_id}`;
                           return (
-                            <li key={`${c.ligne1}__${c.ligne2}`} className="text-[13px]">
+                            <li key={`${c.ligne1}__${c.ligne2}`} className="text-body">
                               <button
                                 type="button"
                                 onClick={() => toggleCorrTrace(c)}
@@ -1074,14 +1033,14 @@ export default function DemoPage() {
                                 className={
                                   '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
                                   (active
-                                    ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
+                                    ? 'bg-trace-1/10 ring-1 ring-trace-1/40'
                                     : tracable
                                       ? 'hover:bg-muted/40'
                                       : 'cursor-default')
                                 }
                               >
                                 <div className="flex items-center gap-1.5">
-                                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-tiny font-bold">
                                     {LIGNE_META[c.mode1]?.emoji ?? '🚏'}{' '}
                                     {LIGNE_META[c.mode1]?.label ?? c.mode1}
                                     {c.ref1 ? ` ${c.ref1}` : ''}
@@ -1095,7 +1054,7 @@ export default function DemoPage() {
                                   <span aria-hidden="true" className="pl-2 text-muted-foreground">
                                     ↳
                                   </span>
-                                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-tiny font-bold">
                                     {LIGNE_META[c.mode2]?.emoji ?? '🚏'}{' '}
                                     {LIGNE_META[c.mode2]?.label ?? c.mode2}
                                     {c.ref2 ? ` ${c.ref2}` : ''}
@@ -1104,7 +1063,7 @@ export default function DemoPage() {
                                     {cleanLineName(c.ligne2)}
                                   </span>
                                 </div>
-                                <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                <p className="mt-0.5 text-label tabular-nums text-muted-foreground">
                                   🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
                                   {c.gare ? (
                                     <>
@@ -1121,7 +1080,7 @@ export default function DemoPage() {
                                   · descente {fmtWalk(c.descente_m)}
                                 </p>
                                 {active && (
-                                  <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
+                                  <p className="mt-0.5 text-label font-semibold text-trace-1">
                                     {traceLayers
                                       ? 'Tracés affichés sur la carte ↓ (toucher pour retirer)'
                                       : 'Chargement des tracés…'}
@@ -1135,7 +1094,7 @@ export default function DemoPage() {
                     </>
                   )}
 
-                  <p className="mt-2.5 text-[10.5px] leading-snug text-muted-foreground">
+                  <p className="mt-2.5 text-tiny leading-snug text-muted-foreground">
                     D’après le réseau cartographié <b>OpenStreetMap</b> — lignes et tracés réels ·
                     horaires et tarifs non disponibles.
                   </p>
@@ -1145,7 +1104,7 @@ export default function DemoPage() {
             {cmp.ranking.excluded.map((e) => (
               <div
                 key={e.option.optionId}
-                className="mt-2.5 rounded-2xl border border-dashed bg-muted/40 p-4 text-[12px] text-muted-foreground"
+                className="mt-2.5 rounded-2xl border border-dashed bg-muted/40 p-4 text-note text-muted-foreground"
               >
                 <b>{MODE_META[e.option.mode].label}</b> — non classé : {e.explanation}
               </div>
@@ -1161,11 +1120,11 @@ export default function DemoPage() {
                     traces={traceLayers}
                     changePoint={changePoint}
                   />
-                  <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
+                  <figcaption className="bg-card px-3 py-1.5 text-tiny text-muted-foreground">
                     {traceSel && traceLayers ? (
                       <>
-                        <span className="font-bold text-[#1E5AA8]">— {traceSel.label}</span> · fond
-                        © OpenStreetMap
+                        <span className="font-bold text-trace-1">— {traceSel.label}</span> · fond ©
+                        OpenStreetMap
                       </>
                     ) : (
                       'Fond © OpenStreetMap · tracé indicatif'
@@ -1173,7 +1132,7 @@ export default function DemoPage() {
                   </figcaption>
                 </figure>
                 {/* Navigation externe — au choix de l'usager (la destination est transmise à l'app choisie) */}
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-muted-foreground">
                   <span className="font-semibold">S’y rendre :</span>
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${toCommune.lat},${toCommune.lng}`}
@@ -1199,8 +1158,8 @@ export default function DemoPage() {
             {/* La donnée terrain vaut plus qu'un partage : elle a SON bloc. */}
             {bothLieux && (
               <div className="mt-4 rounded-2xl border bg-card p-4">
-                <p className="text-[15px] font-extrabold">Vous avez fait ce trajet ?</p>
-                <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+                <p className="text-emph font-extrabold">Vous avez fait ce trajet ?</p>
+                <p className="mt-0.5 text-note text-muted-foreground">
                   Aidez à rendre les prix plus fiables — anonyme, modéré avant publication.
                 </p>
                 <Button className="mt-3 w-full" onClick={() => setView('contribute')}>
@@ -1210,7 +1169,7 @@ export default function DemoPage() {
             )}
 
             {/* Partage social : utile, mais secondaire — une ligne discrète. */}
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-note text-muted-foreground">
               <span className="font-semibold">Partager ce trajet :</span>
               <button
                 type="button"
@@ -1240,13 +1199,13 @@ export default function DemoPage() {
             </div>
 
             <details className="group mt-3 rounded-xl border bg-card">
-              <summary className="cursor-pointer select-none px-4 py-3 text-[13px] font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">
+              <summary className="cursor-pointer select-none px-4 py-3 text-body font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">
                 ⓘ Comprendre ces chiffres — exemples, observations, neutralité
               </summary>
               <div className="space-y-3 px-4 pb-4">
                 <ConfidenceNote />
                 {obsCounts && obsCounts.total > 0 && (
-                  <p className="flex items-start gap-1.5 text-[11.5px] font-medium leading-snug text-[#5C6B2E]">
+                  <p className="flex items-start gap-1.5 text-label font-medium leading-snug text-brand-olive">
                     <span aria-hidden="true">🌱</span>
                     <span>
                       {obsCounts.total} observation{obsCounts.total > 1 ? 's' : ''} réelle
@@ -1257,18 +1216,18 @@ export default function DemoPage() {
                   </p>
                 )}
                 {criterion === 'PRICE_TIME' && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-label text-muted-foreground">
                     Valeur du temps : {cmp.timeValueXofPerMinute} FCFA/min (exemple).
                   </p>
                 )}
-                <p className="text-[11px] leading-snug text-muted-foreground">
+                <p className="text-label leading-snug text-muted-foreground">
                   Ordre d’affichage : les VTC d’abord. Les badges « moins cher / plus rapide /
                   meilleur rapport » restent calculés de façon <b>neutre</b> sur tous les modes —
                   aucun opérateur ne peut acheter sa place.
                 </p>
                 <Link
                   to="/methode#faq"
-                  className="inline-block text-[12px] font-semibold text-primary underline-offset-2 hover:underline"
+                  className="inline-block text-note font-semibold text-primary underline-offset-2 hover:underline"
                 >
                   Toutes les questions fréquentes →
                 </Link>
@@ -1444,7 +1403,7 @@ function DetailView({
         <ModeChip mode={o.mode} size={56} />
         <div>
           <div className="text-xl font-extrabold">{m.label}</div>
-          <div className="text-[12px] text-muted-foreground">
+          <div className="text-note text-muted-foreground">
             {m.note}
             {m.kind === 'FLAT' ? ' · tarif fixe' : ''}
           </div>
@@ -1453,14 +1412,14 @@ function DetailView({
           <div className="text-2xl font-extrabold tabular-nums leading-none">
             {price !== null ? `≈ ${fmt(approx50(price))}` : '—'}
           </div>
-          <div className="mt-1 text-[10px] font-semibold text-muted-foreground">
+          <div className="mt-1 text-tiny font-semibold text-muted-foreground">
             FCFA · prix indicatif
           </div>
         </div>
       </div>
 
       <div className="my-3 rounded-xl border bg-card p-4">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="text-label font-bold uppercase tracking-wider text-muted-foreground">
           Pourquoi choisir {m.label} ?
         </div>
         <p className="mt-1.5 text-sm font-bold">
@@ -1468,21 +1427,23 @@ function DetailView({
             ? HEADLINE[primaryBadge]
             : `${m.note.charAt(0).toUpperCase()}${m.note.slice(1)}.`}
         </p>
-        <p className="mt-0.5 text-[13px] text-muted-foreground">
+        <p className="mt-0.5 text-body text-muted-foreground">
           Environ {minTotal(o)} min porte-à-porte
           {waitMin ? `, dont ${waitMin} min d’attente` : ''}.
         </p>
         {refOpt && dPrix !== null && dMin !== null && (dPrix !== 0 || dMin !== 0) && (
           <div className="mt-3 border-t pt-2.5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-label font-bold uppercase tracking-wider text-muted-foreground">
               Par rapport au {refLabel}
             </p>
             <div className="mt-1.5 flex gap-2">
               {dPrix !== 0 && (
                 <span
                   className={
-                    'rounded-lg px-2.5 py-1 text-[13px] font-extrabold tabular-nums ' +
-                    (dPrix < 0 ? 'bg-[#5C6B2E]/10 text-[#5C6B2E]' : 'bg-muted text-foreground/80')
+                    'rounded-lg px-2.5 py-1 text-body font-extrabold tabular-nums ' +
+                    (dPrix < 0
+                      ? 'bg-brand-olive/10 text-brand-olive'
+                      : 'bg-muted text-foreground/80')
                   }
                 >
                   {dPrix > 0 ? '+' : '−'} {fmt(Math.abs(dPrix))} F
@@ -1491,18 +1452,20 @@ function DetailView({
               {dMin !== 0 && (
                 <span
                   className={
-                    'rounded-lg px-2.5 py-1 text-[13px] font-extrabold tabular-nums ' +
-                    (dMin < 0 ? 'bg-[#5C6B2E]/10 text-[#5C6B2E]' : 'bg-muted text-foreground/80')
+                    'rounded-lg px-2.5 py-1 text-body font-extrabold tabular-nums ' +
+                    (dMin < 0
+                      ? 'bg-brand-olive/10 text-brand-olive'
+                      : 'bg-muted text-foreground/80')
                   }
                 >
                   {dMin > 0 ? '+' : '−'} {Math.abs(dMin)} min
                 </span>
               )}
             </div>
-            {arbitrage && <p className="mt-1.5 text-[12.5px] leading-snug">{arbitrage}</p>}
+            {arbitrage && <p className="mt-1.5 text-note leading-snug">{arbitrage}</p>}
           </div>
         )}
-        <p className="mt-2.5 text-[10.5px] text-muted-foreground">
+        <p className="mt-2.5 text-tiny text-muted-foreground">
           {ranked.position}
           <sup>{ranked.position === 1 ? 'er' : 'e'}</sup> sur {cmp.ranking.ranked.length} pour «{' '}
           {critLabel} ».
@@ -1513,7 +1476,7 @@ function DetailView({
       <div className="my-3 grid grid-cols-3 gap-2">
         <div className="rounded-xl bg-muted/50 p-3 text-center">
           <div className="text-lg font-extrabold tabular-nums leading-tight">{minTotal(o)} min</div>
-          <div className="mt-0.5 text-[10px] font-semibold text-muted-foreground">
+          <div className="mt-0.5 text-tiny font-semibold text-muted-foreground">
             porte-à-porte{waitMin ? ` · dont ${waitMin} d’attente` : ''}
           </div>
         </div>
@@ -1521,7 +1484,7 @@ function DetailView({
           <div className="text-lg font-extrabold tabular-nums leading-tight">
             {km1(cmp.corridor.km)} km
           </div>
-          <div className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">
+          <div className="mt-0.5 truncate text-tiny font-semibold text-muted-foreground">
             {cmp.corridor.from} → {cmp.corridor.to}
           </div>
         </div>
@@ -1529,11 +1492,11 @@ function DetailView({
           <div className="text-lg font-extrabold tabular-nums leading-tight">
             ≈ {fmtCo2(estimateCo2Grams(o.mode, cmp.corridor.km))}
           </div>
-          <div className="mt-0.5 text-[10px] font-semibold text-muted-foreground">CO₂ estimé</div>
+          <div className="mt-0.5 text-tiny font-semibold text-muted-foreground">CO₂ estimé</div>
         </div>
       </div>
       {agg && agg.count > 0 && (
-        <p className="my-2 text-[12px] font-bold tabular-nums text-[#5C6B2E]">
+        <p className="my-2 text-note font-bold tabular-nums text-brand-olive">
           ✓ Prix réellement observé :{' '}
           {agg.medianXof !== null
             ? `~${fmt(agg.medianXof)} FCFA (${agg.count} relevés terrain)`
@@ -1543,7 +1506,7 @@ function DetailView({
 
       {modeOperators.length > 0 && (
         <div className="my-3 rounded-xl border bg-card p-4">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="text-label font-bold uppercase tracking-wider text-muted-foreground">
             Disponible via
           </div>
           <ul className="mt-1 divide-y">
@@ -1560,7 +1523,7 @@ function DetailView({
                   </span>
                   <span className="flex items-center gap-2">
                     {op.agrement_status !== 'AGREE' && (
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-tiny font-bold uppercase tracking-wide text-muted-foreground">
                         {AGREMENT_LABEL[op.agrement_status]}
                       </span>
                     )}
@@ -1588,9 +1551,9 @@ function DetailView({
               );
             })}
           </ul>
-          <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
+          <p className="mt-1.5 text-tiny leading-snug text-muted-foreground">
             {modeOperators.every((op) => op.agrement_status === 'AGREE') && (
-              <span className="font-bold text-[#5C6B2E]">✓ Plateformes agréées · </span>
+              <span className="font-bold text-brand-olive">✓ Plateformes agréées · </span>
             )}
             statut vérifié le{' '}
             {modeOperators[0]?.status_verified_at
@@ -1603,7 +1566,7 @@ function DetailView({
         </div>
       )}
 
-      <p className="mt-3 text-[11px] leading-snug" style={{ color: WARN }}>
+      <p className="mt-3 text-label leading-snug" style={{ color: WARN }}>
         ⚠︎ Estimation pilote · prix non confirmé par relevé terrain.{' '}
         <Link to="/methode" className="font-semibold underline underline-offset-2">
           Comment sont calculées les estimations ?
@@ -1613,12 +1576,12 @@ function DetailView({
       {trace && (
         <>
           <Separator className="my-4" />
-          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="text-label font-bold uppercase tracking-wider text-muted-foreground">
             Le calcul, ligne par ligne
           </div>
           <div
-            className="mt-2 overflow-x-auto rounded-xl p-4 font-mono text-[11.5px] leading-relaxed"
-            style={{ backgroundColor: '#26301C', color: '#cfe' }}
+            className="mt-2 overflow-x-auto rounded-xl p-4 font-mono text-label leading-relaxed"
+            style={{ backgroundColor: COULEURS.ink, color: '#cfe' }}
           >
             {trace.steps.map((s, i) => (
               <div key={i}>
@@ -1631,7 +1594,7 @@ function DetailView({
               confiance : {trace.confidenceScore}
             </div>
           </div>
-          <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+          <p className="mt-3 text-label leading-snug text-muted-foreground">
             Trace <b style={{ color: WARN }}>simulée</b> — le produit réel citera grille datée et
             relevés terrain.
           </p>
@@ -1699,27 +1662,27 @@ function ContributeView({
       >
         ← Retour aux résultats
       </button>
-      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
         Partager un prix payé · {IS_BACKEND_CONFIGURED ? 'relevé réel' : 'simulation'}
       </p>
       <h2 className="mb-1 mt-1 text-xl font-extrabold">
         {cmp.corridor.from} → {cmp.corridor.to}
       </h2>
       {IS_BACKEND_CONFIGURED ? (
-        <p className="mb-4 text-[12.5px] text-muted-foreground">
+        <p className="mb-4 text-note text-muted-foreground">
           Votre relevé du prix <b>réellement payé</b> part en file de modération, puis fait monter
           l’indice de confiance de ce corridor. Anonyme par conception : ni nom, ni téléphone, ni
           position précise — seulement commune de départ, d’arrivée, mode et prix.
         </p>
       ) : (
-        <p className="mb-4 text-[12.5px] text-muted-foreground">
+        <p className="mb-4 text-note text-muted-foreground">
           Illustration du futur fonctionnement collaboratif : les usagers relèvent les prix
           réellement payés, ce qui fait monter l’indice de confiance.{' '}
           <b style={{ color: WARN }}>Aucune donnée n’est enregistrée ici.</b>
         </p>
       )}
 
-      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <label className="mb-1.5 block text-label font-bold uppercase tracking-wider text-muted-foreground">
         Mode
       </label>
       <div className="mb-4 grid grid-cols-2 gap-2">
@@ -1744,7 +1707,7 @@ function ContributeView({
 
       <label
         htmlFor="contrib-price"
-        className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+        className="mb-1.5 block text-label font-bold uppercase tracking-wider text-muted-foreground"
       >
         Prix payé (FCFA)
       </label>
@@ -1760,7 +1723,7 @@ function ContributeView({
       <Button className="h-11 w-full" onClick={submit} disabled={sending}>
         {sending ? 'Envoi…' : IS_BACKEND_CONFIGURED ? 'Envoyer mon relevé' : 'Envoyer (simulation)'}
       </Button>
-      <p className="mt-2 text-[11px] text-muted-foreground">
+      <p className="mt-2 text-label text-muted-foreground">
         {IS_BACKEND_CONFIGURED
           ? 'Chaque relevé est modéré avant publication (détection d’aberrations, CDC M4). Rien n’est publié brut.'
           : 'Un vrai envoi passerait par une file modérée, avec masquage des données personnelles et recalage de l’indice de confiance.'}

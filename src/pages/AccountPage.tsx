@@ -94,7 +94,7 @@ export default function AccountPage() {
       />
 
       <main className="mx-auto w-full max-w-md px-5 py-8">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Compte
         </p>
         <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
@@ -102,7 +102,7 @@ export default function AccountPage() {
         </h1>
 
         {/* Bandeau d'honnêteté */}
-        <div className="mt-4 rounded-xl border border-[#B9722A]/40 bg-[#B9722A]/8 px-3.5 py-2.5 text-[12px] font-medium leading-snug text-[#26301C]">
+        <div className="mt-4 rounded-xl border border-brand-ochre/40 bg-brand-ochre/8 px-3.5 py-2.5 text-note font-medium leading-snug text-brand-ink">
           {ACCOUNT_DISCLAIMER}
         </div>
 
@@ -110,13 +110,13 @@ export default function AccountPage() {
           /* ---------------------------------------------------- profil */
           <div className="mt-5 space-y-4">
             <div className="rounded-2xl border bg-card p-5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                 Téléphone
               </div>
               <div className="mt-1 text-lg font-extrabold tabular-nums">
                 {maskMsisdn(account.msisdn)}
               </div>
-              <div className="mt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="mt-3 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                 Profil créé le
               </div>
               <div className="mt-1 text-sm font-semibold">
@@ -126,7 +126,7 @@ export default function AccountPage() {
                   year: 'numeric',
                 })}
               </div>
-              <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+              <p className="mt-3 text-label leading-snug text-muted-foreground">
                 Stocké uniquement sur cet appareil (aucun serveur). Dans le produit final, ce profil
                 portera vos trajets favoris et vos contributions tarifaires.
               </p>
@@ -146,7 +146,7 @@ export default function AccountPage() {
           <div className="mt-5">
             <label
               htmlFor="phone"
-              className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="mb-1.5 block text-label font-bold uppercase tracking-wider text-muted-foreground"
             >
               Numéro de téléphone ivoirien
             </label>
@@ -159,12 +159,12 @@ export default function AccountPage() {
               placeholder="+225 07 00 00 00 00"
               className="w-full rounded-xl border bg-background px-3.5 py-3 text-base tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
-            <label className="mt-4 flex items-start gap-2.5 text-[12.5px] leading-snug">
+            <label className="mt-4 flex items-start gap-2.5 text-note leading-snug">
               <input
                 type="checkbox"
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-[#5C6B2E]"
+                className="mt-0.5 h-4 w-4 accent-brand-olive"
               />
               <span>
                 J’ai lu et j’accepte les{' '}
@@ -175,14 +175,14 @@ export default function AccountPage() {
               </span>
             </label>
             {phoneError && (
-              <p className="mt-2 text-[12px] font-medium text-[#9A3412]" role="alert">
+              <p className="mt-2 text-note font-medium text-warn" role="alert">
                 {phoneError}
               </p>
             )}
             <Button className="mt-4 h-12 w-full text-base" onClick={submitPhone}>
               Recevoir le code (simulation) →
             </Button>
-            <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+            <p className="mt-3 text-label leading-snug text-muted-foreground">
               En production : un SMS avec un code à 6 chiffres, envoyé via un Sender ID officiel
               (multi-opérateurs Orange/MTN/Moov). Ici, le code sera affiché à l’écran.
             </p>
@@ -196,7 +196,7 @@ export default function AccountPage() {
 
             {/* Le code est AFFICHÉ — pas de faux « SMS envoyé ». */}
             <div className="mt-3 rounded-xl border border-dashed bg-muted/50 p-4 text-center">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                 Votre code (simulation — aucun SMS réel n’est envoyé)
               </div>
               <div className="mt-1 text-3xl font-extrabold tabular-nums tracking-[0.3em]">
@@ -206,7 +206,7 @@ export default function AccountPage() {
 
             <label
               htmlFor="otp"
-              className="mb-1.5 mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="mb-1.5 mt-4 block text-label font-bold uppercase tracking-wider text-muted-foreground"
             >
               Recopiez le code
             </label>
@@ -220,7 +220,7 @@ export default function AccountPage() {
               className="w-full rounded-xl border bg-background px-3.5 py-3 text-center text-xl font-bold tabular-nums tracking-[0.3em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {codeError && (
-              <p className="mt-2 text-[12px] font-medium text-[#9A3412]" role="alert">
+              <p className="mt-2 text-note font-medium text-warn" role="alert">
                 {codeError}
               </p>
             )}

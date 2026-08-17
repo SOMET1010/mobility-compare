@@ -97,7 +97,7 @@ export default function Moderation() {
       <SiteHeader links={[{ to: '/', label: 'Accueil' }]} />
 
       <main className="mx-auto w-full max-w-2xl px-5 py-8">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Espace protégé
         </p>
         <h1 className="mt-1 text-2xl font-extrabold tracking-tight">Modération des relevés</h1>
@@ -111,7 +111,7 @@ export default function Moderation() {
           <div className="mt-6 rounded-2xl border bg-card p-5">
             <label
               htmlFor="mod-token"
-              className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="mb-1.5 block text-label font-bold uppercase tracking-wider text-muted-foreground"
             >
               Jeton de modérateur
             </label>
@@ -126,14 +126,14 @@ export default function Moderation() {
               className="w-full rounded-xl border bg-background px-3.5 py-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {error && (
-              <p className="mt-2 text-[12px] font-medium text-[#9A3412]" role="alert">
+              <p className="mt-2 text-note font-medium text-warn" role="alert">
                 {error}
               </p>
             )}
             <Button className="mt-4 h-11 w-full" onClick={signIn}>
               Entrer
             </Button>
-            <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+            <p className="mt-3 text-label leading-snug text-muted-foreground">
               Le jeton n’est jamais stocké en clair côté serveur (empreinte SHA-256) et reste dans
               cette session de navigateur uniquement.
             </p>
@@ -163,7 +163,7 @@ export default function Moderation() {
             </div>
 
             {error && (
-              <p className="mt-3 text-[12px] font-medium text-[#9A3412]" role="alert">
+              <p className="mt-3 text-note font-medium text-warn" role="alert">
                 {error}
               </p>
             )}
@@ -187,12 +187,10 @@ export default function Moderation() {
                       </span>
                       <span className="text-lg font-extrabold tabular-nums">
                         {XOF.format(obs.price_xof)}{' '}
-                        <span className="text-[10px] font-semibold text-muted-foreground">
-                          FCFA
-                        </span>
+                        <span className="text-tiny font-semibold text-muted-foreground">FCFA</span>
                       </span>
                     </div>
-                    <div className="mt-1 text-[12px] text-muted-foreground">
+                    <div className="mt-1 text-note text-muted-foreground">
                       {MODE_META[obs.mode].label} · observé le{' '}
                       {new Date(obs.observed_at).toLocaleString('fr-FR', {
                         day: 'numeric',
@@ -205,12 +203,12 @@ export default function Moderation() {
                       {obs.source === 'app' ? 'application' : 'import CSV'}
                     </div>
                     {obs.comment && (
-                      <p className="mt-1 text-[12px] italic text-muted-foreground">
+                      <p className="mt-1 text-note italic text-muted-foreground">
                         « {obs.comment} »
                       </p>
                     )}
                     {outlier && (
-                      <p className="mt-2 rounded-lg bg-[#9A3412]/8 px-2.5 py-1.5 text-[11.5px] font-medium text-[#9A3412]">
+                      <p className="mt-2 rounded-lg bg-warn/8 px-2.5 py-1.5 text-label font-medium text-warn">
                         ⚠ Hors plage de vraisemblance {MODE_META[obs.mode].label} ({XOF.format(min)}
                         –{XOF.format(max)} FCFA) — à vérifier avant d’approuver.
                       </p>
@@ -218,13 +216,13 @@ export default function Moderation() {
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
-                        className="border-[#9A3412]/40 text-[#9A3412] hover:bg-[#9A3412]/8"
+                        className="border-warn/40 text-warn hover:bg-warn/8"
                         onClick={() => judge(obs, 'REJECTED')}
                       >
                         Rejeter
                       </Button>
                       <Button
-                        className="bg-[#5C6B2E] text-white hover:brightness-110"
+                        className="bg-brand-olive text-white hover:brightness-110"
                         onClick={() => judge(obs, 'APPROVED')}
                       >
                         Approuver
@@ -297,7 +295,7 @@ function CandidaturesPanel({ token }: { token: string }) {
   return (
     <section className="mt-8 rounded-2xl border bg-card p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h2 className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Candidatures d’opérateurs
         </h2>
         <Button variant="outline" size="sm" onClick={charger}>
@@ -305,12 +303,12 @@ function CandidaturesPanel({ token }: { token: string }) {
         </Button>
       </div>
 
-      {erreur && <p className="mt-2 text-[12.5px] text-muted-foreground">{erreur}</p>}
+      {erreur && <p className="mt-2 text-note text-muted-foreground">{erreur}</p>}
       {liste === null && !erreur && (
-        <p className="mt-2 text-[12.5px] text-muted-foreground">Chargement…</p>
+        <p className="mt-2 text-note text-muted-foreground">Chargement…</p>
       )}
       {liste !== null && liste.length === 0 && !erreur && (
-        <p className="mt-2 text-[12.5px] text-muted-foreground">
+        <p className="mt-2 text-note text-muted-foreground">
           Aucune candidature en attente — celles déposées sur la page Partenaires apparaîtront ici.
         </p>
       )}
@@ -321,18 +319,18 @@ function CandidaturesPanel({ token }: { token: string }) {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="font-bold">{c.nom}</span>
               <span className="flex items-center gap-1.5">
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-tiny font-bold">
                   {MODE_META[c.mode].emoji} {MODE_META[c.mode].label}
                 </span>
                 {c.statut === 'EN_EXAMEN' && (
-                  <span className="rounded-full bg-[#B9722A]/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B9722A]">
+                  <span className="rounded-full bg-brand-ochre/12 px-2 py-0.5 text-tiny font-bold uppercase tracking-wide text-brand-ochre">
                     En examen
                   </span>
                 )}
               </span>
             </div>
-            <p className="mt-1 font-mono text-[12.5px]">{c.contact}</p>
-            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+            <p className="mt-1 font-mono text-note">{c.contact}</p>
+            <p className="mt-0.5 text-label text-muted-foreground">
               Déposée le{' '}
               {new Date(c.created_at).toLocaleString('fr-FR', {
                 day: 'numeric',
@@ -351,13 +349,13 @@ function CandidaturesPanel({ token }: { token: string }) {
               )}
             </p>
             {c.message && (
-              <p className="mt-1.5 text-[12px] italic text-muted-foreground">« {c.message} »</p>
+              <p className="mt-1.5 text-note italic text-muted-foreground">« {c.message} »</p>
             )}
             <div className="mt-3 grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="border-[#9A3412]/40 text-[#9A3412] hover:bg-[#9A3412]/8"
+                className="border-warn/40 text-warn hover:bg-warn/8"
                 onClick={() => statuer(c, 'REFUSEE')}
               >
                 Refuser
@@ -372,7 +370,7 @@ function CandidaturesPanel({ token }: { token: string }) {
               </Button>
               <Button
                 size="sm"
-                className="bg-[#5C6B2E] text-white hover:brightness-110"
+                className="bg-brand-olive text-white hover:brightness-110"
                 onClick={() => statuer(c, 'ACCEPTEE')}
               >
                 Accepter
@@ -382,7 +380,7 @@ function CandidaturesPanel({ token }: { token: string }) {
         ))}
       </div>
 
-      <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+      <p className="mt-3 text-label leading-snug text-muted-foreground">
         Accepter ne publie rien tout seul : la publication dans le comparateur exige un statut
         d’agrément <b>vérifié auprès des sources officielles, daté et sourcé</b> (invariant I4).
       </p>
@@ -433,13 +431,13 @@ function AudiencePanel({ token }: { token: string }) {
 
   return (
     <section className="mt-8 rounded-2xl border bg-card p-5">
-      <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+      <h2 className="text-label font-bold uppercase tracking-widest text-muted-foreground">
         Audience — compteur souverain
       </h2>
 
-      {erreur && <p className="mt-2 text-[12.5px] text-muted-foreground">{erreur}</p>}
+      {erreur && <p className="mt-2 text-note text-muted-foreground">{erreur}</p>}
       {jours === null && !erreur && (
-        <p className="mt-2 text-[12.5px] text-muted-foreground">Chargement…</p>
+        <p className="mt-2 text-note text-muted-foreground">Chargement…</p>
       )}
 
       {jours !== null && (
@@ -454,10 +452,10 @@ function AudiencePanel({ token }: { token: string }) {
             ).map(([libelle, t]) => (
               <div key={libelle} className="rounded-xl border bg-background px-2 py-3">
                 <p className="text-xl font-extrabold tabular-nums">{XOF.format(t.visites)}</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-label text-muted-foreground">
                   visites · {XOF.format(t.vues)} vues
                 </p>
-                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mt-0.5 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                   {libelle}
                 </p>
               </div>
@@ -466,13 +464,13 @@ function AudiencePanel({ token }: { token: string }) {
 
           {pagesTriees.length > 0 && (
             <div className="mt-4">
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-1 text-label font-bold uppercase tracking-wider text-muted-foreground">
                 Par page (30 jours)
               </p>
               {pagesTriees.map(([page, t]) => (
                 <div
                   key={page}
-                  className="flex items-baseline justify-between border-b py-1 text-[12.5px] last:border-b-0"
+                  className="flex items-baseline justify-between border-b py-1 text-note last:border-b-0"
                 >
                   <span className="font-mono">{page}</span>
                   <span className="tabular-nums text-muted-foreground">
@@ -485,7 +483,7 @@ function AudiencePanel({ token }: { token: string }) {
         </>
       )}
 
-      <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+      <p className="mt-3 text-label leading-snug text-muted-foreground">
         Compté chez nous, sans cookie, sans adresse IP, sans identifiant : une <b>visite</b> est une
         session de navigation, pas une personne — un visiteur revenu le lendemain compte pour une
         nouvelle visite. Les navigateurs demandant à ne pas être suivis ne sont pas comptés. Repère
@@ -580,10 +578,10 @@ function AiConfigPanel({ token }: { token: string }) {
 
   return (
     <section className="mt-8 rounded-2xl border bg-card p-5">
-      <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+      <h2 className="text-label font-bold uppercase tracking-widest text-muted-foreground">
         Assistant IA — configuration
       </h2>
-      <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
+      <p className="mt-1.5 text-note leading-snug text-muted-foreground">
         {status === null
           ? 'Chargement…'
           : status.configured
@@ -597,7 +595,7 @@ function AiConfigPanel({ token }: { token: string }) {
 
       <label
         htmlFor="ai-key"
-        className="mb-1 mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+        className="mb-1 mt-4 block text-label font-bold uppercase tracking-wider text-muted-foreground"
       >
         Clé d’API du fournisseur
       </label>
@@ -615,7 +613,7 @@ function AiConfigPanel({ token }: { token: string }) {
         <div>
           <label
             htmlFor="ai-model"
-            className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+            className="mb-1 block text-label font-bold uppercase tracking-wider text-muted-foreground"
           >
             Modèle
           </label>
@@ -630,7 +628,7 @@ function AiConfigPanel({ token }: { token: string }) {
         <div>
           <label
             htmlFor="ai-base"
-            className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+            className="mb-1 block text-label font-bold uppercase tracking-wider text-muted-foreground"
           >
             Adresse de l’API
           </label>
@@ -653,11 +651,11 @@ function AiConfigPanel({ token }: { token: string }) {
         </Button>
       </div>
 
-      <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+      <p className="mt-3 text-label leading-snug text-muted-foreground">
         « Tester la clé » vérifie la clé <b>enregistrée</b> — un texte tapé ci-dessus sans «
         Enregistrer » n’est pas pris en compte (l’enregistrement lance le test tout seul).
       </p>
-      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+      <p className="mt-2 text-label leading-snug text-muted-foreground">
         La clé est stockée côté serveur (table protégée, aucune lecture publique) et n’est jamais
         renvoyée au navigateur. Compatible avec toute API au format OpenAI (Kimi/Moonshot par
         défaut). La charte de l’assistant — aucun prix inventé, neutralité, pas de données

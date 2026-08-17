@@ -55,15 +55,15 @@ export default function Observatory() {
       />
 
       {/* En-tête encre */}
-      <section className="bg-[#26301C] text-white">
+      <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-4xl px-5 py-10 sm:py-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-sprout">
             Observatoire des prix · version pilote
           </p>
           <h1 className="mt-4 max-w-2xl text-3xl font-extrabold leading-[1.15] tracking-tight sm:text-4xl">
             Ce que les usagers paient vraiment, corridor par corridor.
           </h1>
-          <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-white/70">
+          <p className="mt-4 max-w-2xl text-emph leading-[1.6] text-white/70">
             Uniquement des prix <b className="text-white">réellement payés</b>, déposés par les
             usagers ou relevés sur le terrain, puis modérés. Aucune estimation, aucune valeur
             simulée sur cette page.
@@ -89,22 +89,22 @@ export default function Observatory() {
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-xl border bg-card p-3 text-center">
                 <div className="text-2xl font-extrabold tabular-nums">{data.total}</div>
-                <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                <div className="mt-0.5 text-label leading-snug text-muted-foreground">
                   relevé{data.total > 1 ? 's' : ''} approuvé{data.total > 1 ? 's' : ''}
                 </div>
               </div>
               <div className="rounded-xl border bg-card p-3 text-center">
                 <div className="text-2xl font-extrabold tabular-nums">{data.corridors.length}</div>
-                <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                <div className="mt-0.5 text-label leading-snug text-muted-foreground">
                   corridor{data.corridors.length > 1 ? 's' : ''} couvert
                   {data.corridors.length > 1 ? 's' : ''}
                 </div>
               </div>
               <div className="rounded-xl border bg-card p-3 text-center">
-                <div className="text-[13px] font-extrabold leading-tight">
+                <div className="text-body font-extrabold leading-tight">
                   {data.latestAt ? dateFr(data.latestAt) : '—'}
                 </div>
-                <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                <div className="mt-0.5 text-label leading-snug text-muted-foreground">
                   dernier relevé
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function Observatory() {
                       <h2 className="text-lg font-extrabold">
                         {communeName(c.fromId)} → {communeName(c.toId)}
                       </h2>
-                      <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
+                      <span className="text-label font-medium tabular-nums text-muted-foreground">
                         {c.total} relevé{c.total > 1 ? 's' : ''}
                         {c.latestAt ? ` · dernier le ${dateFr(c.latestAt)}` : ''}
                       </span>
@@ -151,25 +151,25 @@ export default function Observatory() {
                               <ModeGlyph shape={GLYPH[m]} className="h-5 w-5" />
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="block text-[13px] font-bold leading-tight">
+                              <span className="block text-body font-bold leading-tight">
                                 {meta.label}
                               </span>
-                              <span className="text-[11px] text-muted-foreground">
+                              <span className="text-label text-muted-foreground">
                                 {agg.count} relevé{agg.count > 1 ? 's' : ''}
                               </span>
                             </span>
                             <span className="shrink-0 text-right">
                               {agg.medianXof !== null ? (
                                 <>
-                                  <span className="block text-[15px] font-extrabold tabular-nums leading-none">
+                                  <span className="block text-emph font-extrabold tabular-nums leading-none">
                                     ~{XOF.format(agg.medianXof)}
                                   </span>
-                                  <span className="text-[9px] font-semibold text-muted-foreground">
+                                  <span className="text-tiny font-semibold text-muted-foreground">
                                     FCFA · médiane
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-[10px] font-medium leading-tight text-muted-foreground">
+                                <span className="text-tiny font-medium leading-tight text-muted-foreground">
                                   médiane dès
                                   <br />
                                   {MEDIAN_MIN_OBSERVATIONS} relevés
@@ -188,13 +188,13 @@ export default function Observatory() {
             {/* Appel à contribution */}
             <div className="mt-8 rounded-2xl border bg-muted/40 p-5 text-center">
               <h2 className="text-lg font-bold">Faites grandir l’observatoire</h2>
-              <p className="mx-auto mt-1.5 max-w-md text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mx-auto mt-1.5 max-w-md text-body leading-relaxed text-muted-foreground">
                 Chaque prix réellement payé que vous déposez est modéré puis rendu public ici —
                 anonyme par conception.
               </p>
               <Link
                 to="/comparer"
-                className="mt-4 inline-flex items-center justify-center rounded-xl bg-[#B9722A] px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="mt-4 inline-flex items-center justify-center rounded-xl bg-brand-ochre px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ochre focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Contribuer un tarif →
               </Link>
@@ -204,7 +204,7 @@ export default function Observatory() {
               <AdSlot slotId="observatoire" />
             </div>
 
-            <p className="mt-6 text-[11px] leading-relaxed text-muted-foreground">
+            <p className="mt-6 text-label leading-relaxed text-muted-foreground">
               Méthode : médiane par mode, affichée à partir de {MEDIAN_MIN_OBSERVATIONS} relevés
               approuvés (seuil provisoire) ; les sens aller et retour sont comptés séparément. La
               modération écarte les aberrations manifestes ; rien n’est corrigé en silence. Détails
@@ -219,7 +219,7 @@ export default function Observatory() {
       </main>
 
       <footer className="border-t">
-        <div className="mx-auto flex max-w-4xl flex-col gap-3 px-5 py-8 text-[12px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-4xl flex-col gap-3 px-5 py-8 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <Wordmark className="text-base" />
           <p>
             {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Observatoire pilote — données

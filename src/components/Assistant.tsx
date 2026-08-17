@@ -99,21 +99,21 @@ export function Assistant() {
         aria-expanded={open}
         aria-label={open ? 'Fermer l’assistant' : 'Ouvrir l’assistant'}
         title="Assistant"
-        className="fixed bottom-4 right-4 z-[1100] grid h-11 w-11 place-items-center rounded-full bg-[#26301C]/90 text-white shadow-lg backdrop-blur transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[1100] grid h-11 w-11 place-items-center rounded-full bg-brand-ink/90 text-white shadow-lg backdrop-blur transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ink focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <BrandMark className="h-5 w-5 text-[#F3EEDF]" />
+        <BrandMark className="h-5 w-5 text-brand-paper" />
       </button>
 
       {open && (
         <div
           role="dialog"
           aria-label="Assistant MOBILIS"
-          className="fixed bottom-[4.5rem] right-4 z-[1100] flex max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl"
+          className="fixed bottom-[max(4.5rem,calc(3.5rem+env(safe-area-inset-bottom)))] right-4 z-[1100] flex max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl"
         >
           {/* En-tête */}
-          <div className="flex items-center justify-between bg-[#26301C] px-4 py-3 text-white">
+          <div className="flex items-center justify-between bg-brand-ink px-4 py-3 text-white">
             <span className="flex items-center gap-2 text-sm font-bold">
-              <BrandMark className="h-4 w-4 text-[#F3EEDF]" />
+              <BrandMark className="h-4 w-4 text-brand-paper" />
               Assistant MOBILIS
             </span>
             <button
@@ -134,7 +134,7 @@ export function Assistant() {
               </svg>
             </button>
           </div>
-          <p className="border-b bg-muted/50 px-4 py-1.5 text-[10px] leading-snug text-muted-foreground">
+          <p className="border-b bg-muted/50 px-4 py-1.5 text-tiny leading-snug text-muted-foreground">
             {ASSISTANT_DISCLAIMER}
           </p>
 
@@ -145,7 +145,7 @@ export function Assistant() {
                 <div
                   className={
                     m.role === 'user'
-                      ? 'max-w-[85%] rounded-2xl rounded-br-md bg-[#5C6B2E] px-3.5 py-2 text-sm text-white'
+                      ? 'max-w-[85%] rounded-2xl rounded-br-md bg-brand-olive px-3.5 py-2 text-sm text-white'
                       : 'max-w-[85%] rounded-2xl rounded-bl-md bg-muted px-3.5 py-2 text-sm'
                   }
                 >
@@ -155,7 +155,7 @@ export function Assistant() {
                     m.text
                   )}
                   {m.ai && !m.pending && (
-                    <span className="mt-1.5 block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="mt-1.5 block text-tiny font-bold uppercase tracking-wider text-muted-foreground">
                       IA — peut se tromper ; les prix viennent du comparateur
                     </span>
                   )}
@@ -169,7 +169,7 @@ export function Assistant() {
                             setOpen(false);
                             navigate(a.to);
                           }}
-                          className="rounded-full bg-[#B9722A] px-3 py-1.5 text-[12px] font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A]"
+                          className="rounded-full bg-brand-ochre px-3 py-1.5 text-note font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ochre"
                         >
                           {a.label} →
                         </button>
@@ -188,7 +188,7 @@ export function Assistant() {
                 key={q}
                 type="button"
                 onClick={() => send(q)}
-                className="rounded-full border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-full border bg-background px-2.5 py-1 text-label font-medium text-muted-foreground transition hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {q}
               </button>
@@ -213,7 +213,7 @@ export function Assistant() {
             <button
               type="submit"
               aria-label="Envoyer"
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#5C6B2E] text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C6B2E]"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-olive text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-olive"
             >
               <svg
                 viewBox="0 0 24 24"

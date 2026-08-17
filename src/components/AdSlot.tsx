@@ -20,16 +20,16 @@ export function AdSlot({ slotId }: { slotId: string }) {
       className="rounded-2xl border border-dashed bg-muted/30 p-4"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="rounded-full bg-muted px-2 py-0.5 text-tiny font-bold uppercase tracking-widest text-muted-foreground">
           Publicité
         </span>
-        <span className="text-[10px] text-muted-foreground">N’influence jamais le classement</span>
+        <span className="text-tiny text-muted-foreground">N’influence jamais le classement</span>
       </div>
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold">Cet espace attend un partenaire de confiance.</p>
+        <p className="text-body font-semibold">Cet espace attend un partenaire de confiance.</p>
         <Link
           to="/partenaires"
-          className="rounded-lg border px-3 py-1.5 text-[12px] font-semibold text-primary transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="rounded-lg border px-3 py-1.5 text-note font-semibold text-primary transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Devenir partenaire →
         </Link>

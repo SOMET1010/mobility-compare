@@ -131,7 +131,7 @@ export default function Terms() {
       />
 
       <main className="mx-auto w-full max-w-2xl px-5 py-8">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Juridique
         </p>
         <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
@@ -145,14 +145,14 @@ export default function Terms() {
           {SECTIONS.map((s) => (
             <section key={s.title}>
               <h2 className="text-base font-bold">{s.title}</h2>
-              <p className="mt-1.5 text-[14px] leading-[1.65] text-muted-foreground">{s.body}</p>
+              <p className="mt-1.5 text-sm leading-[1.65] text-muted-foreground">{s.body}</p>
             </section>
           ))}
         </div>
       </main>
 
       <footer className="border-t">
-        <div className="mx-auto flex max-w-2xl flex-col gap-3 px-5 py-8 text-[12px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-2xl flex-col gap-3 px-5 py-8 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <Wordmark className="text-base" />
           <p>
             {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Identité et hébergement provisoires.

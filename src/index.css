@@ -52,12 +52,14 @@
     --radius: 0.5rem;
 
     /**
-     * Marque provisoire « Voies qui convergent » (variante A) — tons terre.
+     * Marque « Voies qui convergent » — tons terre. Nom MOBILIS acté
+     * (ADR-001) ; identité visuelle encore susceptible d'évoluer.
      *   - Olive foncé (Encre) #26301C  : fonds sombres, texte
      *   - Crème (Papier)      #F3EEDF
      *   - Olive (primaire)    #5C6B2E
      *   - Ocre (accent)       #B9722A  : logo, aplats, tracé, gagnant
-     * Provisoire jusqu'à la marque définitive (ADR-001 / DEP-007).
+     * Les MÊMES valeurs vivent dans tailwind.config.ts (brand.*) et
+     * src/config/couleurs.ts — les trois bougent ensemble.
      */
     --brand-ink: #26301c;
     --brand-paper: #f3eedf;
@@ -65,35 +67,9 @@
     --brand-ochre: #b9722a;
   }
 
-  .dark {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 96%;
-
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 96%;
-
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 96%;
-
-    --primary: 0 0% 96%;
-    --primary-foreground: 0 0% 9%;
-
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 96%;
-
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 65%;
-
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 96%;
-
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 0 0% 85%;
-  }
+  /* Pas de mode sombre : le produit se lit en plein soleil sur des écrans
+     modestes (CDC) — un thème défini mais jamais activé serait un mensonge
+     de code (audit UX C4). Si un jour il revient, il repartira des tokens. */
 }
 
 @layer base {
@@ -104,6 +80,8 @@
     @apply bg-background text-foreground;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    /* Encoches et barres système (iPhone, Android gestuel). */
+    padding-bottom: env(safe-area-inset-bottom);
   }
   /* Accessibilite : la cible de focus doit rester visible au clavier. */
   :focus-visible {

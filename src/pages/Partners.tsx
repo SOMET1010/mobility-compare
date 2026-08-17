@@ -126,12 +126,12 @@ function CandidatureForm() {
   return (
     <form onSubmit={envoyer} className="mt-6 max-w-xl rounded-2xl border bg-card p-5">
       <h3 className="font-semibold">Déposer une candidature</h3>
-      <p className="mt-1 text-[12.5px] text-muted-foreground">
+      <p className="mt-1 text-note text-muted-foreground">
         Trois champs suffisent — le reste aide l’examen.{' '}
         {IS_BACKEND_CONFIGURED ? '' : 'Mode démonstration : rien ne sera enregistré.'}
       </p>
 
-      <label className="mb-1 mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <label className="mb-1 mt-4 block text-label font-bold uppercase tracking-wider text-muted-foreground">
         Nom de l’opérateur *
       </label>
       <input
@@ -144,7 +144,7 @@ function CandidatureForm() {
         className={champClass}
       />
 
-      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <label className="mb-1 mt-3 block text-label font-bold uppercase tracking-wider text-muted-foreground">
         Type de service *
       </label>
       <select
@@ -159,7 +159,7 @@ function CandidatureForm() {
         ))}
       </select>
 
-      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <label className="mb-1 mt-3 block text-label font-bold uppercase tracking-wider text-muted-foreground">
         Contact joignable (e-mail ou téléphone) *
       </label>
       <input
@@ -172,7 +172,7 @@ function CandidatureForm() {
         className={champClass}
       />
 
-      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <label className="mb-1 mt-3 block text-label font-bold uppercase tracking-wider text-muted-foreground">
         Référence d’agrément (si vous en avez une)
       </label>
       <input
@@ -184,7 +184,7 @@ function CandidatureForm() {
         className={champClass}
       />
 
-      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <label className="mb-1 mt-3 block text-label font-bold uppercase tracking-wider text-muted-foreground">
         Message (facultatif)
       </label>
       <textarea
@@ -210,7 +210,7 @@ function CandidatureForm() {
       <Button type="submit" disabled={sending} className="mt-4 w-full">
         {sending ? 'Envoi…' : 'Envoyer ma candidature'}
       </Button>
-      <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
+      <p className="mt-2 text-tiny leading-snug text-muted-foreground">
         Seules ces informations sont transmises — aucune donnée de navigation. La candidature
         n’entraîne aucune publication automatique : vérification d’agrément d’abord, toujours.
       </p>
@@ -229,28 +229,28 @@ export default function Partners() {
       />
 
       {/* HERO */}
-      <section className="bg-[var(--brand-ink)] text-white">
+      <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C3D18F]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-sprout">
             Institutions · Opérateurs · Usagers
           </p>
           <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl sm:leading-[1.05]">
             Un observatoire neutre de la mobilité urbaine.
           </h1>
-          <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-white/70 sm:text-lg">
+          <p className="mt-4 max-w-2xl text-emph leading-[1.6] text-white/70 sm:text-lg">
             {PRODUCT.displayName} compare les mobilités d’Abidjan sans vendre de courses et sans
             classement payant. Un outil d’intérêt public, pensé pour l’échelle nationale.
           </p>
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
               to="/comparer"
-              className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-ochre)] px-6 py-3 text-base font-semibold text-[var(--brand-ink)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ochre)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-ink)] active:brightness-95"
+              className="inline-flex items-center justify-center rounded-xl bg-brand-ochre px-6 py-3 text-base font-semibold text-brand-ink transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ochre focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink active:brightness-95"
             >
               Ouvrir le comparateur →
             </Link>
             <a
               href="#contact"
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3 text-base font-medium text-white/90 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-ink)] active:bg-white/10"
+              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3 text-base font-medium text-white/90 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink active:bg-white/10"
             >
               Devenir partenaire
             </a>
@@ -283,7 +283,7 @@ export default function Partners() {
       <section className="border-y bg-muted/40">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
           <h2 className="text-2xl font-bold sm:text-3xl">Nos principes de partenariat</h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-emph leading-[1.6] text-muted-foreground">
             Des engagements structurels, pas des slogans : ils sont tenus par le code et les tests.
           </p>
           <div className="mt-6 grid gap-3 sm:gap-5 sm:grid-cols-2">
@@ -307,13 +307,13 @@ export default function Partners() {
       {/* CE QUE NOUS CHERCHONS */}
       <section id="contact" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-12 sm:py-20">
         <h2 className="text-2xl font-bold sm:text-3xl">Ce que nous cherchons</h2>
-        <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-emph leading-[1.6] text-muted-foreground">
           Les dépendances ouvertes du projet sont d’abord des partenariats à nouer.
         </p>
         <div className="mt-6 grid gap-3 sm:gap-5 md:grid-cols-3">
           {NEEDS.map((n) => (
             <div key={n.title} className="rounded-2xl border bg-card p-5">
-              <span className="inline-block rounded-full bg-primary/12 px-2.5 py-1 text-[11px] font-semibold text-primary">
+              <span className="inline-block rounded-full bg-primary/12 px-2.5 py-1 text-label font-semibold text-primary">
                 {n.tag}
               </span>
               <h3 className="mt-4 font-semibold">{n.title}</h3>
@@ -334,7 +334,7 @@ export default function Partners() {
       <section id="candidature" className="border-y bg-muted/40">
         <div className="mx-auto max-w-6xl scroll-mt-16 px-5 py-12 sm:py-16">
           <h2 className="text-2xl font-bold sm:text-3xl">Opérateurs : rejoindre le comparateur</h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-emph leading-[1.6] text-muted-foreground">
             Être listé est <b>gratuit</b> et l’ordre du classement <b>ne s’achète pas</b> — la
             candidature n’a aucun effet sur le tri, garanti par le code et vérifié à chaque
             livraison.
@@ -359,7 +359,7 @@ export default function Partners() {
               },
             ].map((s) => (
               <li key={s.n} className="rounded-2xl border bg-card p-5">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/12 text-[13px] font-extrabold text-primary">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/12 text-body font-extrabold text-primary">
                   {s.n}
                 </span>
                 <h3 className="mt-3 font-semibold">{s.title}</h3>
@@ -374,7 +374,7 @@ export default function Partners() {
 
       {/* PIED */}
       <footer className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 text-[12px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <Wordmark className="text-base" />
           <p>
             {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Identité, nom et hébergement

@@ -65,24 +65,24 @@ export function InstallPrompt() {
     <div className="mt-4 flex items-center gap-3 rounded-2xl border bg-card p-3.5">
       <img src="/icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-xl" />
       <div className="min-w-0 flex-1">
-        <div className="text-[13.5px] font-semibold leading-tight">
+        <div className="text-body font-semibold leading-tight">
           Ajoutez MOBILIS à votre écran d’accueil
         </div>
-        <div className="text-[11.5px] text-muted-foreground">
+        <div className="text-label text-muted-foreground">
           Gratuit, léger, et vos trajets restent sous la main.
         </div>
       </div>
       <button
         type="button"
         onClick={dismiss}
-        className="shrink-0 rounded-lg px-2 py-2 text-[12px] font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="shrink-0 rounded-lg px-2 py-2 text-note font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         Plus tard
       </button>
       <button
         type="button"
         onClick={install}
-        className="shrink-0 rounded-xl bg-[#26301C] px-3.5 py-2 text-[12.5px] font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] active:brightness-110"
+        className="shrink-0 rounded-xl bg-brand-ink px-3.5 py-2 text-note font-semibold text-white transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ink active:brightness-110"
       >
         Installer
       </button>

@@ -33,13 +33,13 @@ export function ConditionsBar({ pilote = false }: { pilote?: boolean }) {
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 border-b bg-muted px-3 py-1 text-[11.5px] font-medium text-foreground/75">
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 border-b bg-muted px-3 py-1 text-label font-medium text-foreground/75">
       {pilote && (
         <span
           title="Version pilote — prix indicatifs, à confirmer sur le terrain"
-          className="inline-flex items-center gap-1.5 font-bold text-[#26301C]"
+          className="inline-flex items-center gap-1.5 font-bold text-brand-ink"
         >
-          <span aria-hidden="true" className="text-[#B9722A]">
+          <span aria-hidden="true" className="text-brand-ochre">
             ●
           </span>
           Pilote · prix indicatifs
@@ -49,7 +49,7 @@ export function ConditionsBar({ pilote = false }: { pilote?: boolean }) {
         <span className="inline-flex items-center gap-1.5">
           <svg
             viewBox="0 0 24 24"
-            className="h-3 w-3 text-[#B9722A]"
+            className="h-3 w-3 text-brand-ochre"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}

@@ -1,3 +1,4 @@
+import { COULEURS } from '@/config/couleurs';
 /**
  * Écosystème du comparateur : conditions de circulation et météo.
  *
@@ -49,9 +50,9 @@ export function estimateTraffic(now: Date): TrafficEstimate {
 }
 
 export const TRAFFIC_TINT: Record<TrafficLevel, string> = {
-  FLUIDE: '#5C6B2E',
-  DENSE: '#B9722A',
-  SATURE: '#9A3412',
+  FLUIDE: COULEURS.olive,
+  DENSE: COULEURS.ochre,
+  SATURE: COULEURS.warn,
 };
 
 /* ------------------------------------------------------------------- météo */
