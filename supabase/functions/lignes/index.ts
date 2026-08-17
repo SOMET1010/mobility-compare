@@ -44,15 +44,35 @@ Deno.serve(async (req) => {
   } catch {
     return json({ erreur: 'json' }, 400);
   }
-  const { depart, arrivee } = (corps ?? {}) as Record<string, unknown>;
-  if (!pointValide(depart) || !pointValide(arrivee)) {
-    return json({ erreur: 'coordonnees invalides ou hors Côte d’Ivoire' }, 400);
-  }
+  const { depart, arrivee, trace } = (corps ?? {}) as Record<string, unknown>;
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!supabaseUrl || !serviceKey) return json({ disponible: false }, 503);
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  // Mode « tracé » : les points ordonnés d'UNE ligne, pour la carte.
+  // Données publiques (réseau OpenStreetMap) — aucun paramètre d'usager.
+  if (trace !== undefined) {
+    if (typeof trace !== 'number' || !Number.isInteger(trace) || trace <= 0) {
+      return json({ erreur: 'identifiant de ligne invalide' }, 400);
+    }
+    const { data: pts, error: errTrace } = await admin.rpc('ligne_trace', { p_id: trace });
+    if (errTrace || !Array.isArray(pts)) return json({ disponible: false }, 503);
+    const points = pts
+      .filter(
+        (p): p is { lat: number; lng: number } =>
+          typeof p?.lat === 'number' && typeof p?.lng === 'number',
+      )
+      .slice(0, 500)
+      .map((p) => [p.lat, p.lng]);
+    if (points.length < 2) return json({ disponible: false }, 404);
+    return json({ disponible: true, points });
+  }
+
+  if (!pointValide(depart) || !pointValide(arrivee)) {
+    return json({ erreur: 'coordonnees invalides ou hors Côte d’Ivoire' }, 400);
+  }
 
   const { data, error } = await admin.rpc('lignes_desservant', {
     p_lat1: depart.lat,
@@ -64,8 +84,16 @@ Deno.serve(async (req) => {
   if (error || !Array.isArray(data)) return json({ disponible: false }, 503);
 
   const lignes = data.filter(
-    (l): l is { nom: string; mode: string; ref: string; montee_m: number; descente_m: number } =>
-      typeof l?.nom === 'string' && typeof l?.mode === 'string',
+    (
+      l,
+    ): l is {
+      id: number;
+      nom: string;
+      mode: string;
+      ref: string;
+      montee_m: number;
+      descente_m: number;
+    } => typeof l?.nom === 'string' && typeof l?.mode === 'string',
   );
 
   // Peu ou pas de lignes directes → chercher les trajets à UNE

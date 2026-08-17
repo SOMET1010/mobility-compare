@@ -5,6 +5,7 @@ import {
   dedupeLines,
   fmtWalk,
   totalWalkM,
+  traceSegments,
 } from '@/features/transit/lignes';
 
 /**
@@ -98,6 +99,43 @@ describe('fmtWalk — marche affichée sans fausse précision', () => {
   it('valeur absente ou invalide : null (rien d’affiché)', () => {
     expect(fmtWalk(undefined)).toBeNull();
     expect(fmtWalk(-5)).toBeNull();
+  });
+});
+
+describe('traceSegments — la charnière aller/retour ne traverse pas la ville', () => {
+  it('coupe au saut de plus de 2 km (relations OSM aller + retour)', () => {
+    const aller: [number, number][] = [
+      [5.4, -3.98],
+      [5.401, -3.985],
+      [5.402, -3.99],
+    ];
+    const retour: [number, number][] = [
+      [5.32, -4.02],
+      [5.321, -4.015],
+    ];
+    const segments = traceSegments([...aller, ...retour]);
+    expect(segments).toHaveLength(2);
+    expect(segments[0]).toHaveLength(3);
+    expect(segments[1]).toHaveLength(2);
+  });
+
+  it('tracé continu : un seul segment', () => {
+    const segments = traceSegments([
+      [5.4, -3.98],
+      [5.405, -3.985],
+      [5.41, -3.99],
+    ]);
+    expect(segments).toHaveLength(1);
+  });
+
+  it('point isolé après coupe : ignoré (pas de segment à un point)', () => {
+    const segments = traceSegments([
+      [5.4, -3.98],
+      [5.401, -3.985],
+      [5.32, -4.02],
+    ]);
+    expect(segments).toHaveLength(1);
+    expect(segments[0]).toHaveLength(2);
   });
 });
 

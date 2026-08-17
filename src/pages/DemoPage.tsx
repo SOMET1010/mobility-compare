@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -20,8 +20,11 @@ import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
 import {
   cleanLineName,
   fetchLignes,
+  fetchTrace,
   fmtWalk,
   totalWalkM,
+  type LigneProche,
+  type TracePoint,
   type TransitInfo,
 } from '@/features/transit/lignes';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -301,10 +304,44 @@ export default function DemoPage() {
   // « de gare en gare ». Indisponible → la section n'apparaît pas.
   const [transit, setTransit] = useState<TransitInfo | null>(null);
   const [showAllLines, setShowAllLines] = useState(false);
+  // Ligne dont le tracé est affiché sur la carte (toucher = afficher).
+  const [ligneActive, setLigneActive] = useState<{ id: number; label: string } | null>(null);
+  const [traceSegs, setTraceSegs] = useState<TracePoint[][] | null>(null);
+  const traceReqRef = useRef<number | null>(null);
+  const mapFigureRef = useRef<HTMLElement | null>(null);
+
+  async function toggleTrace(l: LigneProche) {
+    if (typeof l.id !== 'number') return;
+    if (ligneActive?.id === l.id) {
+      traceReqRef.current = null;
+      setLigneActive(null);
+      setTraceSegs(null);
+      return;
+    }
+    const label = `${LIGNE_META[l.mode]?.label ?? l.mode}${l.ref ? ` ${l.ref}` : ''}`;
+    traceReqRef.current = l.id;
+    setLigneActive({ id: l.id, label });
+    setTraceSegs(null);
+    const segs = await fetchTrace(l.id);
+    if (traceReqRef.current !== l.id) return; // l'usager a changé d'avis entre-temps
+    if (!segs) {
+      setLigneActive(null);
+      toast('Tracé indisponible pour le moment', {
+        description: 'Rien n’est dessiné plutôt qu’un tracé inventé.',
+      });
+      return;
+    }
+    setTraceSegs(segs);
+    mapFigureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   useEffect(() => {
     let cancelled = false;
     setTransit(null);
     setShowAllLines(false);
+    setLigneActive(null);
+    setTraceSegs(null);
+    traceReqRef.current = null;
     const a = resolvePoint(fromId);
     const b = resolvePoint(toId);
     if (!a || !b || fromId === toId) return;
@@ -837,31 +874,50 @@ export default function DemoPage() {
                           const montee = fmtWalk(l.montee_m);
                           const descente = fmtWalk(l.descente_m);
                           const best = i === 0 && marche !== null && transit.lignes.length > 1;
+                          const tracable = typeof l.id === 'number';
+                          const active = tracable && ligneActive?.id === l.id;
                           return (
-                            <li
-                              key={`${l.mode}-${l.nom}`}
-                              className={
-                                'text-[13px]' +
-                                (best
-                                  ? ' -mx-2 rounded-xl bg-[#5C6B2E]/8 px-2 py-1.5 ring-1 ring-[#5C6B2E]/25'
-                                  : '')
-                              }
-                            >
-                              <div className="flex items-baseline gap-2">
-                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                                  {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
-                                  {LIGNE_META[l.mode]?.label ?? l.mode}
-                                  {l.ref ? ` ${l.ref}` : ''}
-                                </span>
-                                <span className="min-w-0 truncate font-medium">
-                                  {cleanLineName(l.nom)}
-                                </span>
-                              </div>
-                              {montee && descente && (
-                                <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                                  🚶 {montee} au départ · {descente} à l’arrivée
-                                </p>
-                              )}
+                            <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
+                              <button
+                                type="button"
+                                onClick={() => toggleTrace(l)}
+                                disabled={!tracable}
+                                aria-pressed={active}
+                                className={
+                                  '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                                  (active
+                                    ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
+                                    : best
+                                      ? 'bg-[#5C6B2E]/8 ring-1 ring-[#5C6B2E]/25'
+                                      : tracable
+                                        ? 'hover:bg-muted/40'
+                                        : '')
+                                }
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                    {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
+                                    {LIGNE_META[l.mode]?.label ?? l.mode}
+                                    {l.ref ? ` ${l.ref}` : ''}
+                                  </span>
+                                  <span className="min-w-0 flex-1 truncate font-medium">
+                                    {cleanLineName(l.nom)}
+                                  </span>
+                                  {tracable && <Chevron />}
+                                </div>
+                                {montee && descente && (
+                                  <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                    🚶 {montee} au départ · {descente} à l’arrivée
+                                  </p>
+                                )}
+                                {active && (
+                                  <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
+                                    {traceSegs
+                                      ? 'Tracé affiché sur la carte ↓ (toucher pour retirer)'
+                                      : 'Chargement du tracé…'}
+                                  </p>
+                                )}
+                              </button>
                             </li>
                           );
                         })}
@@ -955,10 +1011,19 @@ export default function DemoPage() {
             {/* La carte JUSTE sous les lignes : c'est elle qui les explique. */}
             {fromCommune && toCommune && (
               <>
-                <figure className="mt-4 overflow-hidden rounded-2xl border">
-                  <StreetMap from={fromCommune} to={toCommune} />
+                <figure ref={mapFigureRef} className="mt-4 overflow-hidden rounded-2xl border">
+                  <StreetMap from={fromCommune} to={toCommune} trace={traceSegs} />
                   <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
-                    Fond © OpenStreetMap · tracé indicatif
+                    {ligneActive && traceSegs ? (
+                      <>
+                        <span className="font-bold text-[#1E5AA8]">
+                          — Tracé : {ligneActive.label}
+                        </span>{' '}
+                        · fond © OpenStreetMap
+                      </>
+                    ) : (
+                      'Fond © OpenStreetMap · tracé indicatif'
+                    )}
                   </figcaption>
                 </figure>
                 {/* Navigation externe — au choix de l'usager (la destination est transmise à l'app choisie) */}

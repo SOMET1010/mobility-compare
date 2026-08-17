@@ -10,6 +10,8 @@ import { env } from '@/config/env';
  */
 
 export interface LigneProche {
+  /** Identifiant de la ligne en base — permet de demander son tracé. */
+  readonly id?: number;
   readonly nom: string;
   readonly mode: string;
   readonly ref: string;
@@ -115,6 +117,76 @@ export function dedupeLines(lignes: readonly LigneProche[]): LigneProche[] {
 
 function functionUrl(): string | null {
   return env.VITE_SUPABASE_URL ? `${env.VITE_SUPABASE_URL}/functions/v1/lignes` : null;
+}
+
+/** Un point de tracé : [lat, lng]. */
+export type TracePoint = readonly [number, number];
+
+function kmEntre(a: TracePoint, b: TracePoint): number {
+  const rad = Math.PI / 180;
+  const dLat = (b[0] - a[0]) * rad;
+  const dLng = (b[1] - a[1]) * rad;
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Découpe un tracé aux grands sauts (> gapKm) : les relations OSM portent
+ * souvent l'aller ET le retour — la charnière entre les deux ne doit pas
+ * être dessinée comme un segment qui traverse la ville.
+ */
+export function traceSegments(points: readonly TracePoint[], gapKm = 2): TracePoint[][] {
+  const segments: TracePoint[][] = [];
+  let courant: TracePoint[] = [];
+  for (const p of points) {
+    const dernier = courant[courant.length - 1];
+    if (dernier && kmEntre(dernier, p) > gapKm) {
+      if (courant.length >= 2) segments.push(courant);
+      courant = [];
+    }
+    courant.push(p);
+  }
+  if (courant.length >= 2) segments.push(courant);
+  return segments;
+}
+
+/** Tracés déjà téléchargés, par ligne ; seuls les succès sont mémorisés. */
+const traceCache = new Map<number, TracePoint[][]>();
+
+/**
+ * Le tracé d'une ligne (segments de [lat, lng]), depuis notre carte.
+ * Indisponible → null : rien n'est dessiné (absence honnête).
+ */
+export async function fetchTrace(id: number): Promise<TracePoint[][] | null> {
+  const url = functionUrl();
+  if (!url) return null;
+  const connu = traceCache.get(id);
+  if (connu) return connu;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ trace: id }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const json = (await res.json().catch(() => null)) as {
+      disponible?: boolean;
+      points?: unknown[];
+    } | null;
+    if (!json?.disponible || !Array.isArray(json.points)) return null;
+    const points = json.points.filter(
+      (p): p is [number, number] =>
+        Array.isArray(p) && typeof p[0] === 'number' && typeof p[1] === 'number',
+    );
+    const segments = traceSegments(points);
+    if (segments.length === 0) return null;
+    traceCache.set(id, segments);
+    return segments;
+  } catch {
+    return null;
+  }
 }
 
 /** Mémoire de session par paire ; seuls les succès sont mémorisés. */

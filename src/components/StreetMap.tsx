@@ -16,8 +16,19 @@ export interface MapPoint {
 
 const ORIGIN = '#5C6B2E';
 const DEST = '#B9722A';
+/** Bleu transit, lisible sur le fond OSM, distinct des deux marqueurs. */
+const TRACE = '#1E5AA8';
 
-export function StreetMap({ from, to }: { from: MapPoint; to: MapPoint }) {
+export function StreetMap({
+  from,
+  to,
+  trace = null,
+}: {
+  from: MapPoint;
+  to: MapPoint;
+  /** Tracé de ligne à mettre en évidence : segments de [lat, lng]. */
+  trace?: readonly (readonly (readonly [number, number])[])[] | null;
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,6 +51,17 @@ export function StreetMap({ from, to }: { from: MapPoint; to: MapPoint }) {
 
     L.polyline([a, b], { color: DEST, weight: 3, dashArray: '6 7', opacity: 0.9 }).addTo(map);
 
+    // Le tracé réel de la ligne choisie — par-dessus la ligne directe.
+    const bornes = L.latLngBounds([a, b]);
+    if (trace) {
+      for (const segment of trace) {
+        const pts = segment.map(([lat, lng]) => L.latLng(lat, lng));
+        L.polyline(pts, { color: '#ffffff', weight: 7, opacity: 0.65 }).addTo(map);
+        L.polyline(pts, { color: TRACE, weight: 4, opacity: 0.95 }).addTo(map);
+        pts.forEach((p) => bornes.extend(p));
+      }
+    }
+
     const marker = (p: L.LatLng, color: string, label: string) =>
       L.circleMarker(p, {
         radius: 8,
@@ -54,12 +76,12 @@ export function StreetMap({ from, to }: { from: MapPoint; to: MapPoint }) {
     marker(a, ORIGIN, from.name);
     marker(b, DEST, to.name);
 
-    map.fitBounds(L.latLngBounds([a, b]).pad(0.4));
+    map.fitBounds(bornes.pad(trace ? 0.12 : 0.4));
 
     return () => {
       map.remove();
     };
-  }, [from.lat, from.lng, from.name, to.lat, to.lng, to.name]);
+  }, [from.lat, from.lng, from.name, to.lat, to.lng, to.name, trace]);
 
   return (
     <div ref={ref} className="h-[240px] w-full" role="img" aria-label="Carte du trajet à Abidjan" />
