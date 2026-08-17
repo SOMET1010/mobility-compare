@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { placeGroups } from '@/demo/scenario';
 import {
   makeAddressId,
@@ -127,7 +128,10 @@ export function PlaceSheet({
     }
   }
 
-  return (
+  // Portail vers <body> : un ancêtre à effet (backdrop-blur du widget…)
+  // capturerait sinon le position:fixed dans sa propre boîte.
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <div
       className="fixed inset-0 z-[1200] flex items-stretch justify-center bg-black/35 sm:items-start sm:py-12"
       role="dialog"
@@ -264,7 +268,8 @@ export function PlaceSheet({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
