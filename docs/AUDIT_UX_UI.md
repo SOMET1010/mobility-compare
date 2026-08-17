@@ -240,3 +240,59 @@ quand une fenêtre calme le permet — c'est lui qui rend les couches suivantes 
   le refactoring est strictement présentation et structure.
 - **Ne pas ajouter de bibliothèque d'animation** : les transitions nécessaires (opacité,
   hauteur) tiennent en CSS.
+
+---
+
+## F. Annexe — Confrontation avec l'audit externe (17 août 2026)
+
+Un audit UX/UI externe a été produit indépendamment le même jour. Confrontation
+constat par constat, preuves à l'appui.
+
+### F1. Convergences (les deux audits disent la même chose)
+
+Monolithe `DemoPage.tsx` à découper · système visuel à unifier sur les tokens
+`--brand-*` · doctrine d'honnêteté et moteurs à préserver absolument · pas de
+migration de framework ni de sur-outillage (Storybook, Mapbox…) · dark mode :
+ne pas l'activer (contexte « plein soleil » du CDC — notre lot 2 tranchera
+entre le retirer ou le laisser inactif) · piège de focus manquant sur les
+dialogues · alternative textuelle de la carte à rendre dynamique · découpage
+par extractions successives, jamais en bloc.
+
+### F2. Apports RETENUS de l'audit externe (intégrés au plan)
+
+| Constat externe                                                                                                                     | Verdict                                                                                                        | Où                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Le retour arrière du navigateur sort de `/comparer`** au lieu de revenir aux résultats — `view` est un état local, pas une route. | **Vrai, et c'est son meilleur apport** : sur mobile, le geste retour est réflexe.                              | Lot 3 (routes imbriquées ou `history.pushState`)                       |
+| Favoris et récents partagés entre courses et livraisons.                                                                            | Vrai (`savedTrips` ne porte pas le service).                                                                   | Lot 3                                                                  |
+| Pas d'état hors-ligne (`navigator.onLine`).                                                                                         | Vrai — pertinent en 2G/3G à Abidjan.                                                                           | Lot 3                                                                  |
+| Pas de `env(safe-area-inset-*)` pour les encoches.                                                                                  | Vrai.                                                                                                          | Lot 2                                                                  |
+| Clavier virtuel : pas de `scrollIntoView` après le focus dans PlaceSheet.                                                           | Vrai.                                                                                                          | Lot 2                                                                  |
+| Prévisualisation de lien générique (SPA sans prérendu) — un trajet partagé sur WhatsApp affiche le titre du site.                   | Vrai pour le titre dynamique ; le prérendu complet est reporté (l'audit externe lui-même déconseille Next.js). | Noté, hors lots — à réévaluer quand le partage devient un canal majeur |
+| Pas d'indicateur de page active dans l'en-tête.                                                                                     | Vrai, mineur.                                                                                                  | Lot 2 (layout commun)                                                  |
+| `package.json` disait encore « nom commercial à définir ».                                                                          | Vrai — corrigé (nom acté ADR-001).                                                                             | Fait                                                                   |
+| Fiche détail : pas de rappel visuel du mode livraison.                                                                              | Déjà relevé (C8) — confirmé.                                                                                   | Lot 2                                                                  |
+
+### F3. Constats externes RÉFUTÉS (preuves)
+
+| Affirmation externe                                                                            | Réalité                                                                                                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| « Pas de route 404 — pas de route `*` visible » (1.1)                                          | `App.tsx:59` : `<Route path="*" element={<Navigate to="/" replace />} />`. C'est une redirection délibérée, pas une absence. Une page 404 dédiée reste un choix possible, pas un manque.                                      |
+| « L'observatoire est une page orpheline, aucun lien depuis l'accueil ou le comparateur » (1.3) | Lié dans l'en-tête de l'accueil (`Home.tsx:119`) ET du comparateur (`DemoPage.tsx:583`). La modération est volontairement non référencée (espace protégé).                                                                    |
+| « Le CTA principal est après 3 écrans de scroll » (2a, 3.1)                                    | Le comparateur (TripWidget) est DANS le hero, en haut de l'accueil (`Home.tsx:160`).                                                                                                                                          |
+| « Ajouter un skeleton pendant le calcul du classement » (5.1)                                  | Le classement est un calcul **synchrone** (`useMemo`) : il n'existe aucun instant à couvrir d'un squelette. Le vrai flash est le raffinement de la distance serveur (notre A-1), qui appelle une transition, pas un skeleton. |
+| « La carte n'a pas d'`aria-label` » (6.1)                                                      | `StreetMap.tsx` : `role="img" aria-label` présents — le vrai défaut est qu'ils sont statiques (notre A-5), pas absents.                                                                                                       |
+| « La contribution ne demande pas le service » (8.3)                                            | Le choix du mode (moto-coursier, tricycle…) porte le service : un relevé MOTO est un relevé livraison, sans champ supplémentaire.                                                                                             |
+
+### F4. Constats externes PÉRIMÉS (déjà corrigés au lot 1, commit b3afaa1)
+
+Bouton assistant : 44 px (pas 56) et toasts déplacés en haut de l'écran ·
+mentions « pilote/provisoire » : fusionnées en une seule bande sur `/comparer`
+(la réduction sur l'accueil reste à faire — retenue pour le lot 2) ·
+« Chargement… » nu de la modération : conservé (bas risque, cohérence traitée
+au lot 2 avec `EmptyState`).
+
+**Verdict d'ensemble : l'audit externe confirme le diagnostic et le plan en
+3 lots. Il ajoute quatre vrais chantiers (retour arrière navigateur,
+favoris par service, hors-ligne, safe-area) — intégrés ci-dessus. Ses
+estimations d'effort (~35 jours humain) correspondent à nos « sessions »
+assistées.**
