@@ -76,7 +76,16 @@ entreprises sont autorisées** à opérer comme VTC en Côte d'Ivoire :
 3. **FAIT — courrier type DGTTC rédigé** : `docs/COURRIER_DGTTC.md`
    (grille taxi compteur + assiette de la taxe de 4 % ; variantes
    ARTI/AMUGA en note). À personnaliser et envoyer par le décideur.
-4. Inventaire de `amuga.ci/statistiques/` depuis un navigateur.
+4. **FAIT — verdict (17/08/2026, constaté par le décideur)** :
+   `amuga.ci/statistiques/` affiche « Coming Soon » — rien de publié.
+   Reste à vérifier `amuga.ci/mobilite-en-chiffres/` (parts modales 2020
+   d'après l'indexation des moteurs). Contact relevé sur le site :
+   info@amuga.ci · +225 27 22 52 19 46 / +225 27 22 59 86 15 — canal
+   pour la variante AMUGA du courrier (statistiques + cartographie).
+   Les chiffres de cadrage restent ceux de la presse/CODATU :
+   17 M de déplacements/jour (9,5 M motorisés, 17 % en véhicule
+   individuel), SOTRA 1 500 bus / 128 lignes, lagunaire > 1 M de
+   passagers — chacun à citer avec sa source, jamais en absolu.
 
 Sources : recherches du 16/08/2026 — amuga.ci, arti.ci, transports.gouv.ci,
 digitaltransport4africa.org, junglebus.io, presse ivoirienne (7info, KOACI,
