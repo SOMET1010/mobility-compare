@@ -62,9 +62,17 @@ entreprises sont autorisées** à opérer comme VTC en Côte d'Ivoire :
    **Uber n'est PAS publié** : le registre portait un fait plus récent
    (cessation d'activités en CI le 25/09/2025) — la note de janvier lui
    est antérieure. Le système de statuts datés a joué son rôle.
-2. **Télécharger le GTFS Abidjan** et l'archiver sur notre serveur
-   (licence libre) — puis étudier l'intégration « lignes gbaka » avec
-   étiquette de millésime. (Commande prête, exécution par le décideur.)
+2. **FAIT — réseau de transport archivé, et mieux que prévu** : le zip
+   GTFS 2019 était inaccessible (certificat expiré, site GitLab en
+   déshérence), mais le travail Jungle Bus/AMUGA vit dans OpenStreetMap
+   même — donc dans NOTRE extrait (août 2026, plus frais que le zip).
+   Extraction faite sur le serveur (16/08/2026) :
+   `osmium tags-filter ivory-coast-latest.osm.pbf r/route=bus,share_taxi,minibus,ferry`
+   → **1 255 relations de lignes** (bus, woro-woro, gbaka, bateaux-bus),
+   32 074 nœuds, 4 972 chemins — `/root/donnees/lignes-transport.osm.pbf`.
+   Ré-extractible à chaque mise à jour des cartes, même cadence que le
+   routage. L'intégration produit (correspondances, marche) reste un
+   chantier à part ; la donnée, elle, est acquise et souveraine.
 3. **FAIT — courrier type DGTTC rédigé** : `docs/COURRIER_DGTTC.md`
    (grille taxi compteur + assiette de la taxe de 4 % ; variantes
    ARTI/AMUGA en note). À personnaliser et envoyer par le décideur.
