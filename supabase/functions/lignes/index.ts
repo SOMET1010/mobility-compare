@@ -81,6 +81,8 @@ Deno.serve(async (req) => {
       p_transfert: 400,
     });
     if (Array.isArray(corr)) {
+      // `gare` : nom du lieu connu le plus proche du point de changement
+      // (lieux_index) — null si rien à moins de 250 m, jamais inventé.
       correspondances = corr.filter(
         (c) => typeof c?.ligne1 === 'string' && typeof c?.ligne2 === 'string',
       );

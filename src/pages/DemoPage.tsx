@@ -868,9 +868,18 @@ export default function DemoPage() {
                           </div>
                           <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
                             🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
-                            {c.correspondance_m < 40
-                              ? 'au même endroit'
-                              : fmtWalk(c.correspondance_m)}{' '}
+                            {c.gare ? (
+                              <>
+                                à <b className="text-foreground/80">{c.gare}</b>
+                                {c.correspondance_m >= 40
+                                  ? ` (${fmtWalk(c.correspondance_m)})`
+                                  : ''}
+                              </>
+                            ) : c.correspondance_m < 40 ? (
+                              'au même endroit'
+                            ) : (
+                              fmtWalk(c.correspondance_m)
+                            )}{' '}
                             · descente {fmtWalk(c.descente_m)}
                           </p>
                         </li>

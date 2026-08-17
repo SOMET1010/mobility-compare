@@ -45,6 +45,8 @@ export interface Correspondance {
   readonly ref2: string;
   readonly descente_m: number;
   readonly correspondance_m: number;
+  /** Nom du lieu connu le plus proche du point de changement (ou null). */
+  readonly gare?: string | null;
 }
 
 /** Lignes directes + trajets à une correspondance, pour une paire de points. */
