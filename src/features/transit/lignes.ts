@@ -48,6 +48,9 @@ export function cleanLineName(nom: string): string {
 
 /** Trajet à une correspondance : ligne 1, changement, ligne 2. */
 export interface Correspondance {
+  /** Identifiants des deux lignes en base — permettent leurs tracés. */
+  readonly ligne1_id?: number;
+  readonly ligne2_id?: number;
   readonly ligne1: string;
   readonly mode1: string;
   readonly ref1: string;
@@ -59,6 +62,9 @@ export interface Correspondance {
   readonly correspondance_m: number;
   /** Nom du lieu connu le plus proche du point de changement (ou null). */
   readonly gare?: string | null;
+  /** Coordonnées du point de changement (sur le tracé de la ligne 1). */
+  readonly corr_lat?: number;
+  readonly corr_lng?: number;
 }
 
 /** Lignes directes + trajets à une correspondance, pour une paire de points. */

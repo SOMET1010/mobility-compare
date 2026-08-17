@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
-import { StreetMap } from '@/components/StreetMap';
+import { StreetMap, type TraceLayer } from '@/components/StreetMap';
 import {
   COMMUNES,
   CRITERIA,
@@ -23,8 +23,8 @@ import {
   fetchTrace,
   fmtWalk,
   totalWalkM,
+  type Correspondance,
   type LigneProche,
-  type TracePoint,
   type TransitInfo,
 } from '@/features/transit/lignes';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -107,6 +107,9 @@ function fareAmount(o: RankableOption): number | null {
 
 const AMBER = '#B9722A';
 const WARN = '#9A3412';
+/** Couleurs des tracés de lignes sur la carte (étape 1 / étape 2). */
+const TRACE1 = '#1E5AA8';
+const TRACE2 = '#7C3AED';
 
 function ModeChip({ mode, size = 44 }: { mode: DemoMode; size?: number }) {
   const m = MODE_META[mode];
@@ -304,34 +307,84 @@ export default function DemoPage() {
   // « de gare en gare ». Indisponible → la section n'apparaît pas.
   const [transit, setTransit] = useState<TransitInfo | null>(null);
   const [showAllLines, setShowAllLines] = useState(false);
-  // Ligne dont le tracé est affiché sur la carte (toucher = afficher).
-  const [ligneActive, setLigneActive] = useState<{ id: number; label: string } | null>(null);
-  const [traceSegs, setTraceSegs] = useState<TracePoint[][] | null>(null);
-  const traceReqRef = useRef<number | null>(null);
+  // Tracé(s) affiché(s) sur la carte — toucher une ligne (un tracé) ou
+  // une correspondance (deux tracés + le point de changement).
+  const [traceSel, setTraceSel] = useState<{ key: string; label: string } | null>(null);
+  const [traceLayers, setTraceLayers] = useState<TraceLayer[] | null>(null);
+  const [changePoint, setChangePoint] = useState<{
+    lat: number;
+    lng: number;
+    label: string;
+  } | null>(null);
+  const traceReqRef = useRef<string | null>(null);
   const mapFigureRef = useRef<HTMLElement | null>(null);
+
+  function clearTrace() {
+    traceReqRef.current = null;
+    setTraceSel(null);
+    setTraceLayers(null);
+    setChangePoint(null);
+  }
+
+  function ligneLabel(mode: string, ref: string): string {
+    return `${LIGNE_META[mode]?.label ?? mode}${ref ? ` ${ref}` : ''}`;
+  }
+
+  function traceIndisponible() {
+    clearTrace();
+    toast('Tracé indisponible pour le moment', {
+      description: 'Rien n’est dessiné plutôt qu’un tracé inventé.',
+    });
+  }
 
   async function toggleTrace(l: LigneProche) {
     if (typeof l.id !== 'number') return;
-    if (ligneActive?.id === l.id) {
-      traceReqRef.current = null;
-      setLigneActive(null);
-      setTraceSegs(null);
+    const key = `l:${l.id}`;
+    if (traceSel?.key === key) {
+      clearTrace();
       return;
     }
-    const label = `${LIGNE_META[l.mode]?.label ?? l.mode}${l.ref ? ` ${l.ref}` : ''}`;
-    traceReqRef.current = l.id;
-    setLigneActive({ id: l.id, label });
-    setTraceSegs(null);
+    traceReqRef.current = key;
+    setTraceSel({ key, label: `Tracé : ${ligneLabel(l.mode, l.ref)}` });
+    setTraceLayers(null);
+    setChangePoint(null);
     const segs = await fetchTrace(l.id);
-    if (traceReqRef.current !== l.id) return; // l'usager a changé d'avis entre-temps
+    if (traceReqRef.current !== key) return; // l'usager a changé d'avis entre-temps
     if (!segs) {
-      setLigneActive(null);
-      toast('Tracé indisponible pour le moment', {
-        description: 'Rien n’est dessiné plutôt qu’un tracé inventé.',
-      });
+      traceIndisponible();
       return;
     }
-    setTraceSegs(segs);
+    setTraceLayers([{ segments: segs, color: TRACE1 }]);
+    mapFigureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  async function toggleCorrTrace(c: Correspondance) {
+    if (typeof c.ligne1_id !== 'number' || typeof c.ligne2_id !== 'number') return;
+    const key = `c:${c.ligne1_id}:${c.ligne2_id}`;
+    if (traceSel?.key === key) {
+      clearTrace();
+      return;
+    }
+    traceReqRef.current = key;
+    const label =
+      `Tracés : ${ligneLabel(c.mode1, c.ref1)} + ${ligneLabel(c.mode2, c.ref2)}` +
+      (c.gare ? ` · changement : ${c.gare}` : '');
+    setTraceSel({ key, label });
+    setTraceLayers(null);
+    setChangePoint(null);
+    const [s1, s2] = await Promise.all([fetchTrace(c.ligne1_id), fetchTrace(c.ligne2_id)]);
+    if (traceReqRef.current !== key) return;
+    if (!s1 || !s2) {
+      traceIndisponible();
+      return;
+    }
+    setTraceLayers([
+      { segments: s1, color: TRACE1 },
+      { segments: s2, color: TRACE2 },
+    ]);
+    if (typeof c.corr_lat === 'number' && typeof c.corr_lng === 'number') {
+      setChangePoint({ lat: c.corr_lat, lng: c.corr_lng, label: c.gare ?? 'Changement de ligne' });
+    }
     mapFigureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -339,9 +392,7 @@ export default function DemoPage() {
     let cancelled = false;
     setTransit(null);
     setShowAllLines(false);
-    setLigneActive(null);
-    setTraceSegs(null);
-    traceReqRef.current = null;
+    clearTrace();
     const a = resolvePoint(fromId);
     const b = resolvePoint(toId);
     if (!a || !b || fromId === toId) return;
@@ -875,7 +926,7 @@ export default function DemoPage() {
                           const descente = fmtWalk(l.descente_m);
                           const best = i === 0 && marche !== null && transit.lignes.length > 1;
                           const tracable = typeof l.id === 'number';
-                          const active = tracable && ligneActive?.id === l.id;
+                          const active = tracable && traceSel?.key === `l:${l.id}`;
                           return (
                             <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
                               <button
@@ -912,7 +963,7 @@ export default function DemoPage() {
                                 )}
                                 {active && (
                                   <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
-                                    {traceSegs
+                                    {traceLayers
                                       ? 'Tracé affiché sur la carte ↓ (toucher pour retirer)'
                                       : 'Chargement du tracé…'}
                                   </p>
@@ -945,49 +996,78 @@ export default function DemoPage() {
                       </p>
                     )}
                     <ul className="mt-1.5 space-y-2.5">
-                      {transit.correspondances.slice(0, 3).map((c) => (
-                        <li key={`${c.ligne1}__${c.ligne2}`} className="text-[13px]">
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                              {LIGNE_META[c.mode1]?.emoji ?? '🚏'}{' '}
-                              {LIGNE_META[c.mode1]?.label ?? c.mode1}
-                              {c.ref1 ? ` ${c.ref1}` : ''}
-                            </span>
-                            <span className="min-w-0 truncate font-medium">
-                              {cleanLineName(c.ligne1)}
-                            </span>
-                          </div>
-                          <div className="mt-0.5 flex items-baseline gap-1.5">
-                            <span aria-hidden="true" className="pl-2 text-muted-foreground">
-                              ↳
-                            </span>
-                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                              {LIGNE_META[c.mode2]?.emoji ?? '🚏'}{' '}
-                              {LIGNE_META[c.mode2]?.label ?? c.mode2}
-                              {c.ref2 ? ` ${c.ref2}` : ''}
-                            </span>
-                            <span className="min-w-0 truncate font-medium">
-                              {cleanLineName(c.ligne2)}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                            🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
-                            {c.gare ? (
-                              <>
-                                à <b className="text-foreground/80">{c.gare}</b>
-                                {c.correspondance_m >= 40
-                                  ? ` (${fmtWalk(c.correspondance_m)})`
-                                  : ''}
-                              </>
-                            ) : c.correspondance_m < 40 ? (
-                              'au même endroit'
-                            ) : (
-                              fmtWalk(c.correspondance_m)
-                            )}{' '}
-                            · descente {fmtWalk(c.descente_m)}
-                          </p>
-                        </li>
-                      ))}
+                      {transit.correspondances.slice(0, 3).map((c) => {
+                        const tracable =
+                          typeof c.ligne1_id === 'number' && typeof c.ligne2_id === 'number';
+                        const active =
+                          tracable && traceSel?.key === `c:${c.ligne1_id}:${c.ligne2_id}`;
+                        return (
+                          <li key={`${c.ligne1}__${c.ligne2}`} className="text-[13px]">
+                            <button
+                              type="button"
+                              onClick={() => toggleCorrTrace(c)}
+                              disabled={!tracable}
+                              aria-pressed={active}
+                              className={
+                                '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                                (active
+                                  ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
+                                  : tracable
+                                    ? 'hover:bg-muted/40'
+                                    : '')
+                              }
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                  {LIGNE_META[c.mode1]?.emoji ?? '🚏'}{' '}
+                                  {LIGNE_META[c.mode1]?.label ?? c.mode1}
+                                  {c.ref1 ? ` ${c.ref1}` : ''}
+                                </span>
+                                <span className="min-w-0 flex-1 truncate font-medium">
+                                  {cleanLineName(c.ligne1)}
+                                </span>
+                                {tracable && <Chevron />}
+                              </div>
+                              <div className="mt-0.5 flex items-baseline gap-1.5">
+                                <span aria-hidden="true" className="pl-2 text-muted-foreground">
+                                  ↳
+                                </span>
+                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                  {LIGNE_META[c.mode2]?.emoji ?? '🚏'}{' '}
+                                  {LIGNE_META[c.mode2]?.label ?? c.mode2}
+                                  {c.ref2 ? ` ${c.ref2}` : ''}
+                                </span>
+                                <span className="min-w-0 truncate font-medium">
+                                  {cleanLineName(c.ligne2)}
+                                </span>
+                              </div>
+                              <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
+                                {c.gare ? (
+                                  <>
+                                    à <b className="text-foreground/80">{c.gare}</b>
+                                    {c.correspondance_m >= 40
+                                      ? ` (${fmtWalk(c.correspondance_m)})`
+                                      : ''}
+                                  </>
+                                ) : c.correspondance_m < 40 ? (
+                                  'au même endroit'
+                                ) : (
+                                  fmtWalk(c.correspondance_m)
+                                )}{' '}
+                                · descente {fmtWalk(c.descente_m)}
+                              </p>
+                              {active && (
+                                <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
+                                  {traceLayers
+                                    ? 'Tracés affichés sur la carte ↓ (toucher pour retirer)'
+                                    : 'Chargement des tracés…'}
+                                </p>
+                              )}
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </>
                 )}
@@ -1012,14 +1092,17 @@ export default function DemoPage() {
             {fromCommune && toCommune && (
               <>
                 <figure ref={mapFigureRef} className="mt-4 overflow-hidden rounded-2xl border">
-                  <StreetMap from={fromCommune} to={toCommune} trace={traceSegs} />
+                  <StreetMap
+                    from={fromCommune}
+                    to={toCommune}
+                    traces={traceLayers}
+                    changePoint={changePoint}
+                  />
                   <figcaption className="bg-card px-3 py-1.5 text-[10px] text-muted-foreground">
-                    {ligneActive && traceSegs ? (
+                    {traceSel && traceLayers ? (
                       <>
-                        <span className="font-bold text-[#1E5AA8]">
-                          — Tracé : {ligneActive.label}
-                        </span>{' '}
-                        · fond © OpenStreetMap
+                        <span className="font-bold text-[#1E5AA8]">— {traceSel.label}</span> · fond
+                        © OpenStreetMap
                       </>
                     ) : (
                       'Fond © OpenStreetMap · tracé indicatif'
