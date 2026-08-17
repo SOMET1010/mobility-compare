@@ -13,7 +13,7 @@ import { getSupabase } from '@/modules/backend/client';
 export interface ContributionInput {
   readonly fromCommune: string;
   readonly toCommune: string;
-  readonly mode: 'VTC' | 'TAXI' | 'WORO' | 'GBAKA';
+  readonly mode: 'VTC' | 'TAXI' | 'WORO' | 'GBAKA' | 'MOTO' | 'TRICYCLE' | 'CARGO';
   readonly priceXof: number;
   readonly rushHour: boolean | null;
 }

@@ -15,6 +15,7 @@ import {
   type DemoComparison,
   type DemoCriterion,
   type DemoMode,
+  type ServiceType,
 } from '@/demo/scenario';
 import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
 import {
@@ -97,7 +98,16 @@ const GLYPH: Record<DemoMode, GlyphShape> = {
   TAXI: 'taxi',
   WORO: 'woro',
   GBAKA: 'gbaka',
+  MOTO: 'moto',
+  TRICYCLE: 'tricycle',
+  CARGO: 'cargo',
 };
+
+/** Les deux prestations comparées — mêmes moteurs, modes différents. */
+const SERVICES: readonly { code: ServiceType; label: string }[] = [
+  { code: 'COURSE', label: '🧍 Me déplacer' },
+  { code: 'LIVRAISON', label: '📦 Envoyer un colis' },
+];
 
 function fareAmount(o: RankableOption): number | null {
   return o.fare.available ? o.fare.value.amount : null;
@@ -261,6 +271,9 @@ export default function DemoPage() {
   const [fromId, setFromId] = useState<string>(deepLinked ? urlFrom : 'cocody');
   const [toId, setToId] = useState<string>(deepLinked ? urlTo : 'plateau');
   const [criterion, setCriterion] = useState<DemoCriterion>(asCrit(params.get('tri')));
+  const [service, setService] = useState<ServiceType>(
+    params.get('quoi') === 'livraison' ? 'LIVRAISON' : 'COURSE',
+  );
   const [view, setView] = useState<View>(deepLinked ? 'results' : 'search');
   const [optionId, setOptionId] = useState<string | null>(null);
   const [recents, setRecents] = useState<SavedTrip[]>(() =>
@@ -408,12 +421,12 @@ export default function DemoPage() {
   // une adresse libre → corridor de points (distance serveur, repli estimé).
   const bothLieux = KNOWN.has(fromId) && KNOWN.has(toId);
   const cmp: DemoComparison | null = useMemo(() => {
-    if (bothLieux) return comparePair(fromId, toId, criterion, liveKm ?? undefined);
+    if (bothLieux) return comparePair(fromId, toId, criterion, liveKm ?? undefined, service);
     const a = resolvePoint(fromId);
     const b = resolvePoint(toId);
     if (!a || !b || fromId === toId) return null;
-    return comparePoints(a.name, b.name, liveKm ?? roadEstimateKm(a, b), criterion);
-  }, [bothLieux, fromId, toId, criterion, liveKm]);
+    return comparePoints(a.name, b.name, liveKm ?? roadEstimateKm(a, b), criterion, service);
+  }, [bothLieux, fromId, toId, criterion, liveKm, service]);
 
   // Opérateurs publiés (invariant I4 — lus en base, jamais en dur).
   const [operators, setOperators] = useState<Operator[] | null>(null);
@@ -454,8 +467,16 @@ export default function DemoPage() {
   const toCommune = resolvePoint(toId);
 
   /** Reflète le trajet dans l'URL (lien partageable / rechargeable). */
-  function syncUrl(from: string, to: string, crit: DemoCriterion) {
-    setParams({ de: from, a: to, tri: crit }, { replace: true });
+  function syncUrl(from: string, to: string, crit: DemoCriterion, svc: ServiceType = service) {
+    setParams(
+      { de: from, a: to, tri: crit, ...(svc === 'LIVRAISON' ? { quoi: 'livraison' } : {}) },
+      { replace: true },
+    );
+  }
+
+  function pickService(svc: ServiceType) {
+    setService(svc);
+    if (view === 'results' || view === 'detail') syncUrl(fromId, toId, criterion, svc);
   }
 
   function showResults(from: string, to: string, crit: DemoCriterion) {
@@ -582,22 +603,49 @@ export default function DemoPage() {
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
         {view === 'search' && (
           <section aria-label="Recherche">
-            <h1 className="mb-1 text-2xl font-extrabold tracking-tight">On va où ?</h1>
+            {/* Personne ou colis — même comparateur, modes différents */}
+            <div
+              className="mb-4 flex gap-1 rounded-xl bg-muted p-1"
+              role="group"
+              aria-label="Type de prestation"
+            >
+              {SERVICES.map((s) => (
+                <button
+                  key={s.code}
+                  type="button"
+                  onClick={() => pickService(s.code)}
+                  aria-pressed={service === s.code}
+                  className={
+                    'flex-1 rounded-lg px-2 py-2 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                    (service === s.code
+                      ? 'bg-background font-bold text-foreground shadow-sm ring-1 ring-[#B9722A]/45'
+                      : 'text-muted-foreground hover:text-foreground')
+                  }
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            <h1 className="mb-1 text-2xl font-extrabold tracking-tight">
+              {service === 'LIVRAISON' ? 'On envoie où ?' : 'On va où ?'}
+            </h1>
             <p className="mb-4 text-sm text-muted-foreground">
-              Choisissez le départ et l’arrivée — on compare les prix pour vous.
+              {service === 'LIVRAISON'
+                ? 'Choisissez l’enlèvement et la livraison — on compare les prix pour vous.'
+                : 'Choisissez le départ et l’arrivée — on compare les prix pour vous.'}
             </p>
 
             {/* Sélecteurs origine → destination — le choix se fait plein écran */}
             <div className="relative flex flex-col gap-2 rounded-2xl border bg-card p-3">
               <PlaceTrigger
-                label="Départ"
+                label={service === 'LIVRAISON' ? 'Enlèvement' : 'Départ'}
                 dotClass="bg-[#5C6B2E]"
                 value={fromId}
                 onPress={() => setSheet('from')}
               />
               <div className="ml-1 h-3 border-l border-dashed" />
               <PlaceTrigger
-                label="Arrivée"
+                label={service === 'LIVRAISON' ? 'Livraison' : 'Arrivée'}
                 dotClass="bg-[#B9722A]"
                 value={toId}
                 onPress={() => setSheet('to')}
@@ -767,6 +815,30 @@ export default function DemoPage() {
               </span>
             </div>
 
+            {/* Personne ou colis */}
+            <div
+              className="mb-2 flex gap-1 rounded-xl bg-muted p-1"
+              role="group"
+              aria-label="Type de prestation"
+            >
+              {SERVICES.map((s) => (
+                <button
+                  key={s.code}
+                  type="button"
+                  onClick={() => pickService(s.code)}
+                  aria-pressed={service === s.code}
+                  className={
+                    'flex-1 rounded-lg px-2 py-1.5 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                    (service === s.code
+                      ? 'bg-background font-bold text-foreground shadow-sm ring-1 ring-[#B9722A]/45'
+                      : 'text-muted-foreground hover:text-foreground')
+                  }
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+
             {/* Sélecteur de critère — collant pendant le défilement */}
             <div
               className="sticky top-0 z-30 mb-3 flex gap-1 rounded-xl bg-muted p-1 shadow-sm"
@@ -791,7 +863,7 @@ export default function DemoPage() {
               ))}
             </div>
             <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Toutes les options
+              Toutes les options{service === 'LIVRAISON' ? ' · envoi de colis' : ''}
             </p>
             <div className="flex flex-col gap-2.5">
               {(() => {
@@ -897,75 +969,174 @@ export default function DemoPage() {
               })()}
             </div>
 
-            {/* Lignes cartographiées — la décomposition « de gare en gare » */}
-            {transit && (transit.lignes.length > 0 || transit.correspondances.length > 0) && (
-              <div className="mt-4 rounded-2xl border bg-card p-4">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                  {transit.lignes.length > 0
-                    ? '🚌 Lignes utiles pour ce trajet'
-                    : 'Pas de ligne directe — avec une correspondance'}
-                </p>
-                {(() => {
-                  // Le serveur trie déjà par marche totale : la première ligne
-                  // EST la meilleure — on le dit, au lieu de laisser analyser.
-                  const meilleure = transit.lignes[0];
-                  const marche = meilleure ? totalWalkM(meilleure) : null;
-                  const visibles = showAllLines ? transit.lignes : transit.lignes.slice(0, 3);
-                  return (
+            {/* Lignes cartographiées — pour les personnes (pas de donnée colis) */}
+            {service === 'COURSE' &&
+              transit &&
+              (transit.lignes.length > 0 || transit.correspondances.length > 0) && (
+                <div className="mt-4 rounded-2xl border bg-card p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {transit.lignes.length > 0
+                      ? '🚌 Lignes utiles pour ce trajet'
+                      : 'Pas de ligne directe — avec une correspondance'}
+                  </p>
+                  {(() => {
+                    // Le serveur trie déjà par marche totale : la première ligne
+                    // EST la meilleure — on le dit, au lieu de laisser analyser.
+                    const meilleure = transit.lignes[0];
+                    const marche = meilleure ? totalWalkM(meilleure) : null;
+                    const visibles = showAllLines ? transit.lignes : transit.lignes.slice(0, 3);
+                    return (
+                      <>
+                        {meilleure && marche !== null && transit.lignes.length > 1 && (
+                          <p className="mt-2 text-[12.5px] font-bold leading-snug text-[#5C6B2E]">
+                            ★ Meilleure ligne :{' '}
+                            {LIGNE_META[meilleure.mode]?.label ?? meilleure.mode}
+                            {meilleure.ref ? ` ${meilleure.ref}` : ''} — seulement {fmtWalk(marche)}{' '}
+                            de marche au total.
+                          </p>
+                        )}
+                        <ul className="mt-2 space-y-2.5">
+                          {visibles.map((l, i) => {
+                            const montee = fmtWalk(l.montee_m);
+                            const descente = fmtWalk(l.descente_m);
+                            const best = i === 0 && marche !== null && transit.lignes.length > 1;
+                            const tracable = typeof l.id === 'number';
+                            const active = tracable && traceSel?.key === `l:${l.id}`;
+                            return (
+                              <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleTrace(l)}
+                                  disabled={!tracable}
+                                  aria-pressed={active}
+                                  className={
+                                    '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+                                    (active
+                                      ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
+                                      : best
+                                        ? 'bg-[#5C6B2E]/8 ring-1 ring-[#5C6B2E]/25'
+                                        : tracable
+                                          ? 'hover:bg-muted/40'
+                                          : '')
+                                  }
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                      {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
+                                      {LIGNE_META[l.mode]?.label ?? l.mode}
+                                      {l.ref ? ` ${l.ref}` : ''}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate font-medium">
+                                      {cleanLineName(l.nom)}
+                                    </span>
+                                    {tracable && <Chevron />}
+                                  </div>
+                                  {montee && descente && (
+                                    <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                      🚶 {montee} au départ · {descente} à l’arrivée
+                                    </p>
+                                  )}
+                                  {active && (
+                                    <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
+                                      {traceLayers
+                                        ? 'Tracé affiché sur la carte ↓ (toucher pour retirer)'
+                                        : 'Chargement du tracé…'}
+                                    </p>
+                                  )}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        {transit.lignes.length > 3 && (
+                          <button
+                            type="button"
+                            onClick={() => setShowAllLines((v) => !v)}
+                            className="mt-2 text-[12px] font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {showAllLines
+                              ? 'Réduire ↑'
+                              : `Voir les ${transit.lignes.length} lignes ↓`}
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
+
+                  {transit.correspondances.length > 0 && (
                     <>
-                      {meilleure && marche !== null && transit.lignes.length > 1 && (
-                        <p className="mt-2 text-[12.5px] font-bold leading-snug text-[#5C6B2E]">
-                          ★ Meilleure ligne : {LIGNE_META[meilleure.mode]?.label ?? meilleure.mode}
-                          {meilleure.ref ? ` ${meilleure.ref}` : ''} — seulement {fmtWalk(marche)}{' '}
-                          de marche au total.
+                      {transit.lignes.length > 0 && (
+                        <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Ou avec une correspondance
                         </p>
                       )}
-                      <ul className="mt-2 space-y-2.5">
-                        {visibles.map((l, i) => {
-                          const montee = fmtWalk(l.montee_m);
-                          const descente = fmtWalk(l.descente_m);
-                          const best = i === 0 && marche !== null && transit.lignes.length > 1;
-                          const tracable = typeof l.id === 'number';
-                          const active = tracable && traceSel?.key === `l:${l.id}`;
+                      <ul className="mt-1.5 space-y-2.5">
+                        {transit.correspondances.slice(0, 3).map((c) => {
+                          const tracable =
+                            typeof c.ligne1_id === 'number' && typeof c.ligne2_id === 'number';
+                          const active =
+                            tracable && traceSel?.key === `c:${c.ligne1_id}:${c.ligne2_id}`;
                           return (
-                            <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
+                            <li key={`${c.ligne1}__${c.ligne2}`} className="text-[13px]">
                               <button
                                 type="button"
-                                onClick={() => toggleTrace(l)}
+                                onClick={() => toggleCorrTrace(c)}
                                 disabled={!tracable}
                                 aria-pressed={active}
                                 className={
                                   '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
                                   (active
                                     ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
-                                    : best
-                                      ? 'bg-[#5C6B2E]/8 ring-1 ring-[#5C6B2E]/25'
-                                      : tracable
-                                        ? 'hover:bg-muted/40'
-                                        : '')
+                                    : tracable
+                                      ? 'hover:bg-muted/40'
+                                      : '')
                                 }
                               >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                   <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                                    {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
-                                    {LIGNE_META[l.mode]?.label ?? l.mode}
-                                    {l.ref ? ` ${l.ref}` : ''}
+                                    {LIGNE_META[c.mode1]?.emoji ?? '🚏'}{' '}
+                                    {LIGNE_META[c.mode1]?.label ?? c.mode1}
+                                    {c.ref1 ? ` ${c.ref1}` : ''}
                                   </span>
                                   <span className="min-w-0 flex-1 truncate font-medium">
-                                    {cleanLineName(l.nom)}
+                                    {cleanLineName(c.ligne1)}
                                   </span>
                                   {tracable && <Chevron />}
                                 </div>
-                                {montee && descente && (
-                                  <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                                    🚶 {montee} au départ · {descente} à l’arrivée
-                                  </p>
-                                )}
+                                <div className="mt-0.5 flex items-baseline gap-1.5">
+                                  <span aria-hidden="true" className="pl-2 text-muted-foreground">
+                                    ↳
+                                  </span>
+                                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                    {LIGNE_META[c.mode2]?.emoji ?? '🚏'}{' '}
+                                    {LIGNE_META[c.mode2]?.label ?? c.mode2}
+                                    {c.ref2 ? ` ${c.ref2}` : ''}
+                                  </span>
+                                  <span className="min-w-0 truncate font-medium">
+                                    {cleanLineName(c.ligne2)}
+                                  </span>
+                                </div>
+                                <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                  🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
+                                  {c.gare ? (
+                                    <>
+                                      à <b className="text-foreground/80">{c.gare}</b>
+                                      {c.correspondance_m >= 40
+                                        ? ` (${fmtWalk(c.correspondance_m)})`
+                                        : ''}
+                                    </>
+                                  ) : c.correspondance_m < 40 ? (
+                                    'au même endroit'
+                                  ) : (
+                                    fmtWalk(c.correspondance_m)
+                                  )}{' '}
+                                  · descente {fmtWalk(c.descente_m)}
+                                </p>
                                 {active && (
                                   <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
                                     {traceLayers
-                                      ? 'Tracé affiché sur la carte ↓ (toucher pour retirer)'
-                                      : 'Chargement du tracé…'}
+                                      ? 'Tracés affichés sur la carte ↓ (toucher pour retirer)'
+                                      : 'Chargement des tracés…'}
                                   </p>
                                 )}
                               </button>
@@ -973,111 +1144,15 @@ export default function DemoPage() {
                           );
                         })}
                       </ul>
-                      {transit.lignes.length > 3 && (
-                        <button
-                          type="button"
-                          onClick={() => setShowAllLines((v) => !v)}
-                          className="mt-2 text-[12px] font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {showAllLines
-                            ? 'Réduire ↑'
-                            : `Voir les ${transit.lignes.length} lignes ↓`}
-                        </button>
-                      )}
                     </>
-                  );
-                })()}
+                  )}
 
-                {transit.correspondances.length > 0 && (
-                  <>
-                    {transit.lignes.length > 0 && (
-                      <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Ou avec une correspondance
-                      </p>
-                    )}
-                    <ul className="mt-1.5 space-y-2.5">
-                      {transit.correspondances.slice(0, 3).map((c) => {
-                        const tracable =
-                          typeof c.ligne1_id === 'number' && typeof c.ligne2_id === 'number';
-                        const active =
-                          tracable && traceSel?.key === `c:${c.ligne1_id}:${c.ligne2_id}`;
-                        return (
-                          <li key={`${c.ligne1}__${c.ligne2}`} className="text-[13px]">
-                            <button
-                              type="button"
-                              onClick={() => toggleCorrTrace(c)}
-                              disabled={!tracable}
-                              aria-pressed={active}
-                              className={
-                                '-mx-2 w-full rounded-xl px-2 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
-                                (active
-                                  ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
-                                  : tracable
-                                    ? 'hover:bg-muted/40'
-                                    : '')
-                              }
-                            >
-                              <div className="flex items-center gap-1.5">
-                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                                  {LIGNE_META[c.mode1]?.emoji ?? '🚏'}{' '}
-                                  {LIGNE_META[c.mode1]?.label ?? c.mode1}
-                                  {c.ref1 ? ` ${c.ref1}` : ''}
-                                </span>
-                                <span className="min-w-0 flex-1 truncate font-medium">
-                                  {cleanLineName(c.ligne1)}
-                                </span>
-                                {tracable && <Chevron />}
-                              </div>
-                              <div className="mt-0.5 flex items-baseline gap-1.5">
-                                <span aria-hidden="true" className="pl-2 text-muted-foreground">
-                                  ↳
-                                </span>
-                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                                  {LIGNE_META[c.mode2]?.emoji ?? '🚏'}{' '}
-                                  {LIGNE_META[c.mode2]?.label ?? c.mode2}
-                                  {c.ref2 ? ` ${c.ref2}` : ''}
-                                </span>
-                                <span className="min-w-0 truncate font-medium">
-                                  {cleanLineName(c.ligne2)}
-                                </span>
-                              </div>
-                              <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                                🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
-                                {c.gare ? (
-                                  <>
-                                    à <b className="text-foreground/80">{c.gare}</b>
-                                    {c.correspondance_m >= 40
-                                      ? ` (${fmtWalk(c.correspondance_m)})`
-                                      : ''}
-                                  </>
-                                ) : c.correspondance_m < 40 ? (
-                                  'au même endroit'
-                                ) : (
-                                  fmtWalk(c.correspondance_m)
-                                )}{' '}
-                                · descente {fmtWalk(c.descente_m)}
-                              </p>
-                              {active && (
-                                <p className="mt-0.5 text-[11px] font-semibold text-[#1E5AA8]">
-                                  {traceLayers
-                                    ? 'Tracés affichés sur la carte ↓ (toucher pour retirer)'
-                                    : 'Chargement des tracés…'}
-                                </p>
-                              )}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </>
-                )}
-
-                <p className="mt-2.5 text-[10.5px] leading-snug text-muted-foreground">
-                  D’après le réseau cartographié <b>OpenStreetMap</b> — lignes et tracés réels ·
-                  horaires et tarifs non disponibles.
-                </p>
-              </div>
-            )}
+                  <p className="mt-2.5 text-[10.5px] leading-snug text-muted-foreground">
+                    D’après le réseau cartographié <b>OpenStreetMap</b> — lignes et tracés réels ·
+                    horaires et tarifs non disponibles.
+                  </p>
+                </div>
+              )}
 
             {cmp.ranking.excluded.map((e) => (
               <div
@@ -1244,7 +1319,15 @@ export default function DemoPage() {
       </main>
       {sheet && (
         <PlaceSheet
-          label={sheet === 'from' ? 'Départ' : 'Arrivée'}
+          label={
+            sheet === 'from'
+              ? service === 'LIVRAISON'
+                ? 'Enlèvement'
+                : 'Départ'
+              : service === 'LIVRAISON'
+                ? 'Livraison'
+                : 'Arrivée'
+          }
           withGeolocation={sheet === 'from'}
           recentIds={recents.flatMap((t) => [t.fromId, t.toId])}
           onClose={() => setSheet(null)}

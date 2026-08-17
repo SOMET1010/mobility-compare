@@ -19,7 +19,20 @@ import { rankOptions, type RankableOption, type RankingResult } from '@/domain/r
 import { DEMO_ROUTING_PROVIDER, DEMO_TIME_VALUE_XOF_PER_MIN } from './simulation';
 import { roadDistanceKm } from './distances';
 
-export type DemoMode = 'VTC' | 'TAXI' | 'WORO' | 'GBAKA';
+export type DemoMode = 'VTC' | 'TAXI' | 'WORO' | 'GBAKA' | 'MOTO' | 'TRICYCLE' | 'CARGO';
+
+/**
+ * Type de prestation comparée : déplacer une PERSONNE (course) ou un
+ * COLIS (livraison). Mêmes moteurs (tarif tracé, classement neutre),
+ * modes différents.
+ */
+export type ServiceType = 'COURSE' | 'LIVRAISON';
+
+/** Modes proposés pour chaque type de prestation. */
+export const SERVICE_MODES: Record<ServiceType, readonly DemoMode[]> = {
+  COURSE: ['VTC', 'TAXI', 'WORO', 'GBAKA'],
+  LIVRAISON: ['MOTO', 'TRICYCLE', 'CARGO'],
+};
 
 export interface ModeMeta {
   readonly code: DemoMode;
@@ -64,15 +77,43 @@ export const MODE_META: Record<DemoMode, ModeMeta> = {
     color: '#3B5BA5',
     kind: 'FLAT',
   },
+  MOTO: {
+    code: 'MOTO',
+    label: 'Moto-coursier',
+    emoji: '🏍️',
+    note: 'colis léger, course dédiée',
+    color: '#C24657',
+    kind: 'METERED',
+  },
+  TRICYCLE: {
+    code: 'TRICYCLE',
+    label: 'Tricycle',
+    emoji: '🛺',
+    note: 'colis volumineux ou lourd',
+    color: '#8C6D1F',
+    kind: 'METERED',
+  },
+  CARGO: {
+    code: 'CARGO',
+    label: 'Coursier voiture',
+    emoji: '🚙',
+    note: 'colis fragile, à l’abri',
+    color: '#5E548E',
+    kind: 'METERED',
+  },
 };
 
 /** Paramètres de grille au compteur (fictifs) pour les modes METERED. */
 const METERED_PARAMS: Record<
-  'VTC' | 'TAXI',
+  'VTC' | 'TAXI' | 'MOTO' | 'TRICYCLE' | 'CARGO',
   { pickupFee: number; perKilometer: number; perMinute: number; minimumFare: number }
 > = {
   VTC: { pickupFee: 800, perKilometer: 260, perMinute: 30, minimumFare: 1500 },
   TAXI: { pickupFee: 500, perKilometer: 190, perMinute: 25, minimumFare: 1000 },
+  // Livraison — ordres de grandeur d'exemple, à confirmer par relevés terrain.
+  MOTO: { pickupFee: 400, perKilometer: 150, perMinute: 10, minimumFare: 800 },
+  TRICYCLE: { pickupFee: 700, perKilometer: 200, perMinute: 12, minimumFare: 1500 },
+  CARGO: { pickupFee: 1000, perKilometer: 260, perMinute: 20, minimumFare: 2000 },
 };
 
 interface FixedFeeSpec {
@@ -261,7 +302,7 @@ function buildGrid(leg: Leg): FareGrid {
           perMinute: 0,
           minimumFare: leg.flatFare,
         }
-      : { ...base, ...METERED_PARAMS[leg.mode as 'VTC' | 'TAXI'] };
+      : { ...base, ...METERED_PARAMS[leg.mode as keyof typeof METERED_PARAMS] };
 
   const result = validateFareGrid(shape);
   if (!result.valid) {
@@ -452,9 +493,34 @@ export function pairDistanceKm(fromId: string, toId: string): number | null {
   return Math.round(haversineKm(a, b) * ROAD_FACTOR * 10) / 10;
 }
 
-const SPEED_KMH: Record<DemoMode, number> = { VTC: 24, TAXI: 22, WORO: 15, GBAKA: 13 };
-const OVERHEAD_MIN: Record<DemoMode, number> = { VTC: 4, TAXI: 3, WORO: 6, GBAKA: 9 };
-const WAIT_MIN: Record<DemoMode, number> = { VTC: 0, TAXI: 0, WORO: 5, GBAKA: 8 };
+const SPEED_KMH: Record<DemoMode, number> = {
+  VTC: 24,
+  TAXI: 22,
+  WORO: 15,
+  GBAKA: 13,
+  MOTO: 30,
+  TRICYCLE: 16,
+  CARGO: 22,
+};
+const OVERHEAD_MIN: Record<DemoMode, number> = {
+  VTC: 4,
+  TAXI: 3,
+  WORO: 6,
+  GBAKA: 9,
+  MOTO: 3,
+  TRICYCLE: 6,
+  CARGO: 5,
+};
+/** Pour la livraison : temps estimé d'arrivée du coursier au point d'enlèvement. */
+const WAIT_MIN: Record<DemoMode, number> = {
+  VTC: 0,
+  TAXI: 0,
+  WORO: 5,
+  GBAKA: 8,
+  MOTO: 6,
+  TRICYCLE: 12,
+  CARGO: 9,
+};
 
 function durationMinFor(mode: DemoMode, km: number): number {
   return Math.max(5, Math.round((km / SPEED_KMH[mode]) * 60 + OVERHEAD_MIN[mode]));
@@ -478,6 +544,7 @@ export function buildPairCorridor(
   fromId: string,
   toId: string,
   kmOverride?: number,
+  service: ServiceType = 'COURSE',
 ): DemoCorridor | null {
   const a = communeById.get(fromId);
   const b = communeById.get(toId);
@@ -488,7 +555,7 @@ export function buildPairCorridor(
       : null;
   const km = live ?? pairDistanceKm(fromId, toId);
   if (km === null) return null;
-  return buildCorridorFromKm({ id: a.id, name: a.name }, { id: b.id, name: b.name }, km);
+  return buildCorridorFromKm({ id: a.id, name: a.name }, { id: b.id, name: b.name }, km, service);
 }
 
 /** Extrémité de corridor : un quartier connu ou un point libre nommé. */
@@ -497,7 +564,25 @@ interface CorridorEndpoint {
   readonly name: string;
 }
 
-function buildCorridorFromKm(a: CorridorEndpoint, b: CorridorEndpoint, km: number): DemoCorridor {
+function buildCorridorFromKm(
+  a: CorridorEndpoint,
+  b: CorridorEndpoint,
+  km: number,
+  service: ServiceType = 'COURSE',
+): DemoCorridor {
+  // Livraison de colis : trois façons d'envoyer, toutes au « compteur »
+  // simulé (grille d'exemple tracée ligne à ligne, comme les courses).
+  // L'attente affichée est l'arrivée estimée du coursier à l'enlèvement.
+  if (service === 'LIVRAISON') {
+    const legs: Leg[] = SERVICE_MODES.LIVRAISON.map((mode) => ({
+      mode,
+      providerId: `op-${mode.toLowerCase()}-demo`,
+      durationMin: durationMinFor(mode, km),
+      waitMin: WAIT_MIN[mode],
+    }));
+    return { id: `${a.id}__${b.id}`, from: a.name, to: b.name, km, legs };
+  }
+
   const airport = a.id === 'aeroport' || b.id === 'aeroport';
   const meteredFees: readonly FixedFeeSpec[] | undefined = airport
     ? [{ code: 'AIRPORT', label: 'Supplément aéroport (exemple)', amount: 1000 }]
@@ -547,6 +632,9 @@ export const CO2_FACTOR_G_PER_KM: Record<DemoMode, number> = {
   TAXI: 150,
   WORO: 55,
   GBAKA: 45,
+  MOTO: 90,
+  TRICYCLE: 110,
+  CARGO: 190,
 };
 
 /** Estimation indicative de CO₂ (g) pour un mode sur une distance donnée. */
@@ -563,8 +651,9 @@ export function comparePair(
   toId: string,
   criterion: DemoCriterion = 'PRICE_TIME',
   kmOverride?: number,
+  service: ServiceType = 'COURSE',
 ): DemoComparison | null {
-  const corridor = buildPairCorridor(fromId, toId, kmOverride);
+  const corridor = buildPairCorridor(fromId, toId, kmOverride, service);
   return corridor ? compareCorridor(corridor, criterion) : null;
 }
 
@@ -579,12 +668,14 @@ export function comparePoints(
   toLabel: string,
   km: number,
   criterion: DemoCriterion = 'PRICE_TIME',
+  service: ServiceType = 'COURSE',
 ): DemoComparison | null {
   if (!Number.isFinite(km) || km <= 0 || !fromLabel.trim() || !toLabel.trim()) return null;
   const corridor = buildCorridorFromKm(
     { id: 'point-depart', name: fromLabel.trim() },
     { id: 'point-arrivee', name: toLabel.trim() },
     Math.round(km * 10) / 10,
+    service,
   );
   return compareCorridor(corridor, criterion);
 }

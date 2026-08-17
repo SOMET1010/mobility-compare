@@ -22,8 +22,11 @@ const GLYPH: Record<DemoMode, GlyphShape> = {
   TAXI: 'taxi',
   WORO: 'woro',
   GBAKA: 'gbaka',
+  MOTO: 'moto',
+  TRICYCLE: 'tricycle',
+  CARGO: 'cargo',
 };
-const MODE_ORDER: DemoMode[] = ['VTC', 'TAXI', 'WORO', 'GBAKA'];
+const MODE_ORDER: DemoMode[] = ['VTC', 'TAXI', 'WORO', 'GBAKA', 'MOTO', 'TRICYCLE', 'CARGO'];
 
 const communeName = (id: string) => COMMUNES.find((c) => c.id === id)?.name ?? id;
 const dateFr = (iso: string) =>

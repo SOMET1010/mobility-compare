@@ -20,7 +20,7 @@ export interface RankableOption {
   /** Identifiant stable. Sert aussi de clé de départage déterministe. */
   readonly optionId: string;
   readonly providerId: string;
-  readonly mode: 'VTC' | 'TAXI' | 'WORO' | 'GBAKA';
+  readonly mode: 'VTC' | 'TAXI' | 'WORO' | 'GBAKA' | 'MOTO' | 'TRICYCLE' | 'CARGO';
   /** Prix estimé, ou absence motivée. */
   readonly fare: Estimation<FareResult>;
   /** Durée de trajet estimée. `null` si indisponible. */

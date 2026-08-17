@@ -68,6 +68,9 @@ export const PLAUSIBLE_XOF: Record<DemoMode, readonly [number, number]> = {
   TAXI: [500, 12000],
   WORO: [150, 1500],
   GBAKA: [100, 1000],
+  MOTO: [500, 8000],
+  TRICYCLE: [1000, 15000],
+  CARGO: [1500, 20000],
 };
 
 export function isOutlier(mode: DemoMode, priceXof: number): boolean {
