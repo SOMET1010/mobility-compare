@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { comparePair, comparePoints, MODE_META, SERVICE_MODES } from '@/demo/scenario';
+import { comparePair, comparePoints, MODE_META, SERVICE_MODES, waitMinFor } from '@/demo/scenario';
 
 /**
  * Livraison de colis : mêmes moteurs que les courses (tarif tracé,
@@ -42,6 +42,31 @@ describe('comparateur livraison', () => {
       expect(m.label.length).toBeGreaterThan(0);
       expect(m.note.length).toBeGreaterThan(0);
       expect(m.color).toMatch(/^#/);
+    }
+  });
+});
+
+describe('waitMinFor — l’attente est un profil horaire, pas une constante', () => {
+  const pointe = new Date('2026-08-17T08:00:00'); // pointe du matin (heure locale)
+  const nuit = new Date('2026-08-17T23:30:00'); // nuit
+  const creux = new Date('2026-08-17T10:30:00'); // matinée dense (facteur 1)
+
+  it('à la pointe : les partagés se remplissent vite, les réservés se font attendre', () => {
+    expect(waitMinFor('WORO', pointe)).toBeLessThan(waitMinFor('WORO', creux));
+    expect(waitMinFor('GBAKA', pointe)).toBeLessThan(waitMinFor('GBAKA', creux));
+    expect(waitMinFor('VTC', pointe)).toBeGreaterThan(waitMinFor('VTC', creux));
+    expect(waitMinFor('TAXI', pointe)).toBeGreaterThan(waitMinFor('TAXI', creux));
+  });
+
+  it('la nuit : c’est l’inverse — remplissage long, chauffeurs rares', () => {
+    expect(waitMinFor('WORO', nuit)).toBeGreaterThan(waitMinFor('WORO', creux));
+    expect(waitMinFor('VTC', nuit)).toBeGreaterThan(waitMinFor('VTC', creux));
+  });
+
+  it('jamais zéro ni négatif — une attente nulle serait un mensonge', () => {
+    for (const m of ['VTC', 'TAXI', 'WORO', 'GBAKA', 'MOTO', 'TRICYCLE', 'CARGO'] as const) {
+      expect(waitMinFor(m, pointe)).toBeGreaterThanOrEqual(1);
+      expect(waitMinFor(m, nuit)).toBeGreaterThanOrEqual(1);
     }
   });
 });

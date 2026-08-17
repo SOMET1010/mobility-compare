@@ -17,6 +17,7 @@ import { computeFare, validateFareGrid, type FareGrid } from '@/domain/pricing/d
 import { fixedClock } from '@/domain/pricing/clock';
 import { rankOptions, type RankableOption, type RankingResult } from '@/domain/ranking';
 import { DEMO_ROUTING_PROVIDER, DEMO_TIME_VALUE_XOF_PER_MIN } from './simulation';
+import { estimateTraffic } from './ecosystem';
 import { roadDistanceKm } from './distances';
 
 export type DemoMode = 'VTC' | 'TAXI' | 'WORO' | 'GBAKA' | 'MOTO' | 'TRICYCLE' | 'CARGO';
@@ -511,16 +512,33 @@ const OVERHEAD_MIN: Record<DemoMode, number> = {
   TRICYCLE: 6,
   CARGO: 5,
 };
-/** Pour la livraison : temps estimé d'arrivée du coursier au point d'enlèvement. */
-const WAIT_MIN: Record<DemoMode, number> = {
-  VTC: 0,
-  TAXI: 0,
+/**
+ * Attente TYPE avant le départ, selon l'heure d'Abidjan — le vrai souci de
+ * certaines compagnies n'est pas le prix mais l'attente :
+ * - VTC / taxi / coursiers : attendre le véhicule — plus long à la pointe
+ *   (chauffeurs occupés) et la nuit (moins de chauffeurs en service) ;
+ * - woro-woro / gbaka : attendre le REMPLISSAGE — rapide à la pointe,
+ *   long la nuit.
+ * Profil simulé et déterministe (même famille que la circulation, DEP-009),
+ * étiqueté comme tel à l'écran — jamais présenté comme une mesure.
+ */
+const WAIT_BASE_MIN: Record<DemoMode, number> = {
+  VTC: 6,
+  TAXI: 4,
   WORO: 5,
   GBAKA: 8,
   MOTO: 6,
   TRICYCLE: 12,
   CARGO: 9,
 };
+
+export function waitMinFor(mode: DemoMode, at: Date = new Date()): number {
+  const partage = mode === 'WORO' || mode === 'GBAKA';
+  const { level } = estimateTraffic(at);
+  const facteur =
+    level === 'SATURE' ? (partage ? 0.6 : 1.5) : level === 'FLUIDE' ? (partage ? 1.8 : 1.3) : 1;
+  return Math.max(1, Math.round(WAIT_BASE_MIN[mode] * facteur));
+}
 
 function durationMinFor(mode: DemoMode, km: number): number {
   return Math.max(5, Math.round((km / SPEED_KMH[mode]) * 60 + OVERHEAD_MIN[mode]));
@@ -578,7 +596,7 @@ function buildCorridorFromKm(
       mode,
       providerId: `op-${mode.toLowerCase()}-demo`,
       durationMin: durationMinFor(mode, km),
-      waitMin: WAIT_MIN[mode],
+      waitMin: waitMinFor(mode),
     }));
     return { id: `${a.id}__${b.id}`, from: a.name, to: b.name, km, legs };
   }
@@ -593,26 +611,28 @@ function buildCorridorFromKm(
       mode: 'VTC',
       providerId: 'op-vtc-demo',
       durationMin: durationMinFor('VTC', km),
+      waitMin: waitMinFor('VTC'),
       fixedFees: meteredFees,
     },
     {
       mode: 'TAXI',
       providerId: 'op-taxi-demo',
       durationMin: durationMinFor('TAXI', km),
+      waitMin: waitMinFor('TAXI'),
       fixedFees: meteredFees,
     },
     {
       mode: 'WORO',
       providerId: 'op-woro-demo',
       durationMin: durationMinFor('WORO', km),
-      waitMin: WAIT_MIN.WORO,
+      waitMin: waitMinFor('WORO'),
       flatFare: flatFareFor('WORO', km),
     },
     {
       mode: 'GBAKA',
       providerId: 'op-gbaka-demo',
       durationMin: durationMinFor('GBAKA', km),
-      waitMin: WAIT_MIN.GBAKA,
+      waitMin: waitMinFor('GBAKA'),
       flatFare: flatFareFor('GBAKA', km),
     },
   ];

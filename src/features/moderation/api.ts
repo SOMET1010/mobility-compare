@@ -16,6 +16,7 @@ export interface PendingObservation {
   readonly mode: DemoMode;
   readonly price_xof: number;
   readonly rush_hour: boolean | null;
+  readonly wait_min: number | null;
   readonly comment: string | null;
   readonly source: 'app' | 'import';
   readonly created_at: string;

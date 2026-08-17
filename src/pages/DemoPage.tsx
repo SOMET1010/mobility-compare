@@ -754,8 +754,11 @@ export default function DemoPage() {
                           {minTotal(r.option)} min
                         </span>
                         {r.option.waitSeconds ? (
-                          <span className="block text-tiny tabular-nums text-muted-foreground">
-                            dont {Math.round(r.option.waitSeconds / 60)} d’attente
+                          <span
+                            className="block text-tiny tabular-nums text-muted-foreground"
+                            title="Attente habituelle à cette heure (remplissage ou arrivée du véhicule) — profil type, pas une mesure"
+                          >
+                            ⏱ dont {Math.round(r.option.waitSeconds / 60)} d’attente
                           </span>
                         ) : null}
                       </span>
@@ -1101,6 +1104,12 @@ export default function DemoPage() {
                     Valeur du temps : {cmp.timeValueXofPerMinute} FCFA/min (exemple).
                   </p>
                 )}
+                <p className="text-label leading-snug text-muted-foreground">
+                  ⏱ Les <b>attentes</b> sont des profils horaires types : à l’heure de pointe,
+                  woro-woro et gbaka se remplissent vite mais VTC et taxis se font attendre — la
+                  nuit, c’est l’inverse. Ce ne sont pas des mesures temps réel ; le classement «
+                  plus rapide » compte toujours porte-à-porte, attente comprise.
+                </p>
                 <p className="text-label leading-snug text-muted-foreground">
                   Ordre d’affichage : les VTC d’abord. Les badges « moins cher / plus rapide /
                   meilleur rapport » restent calculés de façon <b>neutre</b> sur tous les modes —

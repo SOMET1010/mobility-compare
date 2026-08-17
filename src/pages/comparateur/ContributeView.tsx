@@ -19,6 +19,7 @@ export function ContributeView({
 }) {
   const [mode, setMode] = useState<DemoMode>(cmp.options[0]!.mode);
   const [price, setPrice] = useState<string>('');
+  const [waitMin, setWaitMin] = useState<string>('');
   const [sending, setSending] = useState(false);
 
   async function submit() {
@@ -35,6 +36,7 @@ export function ContributeView({
       mode,
       priceXof: Number(price || 0),
       rushHour: null,
+      waitMin: waitMin === '' ? null : Number(waitMin),
     });
     setSending(false);
     if (result.outcome === 'SAVED') {
@@ -52,6 +54,7 @@ export function ContributeView({
       });
     }
     setPrice('');
+    setWaitMin('');
     onBack();
   }
 
@@ -121,6 +124,25 @@ export function ContributeView({
         placeholder="ex. 350"
         className="mb-4 w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
+
+      <label
+        htmlFor="contrib-wait"
+        className="mb-1.5 block text-label font-bold uppercase tracking-wider text-muted-foreground"
+      >
+        ⏱ Attente avant le départ (minutes, facultatif)
+      </label>
+      <input
+        id="contrib-wait"
+        inputMode="numeric"
+        value={waitMin}
+        onChange={(e) => setWaitMin(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+        placeholder="ex. 10 — remplissage ou arrivée du véhicule"
+        className="mb-1 w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
+      <p className="mb-4 text-tiny leading-snug text-muted-foreground">
+        Avec certaines compagnies, l’attente est le vrai souci — vos relevés d’attente rendront
+        cette réalité visible, mode par mode et heure par heure.
+      </p>
 
       <Button className="h-11 w-full" onClick={submit} disabled={sending}>
         {sending ? 'Envoi…' : IS_BACKEND_CONFIGURED ? 'Envoyer mon relevé' : 'Envoyer (simulation)'}

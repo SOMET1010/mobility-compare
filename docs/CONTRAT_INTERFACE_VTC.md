@@ -23,13 +23,19 @@ l'usager) :
   `{ "depart": {"lat","lng"}, "arrivee": {"lat","lng"}, "produit"?: "…" }`
 - **Réponse** :
   `{ "prix_min": 3500, "prix_max": 4200, "devise": "XOF",
-   "attente_s": 240, "duree_s": 1500, "produit": "standard" }`
+ "attente_s": 240, "duree_s": 1500, "produit": "standard" }`
 - **Exigences** : réponse < 2 s ; fraîcheur temps réel ; authentification par
   clé serveur fournie par la plateforme (stockée côté serveur MOBILIS,
   jamais dans un navigateur) ; quota convenu (ordre de grandeur :
   1 appel/devis affiché, mise en cache ≤ 60 s).
 - **Si le service ne répond pas** : MOBILIS retombe sur son estimation
   marquée « estimation » — jamais un faux prix réel (absence honnête).
+- **L'attente est contractuelle** : `attente_s` est l'engagement réel de la
+  plateforme à cet instant — c'est elle que MOBILIS affiche et que le
+  classement « plus rapide » compte (porte-à-porte = attente + trajet).
+  Avec certaines compagnies, l'attente est le vrai souci des usagers :
+  une attente sincère vaut mieux qu'une attente flatteuse démentie au
+  premier trajet.
 
 ### Option B — Grille tarifaire officielle (repli sans API)
 

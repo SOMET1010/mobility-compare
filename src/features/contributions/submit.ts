@@ -16,6 +16,8 @@ export interface ContributionInput {
   readonly mode: 'VTC' | 'TAXI' | 'WORO' | 'GBAKA' | 'MOTO' | 'TRICYCLE' | 'CARGO';
   readonly priceXof: number;
   readonly rushHour: boolean | null;
+  /** Attente vécue avant le départ, en minutes (0–120) — facultative. */
+  readonly waitMin?: number | null;
 }
 
 export type ContributionResult =
@@ -33,6 +35,10 @@ export async function submitContribution(input: ContributionInput): Promise<Cont
     mode: input.mode,
     price_xof: input.priceXof,
     rush_hour: input.rushHour,
+    wait_min:
+      typeof input.waitMin === 'number' && input.waitMin >= 0 && input.waitMin <= 120
+        ? Math.round(input.waitMin)
+        : null,
     source: 'app',
   });
 

@@ -196,6 +196,7 @@ export default function Moderation() {
                         minute: '2-digit',
                       })}
                       {obs.rush_hour === true ? ' · heure de pointe' : ''}
+                      {typeof obs.wait_min === 'number' ? ` · ⏱ ${obs.wait_min} min d’attente` : ''}
                       {' · source : '}
                       {obs.source === 'app' ? 'application' : 'import CSV'}
                     </div>

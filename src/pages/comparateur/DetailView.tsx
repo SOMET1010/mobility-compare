@@ -185,7 +185,7 @@ export function DetailView({
         <div className="rounded-xl bg-muted/50 p-3 text-center">
           <div className="text-lg font-extrabold tabular-nums leading-tight">{minTotal(o)} min</div>
           <div className="mt-0.5 text-tiny font-semibold text-muted-foreground">
-            porte-à-porte{waitMin ? ` · dont ${waitMin} d’attente` : ''}
+            porte-à-porte{waitMin ? ` · dont ⏱ ${waitMin} d’attente` : ''}
           </div>
         </div>
         <div className="rounded-xl bg-muted/50 p-3 text-center">

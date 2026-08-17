@@ -61,7 +61,7 @@ Deno.serve(async (req: Request) => {
     const { data, error } = await admin
       .from('fare_observations')
       .select(
-        'id, observed_at, from_commune, to_commune, mode, price_xof, rush_hour, comment, source, created_at',
+        'id, observed_at, from_commune, to_commune, mode, price_xof, rush_hour, wait_min, comment, source, created_at',
       )
       .eq('status', 'PENDING')
       .order('created_at', { ascending: true })
@@ -94,7 +94,9 @@ Deno.serve(async (req: Request) => {
   if (body.action === 'candidatures') {
     const { data, error } = await admin
       .from('operator_applications')
-      .select('id, created_at, nom, mode, contact, reference_agrement, message, statut')
+      .select(
+        'id, created_at, nom, mode, contact, reference_agrement, message, api_devis_url, contact_technique, statut',
+      )
       .in('statut', ['RECUE', 'EN_EXAMEN'])
       .order('created_at', { ascending: true })
       .limit(100);

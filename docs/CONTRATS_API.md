@@ -49,10 +49,10 @@ Deux modes sur le même point d'entrée :
 
 - **Desserte** — requête `{ "depart": {...}, "arrivee": {...} }` ; réponse
   `{ "disponible": true,
-   "lignes": [{ "id", "nom", "mode", "ref", "montee_m", "descente_m" }],
-   "correspondances": [{ "ligne1_id","ligne1","mode1","ref1","montee_m",
-      "ligne2_id","ligne2","mode2","ref2","descente_m",
-      "correspondance_m","gare","corr_lat","corr_lng" }] }`
+ "lignes": [{ "id", "nom", "mode", "ref", "montee_m", "descente_m" }],
+ "correspondances": [{ "ligne1_id","ligne1","mode1","ref1","montee_m",
+    "ligne2_id","ligne2","mode2","ref2","descente_m",
+    "correspondance_m","gare","corr_lat","corr_lng" }] }`
   `mode ∈ {GBAKA, WORO, BUS, BATEAU}` ; `gare` est nulle si aucun lieu connu
   à ≤ 250 m du point de changement (jamais inventée) ; les correspondances ne
   sont cherchées que si < 3 lignes directes.
@@ -150,7 +150,8 @@ c'est le contrat, pas une politesse.
 ### 2.4 Relevés terrain en lot (campagnes)
 
 CSV UTF-8, une ligne par relevé :
-`observed_at;from_commune;to_commune;mode;price_xof;rush_hour`
+`observed_at;from_commune;to_commune;mode;price_xof;rush_hour;wait_min`
+(`wait_min` : attente vécue en minutes, 0–120, vide si non relevée)
 → import dans la file de modération existante (aucune publication directe).
 
 ---
