@@ -59,6 +59,39 @@ export async function decide(
   return call(token, { action: 'decide', id, decision });
 }
 
+/** Candidature d'opérateur en file d'examen (table operator_applications). */
+export interface OperatorApplication {
+  readonly id: string;
+  readonly created_at: string;
+  readonly nom: string;
+  readonly mode: DemoMode;
+  readonly contact: string;
+  readonly reference_agrement: string | null;
+  readonly message: string | null;
+  readonly statut: 'RECUE' | 'EN_EXAMEN' | 'ACCEPTEE' | 'REFUSEE';
+}
+
+export type CandidatureStatut = 'EN_EXAMEN' | 'ACCEPTEE' | 'REFUSEE';
+
+export async function listCandidatures(
+  token: string,
+): Promise<ModerationResult<{ candidatures: OperatorApplication[] }>> {
+  return call(token, { action: 'candidatures' });
+}
+
+/**
+ * Change le statut d'une candidature. Accepter ne publie RIEN : la
+ * publication dans la table operators reste un geste séparé, avec statut
+ * d'agrément vérifié, daté et sourcé (invariant I4).
+ */
+export async function decideCandidature(
+  token: string,
+  id: string,
+  statut: CandidatureStatut,
+): Promise<ModerationResult<{ decided: { id: string; statut: string } }>> {
+  return call(token, { action: 'candidature_decide', id, statut });
+}
+
 /**
  * Borne de vraisemblance indicative par mode (aide visuelle du modérateur,
  * jamais une décision automatique — CDC M4, détection d'aberrations).

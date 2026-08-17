@@ -5,9 +5,13 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { COMMUNES, MODE_META } from '@/demo/scenario';
 import {
   decide,
+  decideCandidature,
   isOutlier,
+  listCandidatures,
   listPending,
   PLAUSIBLE_XOF,
+  type CandidatureStatut,
+  type OperatorApplication,
   type PendingObservation,
 } from '@/features/moderation/api';
 import {
@@ -231,6 +235,8 @@ export default function Moderation() {
               })}
             </div>
 
+            <CandidaturesPanel token={token} />
+
             <AudiencePanel token={token} />
 
             <AiConfigPanel token={token} />
@@ -238,6 +244,149 @@ export default function Moderation() {
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * File d'examen des candidatures d'opérateurs (page Partenaires).
+ * Accepter ne publie RIEN automatiquement : la publication dans la table
+ * operators reste un geste séparé, avec statut d'agrément vérifié, daté
+ * et sourcé (invariant I4).
+ */
+function CandidaturesPanel({ token }: { token: string }) {
+  const [liste, setListe] = useState<OperatorApplication[] | null>(null);
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  const charger = useCallback(async () => {
+    const res = await listCandidatures(token);
+    if (res.ok) {
+      setListe(res.value.candidatures);
+      setErreur(null);
+    } else setErreur(res.error);
+  }, [token]);
+
+  useEffect(() => {
+    void charger();
+  }, [charger]);
+
+  async function statuer(c: OperatorApplication, statut: CandidatureStatut) {
+    const res = await decideCandidature(token, c.id, statut);
+    if (!res.ok) {
+      toast('Échec — rien n’a changé', { description: res.error });
+      return;
+    }
+    const libelle =
+      statut === 'ACCEPTEE'
+        ? 'Candidature acceptée'
+        : statut === 'REFUSEE'
+          ? 'Candidature refusée'
+          : 'Candidature mise en examen';
+    toast(libelle, {
+      description:
+        statut === 'ACCEPTEE'
+          ? `${c.nom} — pensez à publier l’opérateur (table operators) avec un statut d’agrément vérifié, daté et sourcé.`
+          : c.nom,
+    });
+    if (statut === 'EN_EXAMEN') {
+      setListe((l) => (l ? l.map((x) => (x.id === c.id ? { ...x, statut } : x)) : l));
+    } else {
+      setListe((l) => (l ? l.filter((x) => x.id !== c.id) : l));
+    }
+  }
+
+  return (
+    <section className="mt-8 rounded-2xl border bg-card p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          Candidatures d’opérateurs
+        </h2>
+        <Button variant="outline" size="sm" onClick={charger}>
+          Actualiser
+        </Button>
+      </div>
+
+      {erreur && <p className="mt-2 text-[12.5px] text-muted-foreground">{erreur}</p>}
+      {liste === null && !erreur && (
+        <p className="mt-2 text-[12.5px] text-muted-foreground">Chargement…</p>
+      )}
+      {liste !== null && liste.length === 0 && !erreur && (
+        <p className="mt-2 text-[12.5px] text-muted-foreground">
+          Aucune candidature en attente — celles déposées sur la page Partenaires apparaîtront ici.
+        </p>
+      )}
+
+      <div className="mt-3 space-y-3">
+        {liste?.map((c) => (
+          <div key={c.id} className="rounded-xl border bg-background p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="font-bold">{c.nom}</span>
+              <span className="flex items-center gap-1.5">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                  {MODE_META[c.mode].emoji} {MODE_META[c.mode].label}
+                </span>
+                {c.statut === 'EN_EXAMEN' && (
+                  <span className="rounded-full bg-[#B9722A]/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B9722A]">
+                    En examen
+                  </span>
+                )}
+              </span>
+            </div>
+            <p className="mt-1 font-mono text-[12.5px]">{c.contact}</p>
+            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+              Déposée le{' '}
+              {new Date(c.created_at).toLocaleString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+              {c.reference_agrement ? (
+                <>
+                  {' '}
+                  · agrément déclaré : <b>{c.reference_agrement}</b> (à vérifier — jamais sur
+                  parole)
+                </>
+              ) : (
+                ' · aucun agrément déclaré'
+              )}
+            </p>
+            {c.message && (
+              <p className="mt-1.5 text-[12px] italic text-muted-foreground">« {c.message} »</p>
+            )}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-[#9A3412]/40 text-[#9A3412] hover:bg-[#9A3412]/8"
+                onClick={() => statuer(c, 'REFUSEE')}
+              >
+                Refuser
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={c.statut === 'EN_EXAMEN'}
+                onClick={() => statuer(c, 'EN_EXAMEN')}
+              >
+                En examen
+              </Button>
+              <Button
+                size="sm"
+                className="bg-[#5C6B2E] text-white hover:brightness-110"
+                onClick={() => statuer(c, 'ACCEPTEE')}
+              >
+                Accepter
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+        Accepter ne publie rien tout seul : la publication dans le comparateur exige un statut
+        d’agrément <b>vérifié auprès des sources officielles, daté et sourcé</b> (invariant I4).
+      </p>
+    </section>
   );
 }
 
