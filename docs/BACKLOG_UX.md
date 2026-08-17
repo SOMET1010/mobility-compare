@@ -36,3 +36,15 @@ attente, confiance) → **Partir**.
 
 La promesse n'est pas « combien coûte Yango ? » mais « quelle est la
 meilleure façon d'aller de A à B, maintenant, selon mes priorités ? ».
+
+## Reportés après le refactoring (décision du décideur, 17/08/2026)
+
+Les trois lots ci-dessous sont volontairement différés — « d'autres choses
+peuvent venir avant ». À ressortir quand le besoin le justifiera :
+
+- **Unifier le widget de l'accueil avec la vue recherche du comparateur**
+  (une seule implémentation de la sélection de lieux — audit C2).
+- **Migrer les fetchs sur React Query** (déjà installé, 0 usage — états
+  chargement/erreur/succès uniformes, audit C10).
+- **Prérendu / SEO** (titre et aperçu de lien dynamiques pour les trajets
+  partagés — les deux audits s'accordaient déjà pour le différer).
