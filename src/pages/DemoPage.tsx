@@ -17,6 +17,7 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
+import { cleanLineName, fetchLignes, type LigneProche } from '@/features/transit/lignes';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
@@ -64,6 +65,14 @@ const BADGE_LABEL: Record<BadgeCode, string> = {
  */
 const minTotal = (o: { durationSeconds: number | null; waitSeconds: number | null }) =>
   Math.round(((o.durationSeconds ?? 0) + (o.waitSeconds ?? 0)) / 60);
+
+/** Pastilles des lignes cartographiées (modes au-delà du comparateur). */
+const LIGNE_META: Record<string, { label: string; emoji: string }> = {
+  GBAKA: { label: 'Gbaka', emoji: '🚌' },
+  WORO: { label: 'Wôrô-wôrô', emoji: '🚐' },
+  BUS: { label: 'Bus', emoji: '🚍' },
+  BATEAU: { label: 'Bateau-bus', emoji: '⛴️' },
+};
 
 const GLYPH: Record<DemoMode, GlyphShape> = {
   VTC: 'vtc',
@@ -266,6 +275,24 @@ export default function DemoPage() {
     if (!a || !b || fromId === toId) return;
     fetchRoadRoute({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }).then((r) => {
       if (!cancelled && r) setLiveKm(r.km);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fromId, toId]);
+
+  // Lignes cartographiées passant près du départ ET de l'arrivée (gbaka,
+  // woro-woro, bus, bateau-bus) — la première brique de la décomposition
+  // « de gare en gare ». Indisponible → la section n'apparaît pas.
+  const [lignesProches, setLignesProches] = useState<LigneProche[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setLignesProches(null);
+    const a = resolvePoint(fromId);
+    const b = resolvePoint(toId);
+    if (!a || !b || fromId === toId) return;
+    fetchLignes({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }).then((l) => {
+      if (!cancelled) setLignesProches(l);
     });
     return () => {
       cancelled = true;
@@ -806,6 +833,32 @@ export default function DemoPage() {
                 );
               })()}
             </div>
+
+            {/* Lignes cartographiées — première brique « de gare en gare » */}
+            {lignesProches && lignesProches.length > 0 && (
+              <div className="mt-4 rounded-2xl border bg-card p-4">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Lignes passant près de ce trajet
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {lignesProches.slice(0, 6).map((l) => (
+                    <li
+                      key={`${l.mode}-${l.nom}`}
+                      className="flex items-baseline gap-2 text-[13px]"
+                    >
+                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                        {LIGNE_META[l.mode]?.emoji ?? '🚏'} {LIGNE_META[l.mode]?.label ?? l.mode}
+                        {l.ref ? ` ${l.ref}` : ''}
+                      </span>
+                      <span className="min-w-0 truncate font-medium">{cleanLineName(l.nom)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
+                  Réseau cartographié (OpenStreetMap) — tracés réels, sans horaires ni tarifs.
+                </p>
+              </div>
+            )}
 
             {cmp.ranking.excluded.map((e) => (
               <div

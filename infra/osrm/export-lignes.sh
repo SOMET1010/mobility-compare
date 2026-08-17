@@ -60,6 +60,14 @@ for tags, arrets, voies in lignes:
             nom = f"Ligne {tags['ref']}"
     if not nom:
         continue
+    # À Abidjan, gbakas et woro-woro sont souvent étiquetés route=bus dans
+    # OSM — le nom fait foi (« gbaka : … », « woro-woro : … »).
+    bas = nom.lower()
+    mode = MODES[tags['route']]
+    if bas.startswith('gbaka'):
+        mode = 'GBAKA'
+    elif bas.startswith(('woro', 'wôrô')):
+        mode = 'WORO'
     pts = [noeuds[a] for a in arrets if a in noeuds]
     trace = [noeuds[n] for v in voies for n in chemins.get(v, []) if n in noeuds]
     reste = 80 - len(pts)
@@ -78,7 +86,7 @@ for tags, arrets, voies in lignes:
     prets.append({
         'id': len(prets) + 1,  # identifiant stable par rang d'export
         'nom': nom[:160],
-        'mode': MODES[tags['route']],
+        'mode': mode,
         'ref': (tags.get('ref') or '')[:40],
         'operateur': (tags.get('operator') or tags.get('network') or '')[:80],
         'points': uniques[:80],
