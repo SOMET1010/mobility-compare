@@ -1,7 +1,13 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { PRODUCT } from '@/config/product';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
+import { Button } from '@/components/ui/button';
+import { MODE_META, type DemoMode } from '@/demo/scenario';
+import { submitCandidature } from '@/features/operators/candidature';
+import { IS_BACKEND_CONFIGURED } from '@/config/env';
 
 /**
  * Page Partenaires — registre institutionnel.
@@ -63,6 +69,155 @@ const NEEDS: { tag: string; title: string; body: string }[] = [
   },
 ];
 
+/** Modes proposés au candidat — libellés de l'écran, valeurs de la base. */
+const MODES_CANDIDATURE: readonly DemoMode[] = [
+  'VTC',
+  'TAXI',
+  'WORO',
+  'GBAKA',
+  'MOTO',
+  'TRICYCLE',
+  'CARGO',
+];
+
+function CandidatureForm() {
+  const [nom, setNom] = useState('');
+  const [mode, setMode] = useState<DemoMode>('VTC');
+  const [contact, setContact] = useState('');
+  const [reference, setReference] = useState('');
+  const [message, setMessage] = useState('');
+  // Pot de miel anti-robots : caché aux humains, jamais rempli par eux.
+  const [site, setSite] = useState('');
+  const [sending, setSending] = useState(false);
+
+  async function envoyer(e: React.FormEvent) {
+    e.preventDefault();
+    if (site.trim() !== '') return; // robot : on ignore silencieusement
+    setSending(true);
+    const result = await submitCandidature({
+      nom,
+      mode,
+      contact,
+      referenceAgrement: reference || undefined,
+      message: message || undefined,
+    });
+    setSending(false);
+    if (result.outcome === 'SAVED') {
+      toast('Candidature reçue — merci !', {
+        description:
+          'Votre statut d’agrément sera vérifié auprès des sources officielles avant toute publication. Vous serez recontacté au contact indiqué.',
+      });
+      setNom('');
+      setContact('');
+      setReference('');
+      setMessage('');
+    } else if (result.outcome === 'SIMULATED') {
+      toast('Démonstration — rien n’a été enregistré', {
+        description: 'Dans le produit réel, votre candidature partirait en file d’examen.',
+      });
+    } else {
+      toast('Candidature non envoyée', { description: result.message });
+    }
+  }
+
+  const champClass =
+    'w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+
+  return (
+    <form onSubmit={envoyer} className="mt-6 max-w-xl rounded-2xl border bg-card p-5">
+      <h3 className="font-semibold">Déposer une candidature</h3>
+      <p className="mt-1 text-[12.5px] text-muted-foreground">
+        Trois champs suffisent — le reste aide l’examen.{' '}
+        {IS_BACKEND_CONFIGURED ? '' : 'Mode démonstration : rien ne sera enregistré.'}
+      </p>
+
+      <label className="mb-1 mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        Nom de l’opérateur *
+      </label>
+      <input
+        type="text"
+        value={nom}
+        onChange={(e) => setNom(e.target.value)}
+        required
+        maxLength={120}
+        placeholder="Ex. : Coursiers du Plateau"
+        className={champClass}
+      />
+
+      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        Type de service *
+      </label>
+      <select
+        value={mode}
+        onChange={(e) => setMode(e.target.value as DemoMode)}
+        className={champClass}
+      >
+        {MODES_CANDIDATURE.map((m) => (
+          <option key={m} value={m}>
+            {MODE_META[m].emoji} {MODE_META[m].label} — {MODE_META[m].note}
+          </option>
+        ))}
+      </select>
+
+      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        Contact joignable (e-mail ou téléphone) *
+      </label>
+      <input
+        type="text"
+        value={contact}
+        onChange={(e) => setContact(e.target.value)}
+        required
+        maxLength={200}
+        placeholder="contact@operateur.ci ou +225 …"
+        className={champClass}
+      />
+
+      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        Référence d’agrément (si vous en avez une)
+      </label>
+      <input
+        type="text"
+        value={reference}
+        onChange={(e) => setReference(e.target.value)}
+        maxLength={200}
+        placeholder="N° d’agrément ARTI / DGTTC, arrêté…"
+        className={champClass}
+      />
+
+      <label className="mb-1 mt-3 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        Message (facultatif)
+      </label>
+      <textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        maxLength={2000}
+        rows={3}
+        placeholder="Zones desservies, flotte, grille tarifaire publique…"
+        className={champClass}
+      />
+
+      {/* Pot de miel : invisible pour les humains */}
+      <input
+        type="text"
+        value={site}
+        onChange={(e) => setSite(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-px w-px opacity-0"
+      />
+
+      <Button type="submit" disabled={sending} className="mt-4 w-full">
+        {sending ? 'Envoi…' : 'Envoyer ma candidature'}
+      </Button>
+      <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
+        Seules ces informations sont transmises — aucune donnée de navigation. La candidature
+        n’entraîne aucune publication automatique : vérification d’agrément d’abord, toujours.
+      </p>
+    </form>
+  );
+}
+
 export default function Partners() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -111,6 +266,14 @@ export default function Partners() {
             <div key={a.title} className="rounded-2xl border bg-card p-5">
               <h3 className="font-semibold text-primary">{a.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{a.body}</p>
+              {a.title === 'Opérateurs de transport' && (
+                <a
+                  href="#candidature"
+                  className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline"
+                >
+                  Candidater pour être listé →
+                </a>
+              )}
             </div>
           ))}
         </div>
@@ -160,10 +323,52 @@ export default function Partners() {
         </div>
 
         <div className="mt-8 rounded-2xl border bg-card p-5 text-sm text-muted-foreground">
-          <b className="text-foreground">Prise de contact.</b> Le canal officiel (adresse, domaine)
-          est <b>en cours de définition</b> : la marque et l’identité restent provisoires tant que
-          l’arbitrage n’est pas rendu (ADR-001 / DEP-007). En attendant, la démonstration publique
-          tient lieu de présentation.
+          <b className="text-foreground">Prise de contact.</b> Le nom {PRODUCT.displayName} est acté
+          (ADR-001) ; le canal officiel (domaine, adresse) est en cours de mise en place. En
+          attendant, la démonstration publique tient lieu de présentation, et les opérateurs peuvent
+          déjà candidater ci-dessous.
+        </div>
+      </section>
+
+      {/* CANDIDATURE OPÉRATEUR */}
+      <section id="candidature" className="border-y bg-muted/40">
+        <div className="mx-auto max-w-6xl scroll-mt-16 px-5 py-12 sm:py-16">
+          <h2 className="text-2xl font-bold sm:text-3xl">Opérateurs : rejoindre le comparateur</h2>
+          <p className="mt-2 max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
+            Être listé est <b>gratuit</b> et l’ordre du classement <b>ne s’achète pas</b> — la
+            candidature n’a aucun effet sur le tri, garanti par le code et vérifié à chaque
+            livraison.
+          </p>
+
+          <ol className="mt-6 grid gap-3 sm:grid-cols-3 sm:gap-5">
+            {[
+              {
+                n: '1',
+                title: 'Candidature',
+                body: 'Vous décrivez votre service (transport de personnes ou livraison) et laissez un contact joignable.',
+              },
+              {
+                n: '2',
+                title: 'Vérification',
+                body: 'Le statut d’agrément est vérifié auprès des sources officielles (ARTI, DGTTC), puis daté et sourcé — jamais déclaré sur parole.',
+              },
+              {
+                n: '3',
+                title: 'Publication',
+                body: 'Votre service apparaît sur les fiches concernées, avec son statut vérifié. Aucune mise en avant payante n’existe.',
+              },
+            ].map((s) => (
+              <li key={s.n} className="rounded-2xl border bg-card p-5">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/12 text-[13px] font-extrabold text-primary">
+                  {s.n}
+                </span>
+                <h3 className="mt-3 font-semibold">{s.title}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+
+          <CandidatureForm />
         </div>
       </section>
 
