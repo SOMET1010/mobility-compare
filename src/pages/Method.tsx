@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
-import { Wordmark } from '@/components/BrandMark';
-import { SiteHeader } from '@/components/SiteHeader';
 
 /**
  * Page Méthode & transparence — la référence « comment on calcule ».
@@ -58,14 +56,7 @@ export default function Method() {
     if (hash) document.querySelector(hash)?.scrollIntoView({ block: 'start' });
   }, [hash]);
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/', label: 'Accueil' },
-          { to: '/partenaires', label: 'Partenaires' },
-        ]}
-      />
-
+    <>
       <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-sprout">
@@ -254,16 +245,6 @@ export default function Method() {
           </Link>
         </section>
       </div>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-10 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Wordmark className="text-base" />
-          <p>
-            {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Identité, nom et hébergement
-            provisoires · Démonstration à données simulées.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

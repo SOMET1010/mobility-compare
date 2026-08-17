@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PRODUCT } from '@/config/product';
-import { BrandMark, Wordmark } from '@/components/BrandMark';
-import { SiteHeader } from '@/components/SiteHeader';
+import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/ui/button';
 import { MODE_META, type DemoMode } from '@/demo/scenario';
 import { submitCandidature } from '@/features/operators/candidature';
@@ -220,14 +219,7 @@ function CandidatureForm() {
 
 export default function Partners() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/', label: 'Accueil' },
-          { to: '/methode', label: 'Méthode' },
-        ]}
-      />
-
+    <>
       {/* HERO */}
       <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-20">
@@ -371,17 +363,6 @@ export default function Partners() {
           <CandidatureForm />
         </div>
       </section>
-
-      {/* PIED */}
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Wordmark className="text-base" />
-          <p>
-            {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Identité, nom et hébergement
-            provisoires · Démonstration à données simulées.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

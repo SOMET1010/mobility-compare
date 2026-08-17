@@ -2,11 +2,8 @@ import { useState } from 'react';
 import { COULEURS } from '@/config/couleurs';
 import { Link, useNavigate } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
-import { IS_BACKEND_CONFIGURED } from '@/config/env';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
-import { BrandMark, Wordmark } from '@/components/BrandMark';
-import { SiteHeader } from '@/components/SiteHeader';
-import { ConditionsBar } from '@/components/Conditions';
+import { BrandMark } from '@/components/BrandMark';
 import { AdSlot } from '@/components/AdSlot';
 import { PlaceSheet, PlaceTrigger } from '@/components/PlaceField';
 import { loadRecents } from '@/features/trips/savedTrips';
@@ -114,17 +111,7 @@ const STEPS: { n: string; title: string; body: string }[] = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/observatoire', label: 'Observatoire' },
-          { to: '/methode', label: 'Méthode' },
-          { to: '/partenaires', label: 'Partenaires' },
-          { to: '/compte', label: 'Compte' },
-        ]}
-        banner={<ConditionsBar />}
-      />
-
+    <>
       {/* HERO (clair, composition inspirée de la maquette) */}
       <section className="relative overflow-hidden border-b bg-background">
         {/* Desktop : visuel pleine hauteur à droite, fondu vers le crème */}
@@ -296,41 +283,7 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-      {/* PIED — honnêteté */}
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <Wordmark className="text-base" testId />
-          <div className="flex flex-wrap items-center gap-2 text-label text-muted-foreground">
-            {/* Alerte d'état honnête : visible uniquement quand le backend manque. */}
-            {!IS_BACKEND_CONFIGURED && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-                Backend non configure
-              </span>
-            )}
-            <span className="rounded-full border px-2.5 py-1 font-medium">Version pilote</span>
-            <span className="rounded-full border px-2.5 py-1 font-medium">Prix indicatifs</span>
-            <Link
-              to="/methode"
-              className="rounded-full border px-2.5 py-1 font-medium underline-offset-2 transition hover:text-foreground hover:underline"
-            >
-              Notre méthode
-            </Link>
-            <Link
-              to="/conditions"
-              className="rounded-full border px-2.5 py-1 font-medium underline-offset-2 transition hover:text-foreground hover:underline"
-            >
-              Conditions d'utilisation
-            </Link>
-          </div>
-        </div>
-        <div className="mx-auto max-w-6xl px-5 pb-10 text-label leading-relaxed text-muted-foreground">
-          {PRODUCT.displayName} — {PRODUCT.scope.city}, {PRODUCT.scope.countryName}. Nom et identité
-          provisoires.
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }
 

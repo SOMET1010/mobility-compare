@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { SiteHeader } from '@/components/SiteHeader';
 import { COMMUNES, MODE_META } from '@/demo/scenario';
 import {
   decide,
@@ -93,9 +92,7 @@ export default function Moderation() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader links={[{ to: '/', label: 'Accueil' }]} />
-
+    <>
       <main className="mx-auto w-full max-w-2xl px-5 py-8">
         <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Espace protégé
@@ -241,7 +238,7 @@ export default function Moderation() {
           </div>
         )}
       </main>
-    </div>
+    </>
   );
 }
 

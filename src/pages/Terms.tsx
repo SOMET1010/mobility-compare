@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { PRODUCT } from '@/config/product';
-import { Wordmark } from '@/components/BrandMark';
-import { SiteHeader } from '@/components/SiteHeader';
 
 /**
  * Conditions générales d'utilisation — VERSION PROVISOIRE.
@@ -122,14 +120,7 @@ const SECTIONS: { title: string; body: ReactNode }[] = [
 
 export default function Terms() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/', label: 'Accueil' },
-          { to: '/methode', label: 'Méthode' },
-        ]}
-      />
-
+    <>
       <main className="mx-auto w-full max-w-2xl px-5 py-8">
         <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Juridique
@@ -150,15 +141,6 @@ export default function Terms() {
           ))}
         </div>
       </main>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-2xl flex-col gap-3 px-5 py-8 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Wordmark className="text-base" />
-          <p>
-            {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Identité et hébergement provisoires.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

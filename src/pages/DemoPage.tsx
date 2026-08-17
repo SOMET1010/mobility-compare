@@ -29,8 +29,6 @@ import {
   type LigneProche,
   type TransitInfo,
 } from '@/features/transit/lignes';
-import { SiteHeader } from '@/components/SiteHeader';
-import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { PlaceSheet, PlaceTrigger } from '@/components/PlaceField';
 import { Segmented } from '@/components/Segmented';
@@ -583,17 +581,7 @@ export default function DemoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/observatoire', label: 'Observatoire' },
-          { to: '/methode', label: 'Méthode' },
-          { to: '/partenaires', label: 'Partenaires' },
-          { to: '/compte', label: 'Compte' },
-        ]}
-        cta={null}
-        banner={<ConditionsBar pilote />}
-      />
+    <>
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
         {view === 'search' && (
           <section aria-label="Recherche">
@@ -1314,7 +1302,7 @@ export default function DemoPage() {
           }}
         />
       )}
-    </div>
+    </>
   );
 }
 

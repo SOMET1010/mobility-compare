@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PRODUCT } from '@/config/product';
-import { Wordmark } from '@/components/BrandMark';
-import { SiteHeader } from '@/components/SiteHeader';
 import { AdSlot } from '@/components/AdSlot';
 import { ModeGlyph, type GlyphShape } from '@/components/ModeGlyph';
 import { COMMUNES, MODE_META, type DemoMode } from '@/demo/scenario';
@@ -46,14 +43,7 @@ export default function Observatory() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/', label: 'Accueil' },
-          { to: '/methode', label: 'Méthode' },
-        ]}
-      />
-
+    <>
       {/* En-tête encre */}
       <section className="bg-brand-ink text-white">
         <div className="mx-auto max-w-4xl px-5 py-10 sm:py-14">
@@ -217,16 +207,6 @@ export default function Observatory() {
           </>
         )}
       </main>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-4xl flex-col gap-3 px-5 py-8 text-note text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Wordmark className="text-base" />
-          <p>
-            {PRODUCT.scope.city}, {PRODUCT.scope.countryName} · Observatoire pilote — données
-            réelles modérées.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

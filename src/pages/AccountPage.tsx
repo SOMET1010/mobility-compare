@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { SiteHeader } from '@/components/SiteHeader';
 import { msisdnSchema, otpCodeSchema } from '@/lib/validation';
 import {
   ACCOUNT_DISCLAIMER,
@@ -85,14 +84,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader
-        links={[
-          { to: '/', label: 'Accueil' },
-          { to: '/methode', label: 'Méthode' },
-        ]}
-      />
-
+    <>
       <main className="mx-auto w-full max-w-md px-5 py-8">
         <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
           Compte
@@ -237,6 +229,6 @@ export default function AccountPage() {
           </div>
         )}
       </main>
-    </div>
+    </>
   );
 }
