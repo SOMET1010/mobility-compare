@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
   const messageOk = champ(message, 1, 2000);
   // Intégration API (facultative) : adresse du service de devis + contact
   // technique — remplissables en ligne dès la candidature (contrat
-  // d'interface VTC, docs/CONTRAT_INTERFACE_VTC.md).
+  // d'interface plateformes, docs/CONTRAT_INTERFACE_PLATEFORMES.md).
   const apiOk = champ(api_devis_url, 8, 300);
   const apiValide = apiOk && /^https:\/\//i.test(apiOk) ? apiOk : null;
   const techOk = champ(contact_technique, 3, 200);

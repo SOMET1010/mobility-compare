@@ -1,16 +1,22 @@
-# Contrat d'interface — plateformes VTC et coursiers (Yango, Heetch, …)
+# Contrat d'interface — plateformes VTC et livraison (Yango, Heetch, Glovo, …)
 
 **17 août 2026 · Document à présenter aux plateformes. Le décideur signe ;
 rien n'est branché sans son accord et sans ce contrat accepté.**
 
 ## 1. Objet
 
-MOBILIS est le comparateur neutre des mobilités d'Abidjan. Il affiche
-aujourd'hui des **estimations marquées comme telles**. Ce contrat définit
-comment une plateforme (Yango, Heetch, ou tout opérateur agréé) fournit ses
+MOBILIS est le comparateur neutre des mobilités d'Abidjan — **courses de
+personnes ET livraisons de colis**. Il affiche aujourd'hui des **estimations
+marquées comme telles**. Ce contrat définit comment une plateforme (Yango,
+Heetch, Glovo, ou tout opérateur agréé — VTC comme coursiers) fournit ses
 **prix réels** pour qu'ils remplacent l'estimation — au bénéfice de la
 plateforme (prix exact, trafic qualifié envoyé vers son application) et de
 l'usager (vérité des prix).
+
+Le même contrat couvre les deux services : une course et une livraison sont,
+du point de vue du devis, la même question — un départ, une arrivée, un prix,
+une attente, une durée. Seul le champ `produit` change (« standard »,
+« confort » côté course ; « moto », « tricycle », « cargo » côté colis).
 
 ## 2. Ce que MOBILIS demande à la plateforme
 
@@ -21,6 +27,9 @@ l'usager) :
 
 - **Requête** : `POST <adresse convenue>` —
   `{ "depart": {"lat","lng"}, "arrivee": {"lat","lng"}, "produit"?: "…" }`
+  Pour une plateforme de livraison, `produit` désigne la classe de véhicule
+  ou de colis (ex. « moto », « cargo ») ; MOBILIS envoie la classe convenue
+  lors de la mise en œuvre.
 - **Réponse** :
   `{ "prix_min": 3500, "prix_max": 4200, "devise": "XOF",
  "attente_s": 240, "duree_s": 1500, "produit": "standard" }`
@@ -33,7 +42,8 @@ l'usager) :
 - **L'attente est contractuelle** : `attente_s` est l'engagement réel de la
   plateforme à cet instant — c'est elle que MOBILIS affiche et que le
   classement « plus rapide » compte (porte-à-porte = attente + trajet).
-  Avec certaines compagnies, l'attente est le vrai souci des usagers :
+  Avec certaines compagnies, l'attente est le vrai souci des usagers —
+  et en livraison, l'attente du coursier EST l'essentiel du délai perçu :
   une attente sincère vaut mieux qu'une attente flatteuse démentie au
   premier trajet.
 
@@ -42,7 +52,8 @@ l'usager) :
 La plateforme fournit sa grille au format `FareGrid`
 (`docs/CONTRATS_API.md` §2.3) avec **source datée obligatoire**. MOBILIS
 calcule alors lui-même, en affichant la formule ligne à ligne et la date de
-la grille.
+la grille. Une grille par classe (course standard, moto-coursier, cargo…)
+est acceptée.
 
 ### Dans les deux cas — lien profond
 
@@ -68,10 +79,18 @@ détail. À défaut, le site officiel (déjà en service via `site_url`).
 
 ## 4. Ce que ce contrat exclut
 
-Mise en avant payante · commission sur course · exclusivité · accès aux
-données d'autres plateformes · tout champ qui influencerait le classement.
+Mise en avant payante · commission sur course ou livraison · exclusivité ·
+accès aux données d'autres plateformes · tout champ qui influencerait le
+classement.
 
 ## 5. État des lieux (constaté au 17/08/2026)
+
+Contexte réglementaire : la DGTTC a réuni le 13/08/2026 à Abidjan les
+plateformes VTC **et livraison** (dont Yango et Glovo) pour une concertation
+sur les réformes du secteur — les deux métiers sont traités ensemble, comme
+dans ce contrat.
+
+### Côté courses (VTC)
 
 - **Yango** : programme partenaires actif et intégrations tierces existantes
   (une intégration ChatGPT donnant prix exact et ETA a été lancée
@@ -80,14 +99,33 @@ données d'autres plateformes · tout champ qui influencerait le classement.
   MOBILIS (note ARTI/DGTTC du 28/01/2025).
 - **Heetch** : aucune API publique documentée connue — commencer par
   l'option B (grille + lien profond) et négocier l'option A.
-- Les deux sont déjà listées sur les fiches VTC de MOBILIS (statut agréé,
-  daté, sourcé) avec lien officiel.
+
+### Côté livraison
+
+- **Glovo** : présent à Abidjan depuis 2019, acteur majeur de la livraison
+  en 2026. Publie une **API partenaires documentée publiquement**, dont une
+  offre « LaaS » (logistique à la demande) — la capacité technique de
+  l'option A existe donc ; l'accès passe par un accord partenaire.
+- **Yango Delivery** : actif à Abidjan (moto-coursier, et « Cargo Express »
+  pour les volumineux — ce qui correspond à nos classes MOTO et CARGO) ;
+  même canal partenaire que Yango côté courses.
+- **Jumia** : **Jumia Food a fermé fin décembre 2023** en Côte d'Ivoire
+  (décision groupe, 7 pays). Jumia y reste un site de e-commerce avec sa
+  propre logistique interne — ce n'est pas un service de course à la
+  demande comparable ; rien à afficher tant que cela ne change pas
+  (absence honnête). La porte reste ouverte si un service à la demande
+  rouvre.
+
+Les plateformes déjà publiées sur MOBILIS le sont avec statut d'agrément
+daté et sourcé (invariant I4) ; les autres passent par la candidature §6.
 
 ## 6. Adhésion et mise en œuvre
 
 1. **La demande se fait EN LIGNE** : formulaire de candidature sur
-   `/partenaires` — section « 🔌 Intégration API » remplissable directement
-   (adresse du service de devis + contact technique).
+   `/partenaires` — le sélecteur de mode couvre les courses (VTC, taxi…)
+   comme la livraison (moto, tricycle, cargo), et la section
+   « 🔌 Intégration API » est remplissable directement (adresse du service
+   de devis + contact technique).
 2. Examen dans l'espace de modération (les champs d'intégration y sont
    affichés) ; prise de contact technique ; échange des clés côté serveur.
 3. Recette sur un corridor de test ; vérification de l'attribution et du

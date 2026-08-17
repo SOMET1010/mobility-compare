@@ -202,7 +202,7 @@ function CandidatureForm() {
       />
 
       {/* Intégration API — remplissable en ligne dès la candidature (contrat
-          d'interface VTC : docs/CONTRAT_INTERFACE_VTC.md). Facultatif. */}
+          d'interface plateformes : docs/CONTRAT_INTERFACE_PLATEFORMES.md). Facultatif. */}
       <details className="mt-4 rounded-xl border bg-background/60">
         <summary className="cursor-pointer select-none px-3 py-2.5 text-note font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">
           🔌 Intégration API (facultatif) — vous avez un service de devis ?

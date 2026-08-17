@@ -364,7 +364,7 @@ function CandidaturesPanel({ token }: { token: string }) {
                     · technique : <span className="font-mono">{c.contact_technique}</span>
                   </>
                 )}{' '}
-                — voir docs/CONTRAT_INTERFACE_VTC.md avant tout branchement.
+                — voir docs/CONTRAT_INTERFACE_PLATEFORMES.md avant tout branchement.
               </p>
             )}
             <div className="mt-3 grid grid-cols-3 gap-2">
