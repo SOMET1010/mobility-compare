@@ -83,10 +83,10 @@ export default function Moderation() {
   async function judge(obs: PendingObservation, decision: 'APPROVED' | 'REJECTED') {
     const res = await decide(token, obs.id, decision);
     if (!res.ok) {
-      toast('Échec — rien n’a changé', { description: res.error });
+      toast.error('Échec — rien n’a changé', { description: res.error });
       return;
     }
-    toast(decision === 'APPROVED' ? 'Observation approuvée' : 'Observation rejetée', {
+    toast.success(decision === 'APPROVED' ? 'Observation approuvée' : 'Observation rejetée', {
       description: `${communeName(obs.from_commune)} → ${communeName(obs.to_commune)} · ${MODE_META[obs.mode].label} · ${XOF.format(obs.price_xof)} FCFA`,
     });
     setPending((list) => (list ? list.filter((o) => o.id !== obs.id) : list));
@@ -272,7 +272,7 @@ function CandidaturesPanel({ token }: { token: string }) {
   async function statuer(c: OperatorApplication, statut: CandidatureStatut) {
     const res = await decideCandidature(token, c.id, statut);
     if (!res.ok) {
-      toast('Échec — rien n’a changé', { description: res.error });
+      toast.error('Échec — rien n’a changé', { description: res.error });
       return;
     }
     const libelle =
@@ -281,7 +281,7 @@ function CandidaturesPanel({ token }: { token: string }) {
         : statut === 'REFUSEE'
           ? 'Candidature refusée'
           : 'Candidature mise en examen';
-    toast(libelle, {
+    toast.success(libelle, {
       description:
         statut === 'ACCEPTEE'
           ? `${c.nom} — pensez à publier l’opérateur (table operators) avec un statut d’agrément vérifié, daté et sourcé.`
@@ -529,17 +529,19 @@ function AiConfigPanel({ token }: { token: string }) {
     });
     if (!res.ok) {
       setBusy(false);
-      toast('Échec de l’enregistrement', { description: res.error });
+      toast.error('Échec de l’enregistrement', { description: res.error });
       return;
     }
-    toast('Configuration enregistrée', { description: res.value.warning ?? 'Test en cours…' });
+    toast.success('Configuration enregistrée', {
+      description: res.value.warning ?? 'Test en cours…',
+    });
     setApiKey('');
     void load();
     // Test automatique : l'état de la clé qu'on vient d'enregistrer, sans ambiguïté.
     const probe = await testAi(token);
     setBusy(false);
     if (probe.ok && probe.value.ok) {
-      toast('Clé valide ✓', {
+      toast.success('Clé valide ✓', {
         description: probe.value.switched_base_url
           ? `Votre clé appartient à l'autre plateforme Moonshot — adresse corrigée automatiquement (${probe.value.switched_base_url}).`
           : probe.value.adjusted_model
@@ -548,7 +550,7 @@ function AiConfigPanel({ token }: { token: string }) {
       });
       if (probe.value.switched_base_url || probe.value.adjusted_model) void load();
     } else {
-      toast('La clé enregistrée ne fonctionne pas', {
+      toast.error('La clé enregistrée ne fonctionne pas', {
         description: probe.ok ? probe.value.error : probe.error,
       });
     }
@@ -559,11 +561,11 @@ function AiConfigPanel({ token }: { token: string }) {
     const res = await testAi(token);
     setBusy(false);
     if (!res.ok) {
-      toast('Test impossible', { description: res.error });
+      toast.error('Test impossible', { description: res.error });
       return;
     }
     if (res.value.ok) {
-      toast('Clé valide ✓', {
+      toast.success('Clé valide ✓', {
         description: res.value.switched_base_url
           ? `Votre clé appartient à l'autre plateforme Moonshot — adresse corrigée automatiquement (${res.value.switched_base_url}).`
           : res.value.adjusted_model
@@ -572,7 +574,7 @@ function AiConfigPanel({ token }: { token: string }) {
       });
       if (res.value.switched_base_url || res.value.adjusted_model) void load();
     } else {
-      toast('La clé ne fonctionne pas', { description: res.value.error });
+      toast.error('La clé ne fonctionne pas', { description: res.value.error });
     }
   }
 

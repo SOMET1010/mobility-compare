@@ -103,7 +103,7 @@ function CandidatureForm() {
     });
     setSending(false);
     if (result.outcome === 'SAVED') {
-      toast('Candidature reçue — merci !', {
+      toast.success('Candidature reçue — merci !', {
         description:
           'Votre statut d’agrément sera vérifié auprès des sources officielles avant toute publication. Vous serez recontacté au contact indiqué.',
       });
@@ -116,7 +116,7 @@ function CandidatureForm() {
         description: 'Dans le produit réel, votre candidature partirait en file d’examen.',
       });
     } else {
-      toast('Candidature non envoyée', { description: result.message });
+      toast.error('Candidature non envoyée', { description: result.message });
     }
   }
 

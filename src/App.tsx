@@ -62,7 +62,10 @@ export default function App() {
           <Assistant />
           <AudienceBeacon />
         </BrowserRouter>
-        <Toaster />
+        {/* Succès en vert, échecs en rouge (richColors) ; bouton de
+            fermeture ; en haut au centre — la zone basse droite est
+            occupée par le bouton flottant de l'assistant. */}
+        <Toaster richColors closeButton position="top-center" />
       </QueryClientProvider>
     </ErrorBoundary>
   );

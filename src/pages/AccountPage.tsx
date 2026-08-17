@@ -23,7 +23,7 @@ import {
  * consentement CGU) est le vrai parcours prévu pour la production.
  */
 
-type Step = 'phone' | 'otp' | 'done';
+type Step = 'phone' | 'otp';
 
 export default function AccountPage() {
   const [account, setAccount] = useState<SimAccount | null>(() =>
@@ -69,8 +69,8 @@ export default function AccountPage() {
     const created: SimAccount = { msisdn: msisdn!, createdAt: new Date().toISOString() };
     saveSimAccount(window.localStorage, created);
     setAccount(created);
-    setStep('done');
-    toast('Profil de démonstration créé', {
+    setStep('phone');
+    toast.success('Profil de démonstration créé', {
       description: 'Il n’existe que sur cet appareil et peut être supprimé à tout moment.',
     });
   }

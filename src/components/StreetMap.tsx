@@ -4,9 +4,10 @@ import 'leaflet/dist/leaflet.css';
 
 /**
  * Carte de rue réelle (fond OpenStreetMap) centrée sur le trajet.
- * Les tuiles se chargent dans le navigateur de l'usager. Le tracé est une
- * LIGNE DIRECTE origine → destination : le calcul d'itinéraire par les routes
- * (OSRM) n'est pas encore branché (DEP-001). Honnête et étiqueté comme tel.
+ * Les tuiles se chargent dans le navigateur de l'usager. La ligne pointillée
+ * origine → destination est un REPÈRE VISUEL, pas l'itinéraire : les
+ * distances et durées affichées ailleurs viennent de notre serveur de
+ * routage (OSRM). Les tracés pleins sont les lignes de transport réelles.
  */
 export interface MapPoint {
   readonly lat: number;

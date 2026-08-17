@@ -11,7 +11,7 @@ import { SiteHeader } from '@/components/SiteHeader';
  * dépendance ouverte (DEP-011) : la page l'affiche.
  */
 
-const UPDATED = '15 août 2026';
+const UPDATED = '17 août 2026';
 
 const SECTIONS: { title: string; body: ReactNode }[] = [
   {
@@ -52,18 +52,23 @@ const SECTIONS: { title: string; body: ReactNode }[] = [
     ),
   },
   {
-    title: '4. Données personnelles',
+    title: '4. Données personnelles et mesure d’audience',
     body: (
       <>
-        {PRODUCT.displayName} ne collecte aucune donnée personnelle sur ses serveurs : pas de compte
-        serveur, pas de cookie de suivi, pas de mesure d’audience. Les préférences (onboarding vu,
-        profil simulé) restent dans le stockage local du navigateur. Le navigateur contacte
-        directement des services tiers pour fonctionner : OpenStreetMap (fonds de carte), Open-Meteo
-        (météo, coordonnées fixes d’Abidjan) et Cloudflare Pages (hébergement) — chacun peut
-        journaliser techniquement les requêtes selon ses propres conditions. Le calcul d’itinéraire
-        par les rues, qui manipule des origines et destinations (données personnelles), passera
-        exclusivement par notre couche de services, jamais par un appel direct du navigateur à un
-        tiers.
+        Aucun compte d’usager n’existe côté serveur, aucun cookie de suivi n’est posé. Ce que le
+        service traite : <b>une mesure d’audience souveraine</b> (compteur hébergé par nos soins —
+        sans cookie, sans adresse IP conservée, sans identifiant : seuls des totaux quotidiens par
+        page sont stockés, et les navigateurs demandant à ne pas être suivis ne sont pas comptés) ;
+        des <b>relevés de prix anonymes par conception</b> (commune de départ, d’arrivée, mode et
+        prix — ni nom, ni téléphone, ni position précise), modérés avant publication ; et les{' '}
+        <b>candidatures d’opérateurs</b> (nom de l’opérateur et contact professionnel, fournis
+        volontairement et utilisés uniquement pour leur examen). Les préférences (onboarding vu,
+        profil simulé, trajets récents) restent dans le stockage local du navigateur. Le calcul
+        d’itinéraire et le géocodage, qui manipulent des origines et destinations, passent{' '}
+        <b>exclusivement par notre couche de services</b> — jamais par un appel direct du navigateur
+        à un tiers. Le navigateur contacte en revanche directement : OpenStreetMap (fonds de carte),
+        Open-Meteo (météo, coordonnées fixes d’Abidjan) et Cloudflare Pages (hébergement), chacun
+        pouvant journaliser techniquement les requêtes selon ses propres conditions.
       </>
     ),
   },
@@ -96,9 +101,9 @@ const SECTIONS: { title: string; body: ReactNode }[] = [
     title: '7. Propriété intellectuelle',
     body: (
       <>
-        Le nom, l’identité visuelle et l’hébergement sont provisoires, dans l’attente de l’arbitrage
-        de marque. Les fonds de carte sont © OpenStreetMap (ODbL) ; la météo provient d’Open-Meteo
-        (CC BY 4.0).
+        Le nom {PRODUCT.displayName} est acté (décision ADR-001) ; l’identité visuelle et
+        l’hébergement restent provisoires. Les fonds de carte et le réseau de lignes sont ©
+        OpenStreetMap (ODbL) ; la météo provient d’Open-Meteo (CC BY 4.0).
       </>
     ),
   },

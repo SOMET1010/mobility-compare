@@ -216,7 +216,7 @@ export function PlaceSheet({
             <>
               {withGeolocation && (
                 <div className="border-b py-1">
-                  <UseMyLocation onFound={onPick} variant="row" />
+                  <UseMyLocation onFound={onPick} />
                 </div>
               )}
               {recents.length > 0 && (
@@ -278,7 +278,7 @@ function SheetRow({ name, sub, onPick }: { name: string; sub?: string; onPick: (
     <button
       type="button"
       onClick={onPick}
-      className="flex w-full items-baseline justify-between gap-3 px-4 py-3.5 text-left transition hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted"
+      className="flex w-full items-baseline justify-between gap-3 px-4 py-3.5 text-left transition hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
       <span className="min-w-0 truncate text-[15px] font-semibold">{name}</span>
       {sub && sub !== name && (

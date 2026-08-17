@@ -53,7 +53,6 @@ import {
   fetchPublishedOperators,
   type Operator,
 } from '@/features/operators/operators';
-import { SIMULATION_BANNER } from '@/demo/simulation';
 import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
 const XOF = new Intl.NumberFormat('fr-FR');
@@ -112,6 +111,18 @@ const SERVICES: readonly { code: ServiceType; label: string }[] = [
 function fareAmount(o: RankableOption): number | null {
   return o.fare.available ? o.fare.value.amount : null;
 }
+
+/** Le bénéfice avant l'algorithme : badge premier selon le critère courant. */
+const CRIT_BADGE: Record<DemoCriterion, BadgeCode> = {
+  PRICE: 'CHEAPEST',
+  DURATION: 'FASTEST',
+  PRICE_TIME: 'BEST_VALUE',
+};
+const HEADLINE: Record<BadgeCode, string> = {
+  CHEAPEST: '💰 Le trajet le moins cher.',
+  FASTEST: '⚡ Le trajet le plus rapide.',
+  BEST_VALUE: '⭐ Le meilleur équilibre prix-durée.',
+};
 
 /* ---------------------------------------------------------------- primitives */
 
@@ -225,24 +236,6 @@ function ConfidenceNote() {
 
 type View = 'search' | 'results' | 'detail' | 'contribute';
 
-/** Bandeau d'honnêteté — accordé à la palette (crème/encre, pointes ocre). */
-function HonestyBanner() {
-  return (
-    <div
-      className="flex items-center justify-center gap-2 border-b border-[#B9722A]/40 bg-[#F3EEDF]/95 px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-[#26301C] backdrop-blur"
-      role="alert"
-    >
-      <span aria-hidden="true" className="text-[#B9722A]">
-        ●
-      </span>{' '}
-      {SIMULATION_BANNER}{' '}
-      <span aria-hidden="true" className="text-[#B9722A]">
-        ●
-      </span>
-    </div>
-  );
-}
-
 const QUICK_TRIPS: { from: string; to: string }[] = [
   { from: 'yopougon', to: 'plateau' },
   { from: 'cocody', to: 'aeroport' },
@@ -345,7 +338,7 @@ export default function DemoPage() {
 
   function traceIndisponible() {
     clearTrace();
-    toast('Tracé indisponible pour le moment', {
+    toast.error('Tracé indisponible pour le moment', {
       description: 'Rien n’est dessiné plutôt qu’un tracé inventé.',
     });
   }
@@ -498,7 +491,7 @@ export default function DemoPage() {
     const url = `${window.location.origin}/comparer?de=${encodeURIComponent(fromId)}&a=${encodeURIComponent(toId)}&tri=${criterion}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast('Lien copié', { description: `${fromId} → ${toId} · ${url}` });
+      toast.success('Lien copié', { description: `${fromId} → ${toId} · ${url}` });
     } catch {
       toast('Lien du trajet', { description: url });
     }
@@ -593,12 +586,7 @@ export default function DemoPage() {
           { to: '/compte', label: 'Compte' },
         ]}
         cta={null}
-        banner={
-          <>
-            <HonestyBanner />
-            <ConditionsBar />
-          </>
-        }
+        banner={<ConditionsBar pilote />}
       />
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
         {view === 'search' && (
@@ -1017,7 +1005,7 @@ export default function DemoPage() {
                                         ? 'bg-[#5C6B2E]/8 ring-1 ring-[#5C6B2E]/25'
                                         : tracable
                                           ? 'hover:bg-muted/40'
-                                          : '')
+                                          : 'cursor-default')
                                   }
                                 >
                                   <div className="flex items-center gap-2">
@@ -1089,7 +1077,7 @@ export default function DemoPage() {
                                     ? 'bg-[#1E5AA8]/10 ring-1 ring-[#1E5AA8]/40'
                                     : tracable
                                       ? 'hover:bg-muted/40'
-                                      : '')
+                                      : 'cursor-default')
                                 }
                               >
                                 <div className="flex items-center gap-1.5">
@@ -1316,6 +1304,21 @@ export default function DemoPage() {
             onBack={() => setView('results')}
           />
         )}
+
+        {/* Jamais de page blanche : si la comparaison est impossible, on le
+            dit et on ramène vers la recherche (absence honnête, pas muette). */}
+        {view !== 'search' && !cmp && (
+          <section aria-label="Comparaison impossible" className="py-12 text-center">
+            <p className="text-lg font-extrabold">Impossible de comparer ce trajet.</p>
+            <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+              Vérifiez le départ et l’arrivée — il faut deux lieux différents, dans la zone
+              d’Abidjan.
+            </p>
+            <Button className="mt-5" onClick={() => setView('search')}>
+              ← Modifier le trajet
+            </Button>
+          </section>
+        )}
       </main>
       {sheet && (
         <PlaceSheet
@@ -1374,7 +1377,23 @@ function DetailView({
   onBack: () => void;
 }) {
   const ranked = cmp.ranking.ranked.find((r) => r.option.optionId === optionId);
-  if (!ranked) return null;
+  // Option disparue (changement de service ou de trajet) : on le dit,
+  // jamais un écran vide.
+  if (!ranked)
+    return (
+      <section aria-label="Détail">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-4 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          ← Retour aux résultats
+        </button>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Cette option n’est plus disponible pour ce trajet — revenez aux résultats.
+        </p>
+      </section>
+    );
   const o = ranked.option;
   const agg = observed?.[o.mode];
   const modeOperators = operators?.filter((op) => op.mode === o.mode) ?? [];
@@ -1395,17 +1414,6 @@ function DetailView({
   const dPrix = refOpt ? price! - fareAmount(refOpt.option)! : null;
   const dMin = refOpt ? minTotal(o) - minTotal(refOpt.option) : null;
 
-  // Le bénéfice avant l'algorithme : ce que ce choix apporte, en une phrase.
-  const CRIT_BADGE: Record<DemoCriterion, BadgeCode> = {
-    PRICE: 'CHEAPEST',
-    DURATION: 'FASTEST',
-    PRICE_TIME: 'BEST_VALUE',
-  };
-  const HEADLINE: Record<BadgeCode, string> = {
-    CHEAPEST: '💰 Le trajet le moins cher.',
-    FASTEST: '⚡ Le trajet le plus rapide.',
-    BEST_VALUE: '⭐ Le meilleur équilibre prix-durée.',
-  };
   const primaryBadge = codes.includes(CRIT_BADGE[criterion])
     ? CRIT_BADGE[criterion]
     : (codes[0] ?? null);
@@ -1650,7 +1658,7 @@ function ContributeView({
 
   async function submit() {
     if (IS_BACKEND_CONFIGURED && !price) {
-      toast('Indiquez le prix réellement payé', {
+      toast.error('Indiquez le prix réellement payé', {
         description: 'Un relevé sans montant ne peut pas alimenter l’indice de confiance.',
       });
       return;
@@ -1665,11 +1673,11 @@ function ContributeView({
     });
     setSending(false);
     if (result.outcome === 'SAVED') {
-      toast('Merci ! Relevé transmis', {
+      toast.success('Merci ! Relevé transmis', {
         description: `${MODE_META[mode].label} · ${price} FCFA — en file de modération avant publication (aucune donnée personnelle transmise).`,
       });
     } else if (result.outcome === 'ERROR') {
-      toast('Échec de l’envoi — rien n’a été enregistré', { description: result.message });
+      toast.error('Échec de l’envoi — rien n’a été enregistré', { description: result.message });
       return;
     } else {
       toast('Simulation — rien n’a été enregistré', {

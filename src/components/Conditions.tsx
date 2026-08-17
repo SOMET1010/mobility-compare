@@ -13,8 +13,10 @@ import {
  * Météo RÉELLE (Open-Meteo) et circulation TYPE (profil horaire — DEP-009),
  * chacune étiquetée. L'échec météo est une absence honnête : la bande
  * n'affiche alors que la circulation, jamais une valeur par défaut.
+ * `pilote` : la pastille d'honnêteté vit DANS cette bande — une seule
+ * bande sous l'en-tête, jamais deux empilées.
  */
-export function ConditionsBar() {
+export function ConditionsBar({ pilote = false }: { pilote?: boolean }) {
   const [weather, setWeather] = useState<WeatherNow | null>(null);
   const [traffic, setTraffic] = useState<TrafficEstimate>(() => estimateTraffic(new Date()));
 
@@ -32,6 +34,17 @@ export function ConditionsBar() {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 border-b bg-muted px-3 py-1 text-[11.5px] font-medium text-foreground/75">
+      {pilote && (
+        <span
+          title="Version pilote — prix indicatifs, à confirmer sur le terrain"
+          className="inline-flex items-center gap-1.5 font-bold text-[#26301C]"
+        >
+          <span aria-hidden="true" className="text-[#B9722A]">
+            ●
+          </span>
+          Pilote · prix indicatifs
+        </span>
+      )}
       {weather && (
         <span className="inline-flex items-center gap-1.5">
           <svg
