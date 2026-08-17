@@ -30,4 +30,14 @@ describe('validateCandidature', () => {
   it('les champs facultatifs vides ne bloquent pas', () => {
     expect(validateCandidature({ ...valide, referenceAgrement: '', message: '' })).toBeNull();
   });
+
+  it('intégration API : https exigé, longueurs bornées', () => {
+    expect(
+      validateCandidature({ ...valide, apiDevisUrl: 'https://api.exemple.ci/devis' }),
+    ).toBeNull();
+    expect(validateCandidature({ ...valide, apiDevisUrl: 'http://api.exemple.ci' })).toMatch(
+      /https/,
+    );
+    expect(validateCandidature({ ...valide, contactTechnique: 'x'.repeat(201) })).toMatch(/long/i);
+  });
 });

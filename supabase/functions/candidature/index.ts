@@ -36,10 +36,16 @@ Deno.serve(async (req) => {
   } catch {
     return json({ erreur: 'json' }, 400);
   }
-  const { nom, mode, contact, reference_agrement, message, site } = (corps ?? {}) as Record<
-    string,
-    unknown
-  >;
+  const {
+    nom,
+    mode,
+    contact,
+    reference_agrement,
+    message,
+    api_devis_url,
+    contact_technique,
+    site,
+  } = (corps ?? {}) as Record<string, unknown>;
 
   // Pot de miel : un humain ne remplit jamais ce champ caché. On répond
   // comme si tout allait bien, sans rien enregistrer.
@@ -53,6 +59,12 @@ Deno.serve(async (req) => {
   }
   const refOk = champ(reference_agrement, 1, 200);
   const messageOk = champ(message, 1, 2000);
+  // Intégration API (facultative) : adresse du service de devis + contact
+  // technique — remplissables en ligne dès la candidature (contrat
+  // d'interface VTC, docs/CONTRAT_INTERFACE_VTC.md).
+  const apiOk = champ(api_devis_url, 8, 300);
+  const apiValide = apiOk && /^https:\/\//i.test(apiOk) ? apiOk : null;
+  const techOk = champ(contact_technique, 3, 200);
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -65,6 +77,8 @@ Deno.serve(async (req) => {
     contact: contactOk,
     reference_agrement: refOk,
     message: messageOk,
+    api_devis_url: apiValide,
+    contact_technique: techOk,
   });
   if (error) return json({ enregistree: false }, 503);
 

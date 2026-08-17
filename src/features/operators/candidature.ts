@@ -15,6 +15,9 @@ export interface CandidatureOperateur {
   readonly contact: string;
   readonly referenceAgrement?: string;
   readonly message?: string;
+  /** Intégration API (facultative) : service de devis https + contact technique. */
+  readonly apiDevisUrl?: string;
+  readonly contactTechnique?: string;
 }
 
 export type CandidatureResult =
@@ -30,6 +33,10 @@ export function validateCandidature(c: CandidatureOperateur): string | null {
   if (contact.length > 200) return 'Contact trop long (200 caractères maximum).';
   if ((c.referenceAgrement ?? '').length > 200) return 'Référence d’agrément trop longue.';
   if ((c.message ?? '').length > 2000) return 'Message trop long (2 000 caractères maximum).';
+  const api = c.apiDevisUrl?.trim();
+  if (api && !/^https:\/\//i.test(api)) return 'L’adresse du service de devis doit être en https.';
+  if ((api ?? '').length > 300) return 'Adresse du service de devis trop longue.';
+  if ((c.contactTechnique ?? '').length > 200) return 'Contact technique trop long.';
   return null;
 }
 
@@ -47,6 +54,8 @@ export async function submitCandidature(c: CandidatureOperateur): Promise<Candid
         contact: c.contact.trim(),
         reference_agrement: c.referenceAgrement?.trim() || undefined,
         message: c.message?.trim() || undefined,
+        api_devis_url: c.apiDevisUrl?.trim() || undefined,
+        contact_technique: c.contactTechnique?.trim() || undefined,
       }),
       signal: AbortSignal.timeout(10000),
     });

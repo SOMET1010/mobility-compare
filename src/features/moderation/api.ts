@@ -68,6 +68,8 @@ export interface OperatorApplication {
   readonly contact: string;
   readonly reference_agrement: string | null;
   readonly message: string | null;
+  readonly api_devis_url: string | null;
+  readonly contact_technique: string | null;
   readonly statut: 'RECUE' | 'EN_EXAMEN' | 'ACCEPTEE' | 'REFUSEE';
 }
 

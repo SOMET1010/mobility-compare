@@ -85,6 +85,8 @@ function CandidatureForm() {
   const [contact, setContact] = useState('');
   const [reference, setReference] = useState('');
   const [message, setMessage] = useState('');
+  const [apiDevisUrl, setApiDevisUrl] = useState('');
+  const [contactTechnique, setContactTechnique] = useState('');
   // Pot de miel anti-robots : caché aux humains, jamais rempli par eux.
   const [site, setSite] = useState('');
   const [sending, setSending] = useState(false);
@@ -99,6 +101,8 @@ function CandidatureForm() {
       contact,
       referenceAgrement: reference || undefined,
       message: message || undefined,
+      apiDevisUrl: apiDevisUrl || undefined,
+      contactTechnique: contactTechnique || undefined,
     });
     setSending(false);
     if (result.outcome === 'SAVED') {
@@ -110,6 +114,8 @@ function CandidatureForm() {
       setContact('');
       setReference('');
       setMessage('');
+      setApiDevisUrl('');
+      setContactTechnique('');
     } else if (result.outcome === 'SIMULATED') {
       toast('Démonstration — rien n’a été enregistré', {
         description: 'Dans le produit réel, votre candidature partirait en file d’examen.',
@@ -194,6 +200,47 @@ function CandidatureForm() {
         placeholder="Zones desservies, flotte, grille tarifaire publique…"
         className={champClass}
       />
+
+      {/* Intégration API — remplissable en ligne dès la candidature (contrat
+          d'interface VTC : docs/CONTRAT_INTERFACE_VTC.md). Facultatif. */}
+      <details className="mt-4 rounded-xl border bg-background/60">
+        <summary className="cursor-pointer select-none px-3 py-2.5 text-note font-semibold text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">
+          🔌 Intégration API (facultatif) — vous avez un service de devis ?
+        </summary>
+        <div className="space-y-3 px-3 pb-3">
+          <p className="text-tiny leading-snug text-muted-foreground">
+            Si votre plateforme expose un service d’estimation de prix, MOBILIS peut afficher vos
+            prix réels (avec attribution et horodatage) au lieu d’estimations. Le contrat
+            d’interface vous sera transmis à l’examen de la candidature.
+          </p>
+          <div>
+            <label className="mb-1 block text-label font-bold uppercase tracking-wider text-muted-foreground">
+              Adresse du service de devis (https)
+            </label>
+            <input
+              type="url"
+              value={apiDevisUrl}
+              onChange={(e) => setApiDevisUrl(e.target.value)}
+              maxLength={300}
+              placeholder="https://api.votre-plateforme.com/devis"
+              className={champClass}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-label font-bold uppercase tracking-wider text-muted-foreground">
+              Contact technique (e-mail)
+            </label>
+            <input
+              type="text"
+              value={contactTechnique}
+              onChange={(e) => setContactTechnique(e.target.value)}
+              maxLength={200}
+              placeholder="tech@votre-plateforme.com"
+              className={champClass}
+            />
+          </div>
+        </div>
+      </details>
 
       {/* Pot de miel : invisible pour les humains */}
       <input

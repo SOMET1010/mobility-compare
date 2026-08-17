@@ -348,6 +348,24 @@ function CandidaturesPanel({ token }: { token: string }) {
             {c.message && (
               <p className="mt-1.5 text-note italic text-muted-foreground">« {c.message} »</p>
             )}
+            {(c.api_devis_url || c.contact_technique) && (
+              <p className="mt-1.5 rounded-lg bg-trace-1/8 px-2.5 py-1.5 text-label text-foreground/80">
+                🔌 <b>Intégration API proposée</b>
+                {c.api_devis_url && (
+                  <>
+                    {' '}
+                    · devis : <span className="font-mono">{c.api_devis_url}</span>
+                  </>
+                )}
+                {c.contact_technique && (
+                  <>
+                    {' '}
+                    · technique : <span className="font-mono">{c.contact_technique}</span>
+                  </>
+                )}{' '}
+                — voir docs/CONTRAT_INTERFACE_VTC.md avant tout branchement.
+              </p>
+            )}
             <div className="mt-3 grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
