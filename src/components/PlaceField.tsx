@@ -129,122 +129,140 @@ export function PlaceSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[1200] flex flex-col bg-background"
+      className="fixed inset-0 z-[1200] flex items-stretch justify-center bg-black/35 sm:items-start sm:py-12"
       role="dialog"
       aria-label={`Choisir : ${label}`}
+      onClick={onClose}
     >
-      {/* Barre de saisie */}
-      <div className="flex items-center gap-2 border-b px-3 py-2.5">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Retour"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M19 12H5M5 12l7-7M5 12l7 7" />
-          </svg>
-        </button>
-        <div className="min-w-0 flex-1">
-          <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {label}
-          </span>
-          <input
-            ref={inputRef}
-            type="text"
-            role="combobox"
-            aria-expanded="true"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="done"
-            value={query}
-            placeholder="Tapez un quartier ou une adresse…"
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={onKeyDown}
-            className="w-full bg-transparent text-[16px] font-bold placeholder:font-medium placeholder:text-muted-foreground focus-visible:outline-none"
-          />
+      <div
+        className="flex w-full flex-col overflow-hidden bg-background sm:max-h-[76vh] sm:w-[26rem] sm:rounded-2xl sm:border sm:shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* En-tête : retour + libellé, puis champ de recherche dessiné */}
+        <div className="border-b px-3 pb-3 pt-2.5">
+          <div className="mb-1.5 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Retour"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5M5 12l7-7M5 12l7 7" />
+              </svg>
+            </button>
+            <span className="text-[13.5px] font-bold">{label}</span>
+          </div>
+          <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4 shrink-0 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-3.5-3.5" />
+            </svg>
+            <input
+              ref={inputRef}
+              type="text"
+              role="combobox"
+              aria-expanded="true"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="done"
+              value={query}
+              placeholder="Quartier, gare, adresse…"
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={onKeyDown}
+              className="w-full bg-transparent text-[15px] font-semibold placeholder:font-medium placeholder:text-muted-foreground focus-visible:outline-none"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('');
+                  inputRef.current?.focus();
+                }}
+                aria-label="Effacer"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted-foreground/20 text-[11px] text-foreground/70 transition hover:bg-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
-        {query && (
-          <button
-            type="button"
-            onClick={() => {
-              setQuery('');
-              inputRef.current?.focus();
-            }}
-            aria-label="Effacer"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            ✕
-          </button>
-        )}
-      </div>
 
-      {/* Résultats */}
-      <div className="flex-1 overflow-y-auto pb-8">
-        {lieux === null ? (
-          <>
-            {withGeolocation && (
-              <div className="border-b px-4 py-3.5">
-                <UseMyLocation onFound={onPick} />
-              </div>
-            )}
-            {recents.length > 0 && (
-              <div className="border-b">
-                <p className="px-4 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Récents
+        {/* Résultats */}
+        <div className="flex-1 overflow-y-auto pb-8">
+          {lieux === null ? (
+            <>
+              {withGeolocation && (
+                <div className="border-b py-1">
+                  <UseMyLocation onFound={onPick} variant="row" />
+                </div>
+              )}
+              {recents.length > 0 && (
+                <div className="border-b">
+                  <p className="px-4 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Récents
+                  </p>
+                  {recents.map((r) => (
+                    <SheetRow key={r.id} name={r.point!.name} onPick={() => onPick(r.id)} />
+                  ))}
+                </div>
+              )}
+              {placeGroups().map((g) => (
+                <div key={g.label}>
+                  <p className="sticky top-0 bg-muted/95 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur">
+                    {g.label}
+                  </p>
+                  {g.places.map((p) => (
+                    <SheetRow key={p.id} name={p.name} onPick={() => onPick(p.id)} />
+                  ))}
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              {lieux.map((h) => (
+                <SheetRow key={h.id} name={h.name} sub={h.commune} onPick={() => onPick(h.id)} />
+              ))}
+              {adressesTriees.length > 0 && (
+                <p className="border-t bg-muted/60 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Adresses
                 </p>
-                {recents.map((r) => (
-                  <SheetRow key={r.id} name={r.point!.name} onPick={() => onPick(r.id)} />
-                ))}
-              </div>
-            )}
-            {placeGroups().map((g) => (
-              <div key={g.label}>
-                <p className="sticky top-0 bg-muted/95 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur">
-                  {g.label}
+              )}
+              {adressesTriees.map((a) => (
+                <SheetRow
+                  key={`${a.lat},${a.lng}`}
+                  name={a.nom}
+                  sub={a.detail || (nearestPlace(a.lat, a.lng)?.name ?? '')}
+                  onPick={() => onPick(makeAddressId(a.lat, a.lng, a.nom))}
+                />
+              ))}
+              {lieux.length === 0 && adressesTriees.length === 0 && (
+                <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
+                  Aucun lieu trouvé — essayez le nom de la commune
+                  {query.trim().length < 3 ? ' (adresses dès 3 lettres)' : ''}.
                 </p>
-                {g.places.map((p) => (
-                  <SheetRow key={p.id} name={p.name} onPick={() => onPick(p.id)} />
-                ))}
-              </div>
-            ))}
-          </>
-        ) : (
-          <>
-            {lieux.map((h) => (
-              <SheetRow key={h.id} name={h.name} sub={h.commune} onPick={() => onPick(h.id)} />
-            ))}
-            {adressesTriees.length > 0 && (
-              <p className="border-t bg-muted/60 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Adresses
-              </p>
-            )}
-            {adressesTriees.map((a) => (
-              <SheetRow
-                key={`${a.lat},${a.lng}`}
-                name={a.nom}
-                sub={a.detail || (nearestPlace(a.lat, a.lng)?.name ?? '')}
-                onPick={() => onPick(makeAddressId(a.lat, a.lng, a.nom))}
-              />
-            ))}
-            {lieux.length === 0 && adressesTriees.length === 0 && (
-              <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
-                Aucun lieu trouvé — essayez le nom de la commune
-                {query.trim().length < 3 ? ' (adresses dès 3 lettres)' : ''}.
-              </p>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
