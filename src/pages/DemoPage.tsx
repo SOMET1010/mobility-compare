@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { COULEURS } from '@/config/couleurs';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -256,6 +256,7 @@ const asCrit = (v: string | null): DemoCriterion =>
 
 export default function DemoPage() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const urlFrom = params.get('de');
   const urlTo = params.get('a');
   const deepLinked = isCommune(urlFrom) && isCommune(urlTo) && urlFrom !== urlTo;
@@ -271,8 +272,31 @@ export default function DemoPage() {
   const [service, setService] = useState<ServiceType>(
     params.get('quoi') === 'livraison' ? 'LIVRAISON' : 'COURSE',
   );
-  const [view, setView] = useState<View>(deepLinked ? 'results' : 'search');
-  const [optionId, setOptionId] = useState<string | null>(null);
+  // Les vues internes vivent dans l'URL : le bouton retour du téléphone
+  // revient à l'écran précédent au lieu de quitter le comparateur, et
+  // chaque écran (résultats, fiche détail) devient partageable.
+  const paramVue = params.get('vue');
+  const optionId = params.get('option');
+  const view: View =
+    paramVue === 'detail' && optionId
+      ? 'detail'
+      : paramVue === 'contribuer'
+        ? 'contribute'
+        : paramVue === 'resultats'
+          ? 'results'
+          : paramVue === 'recherche'
+            ? 'search'
+            : deepLinked
+              ? 'results'
+              : 'search';
+  const vueParam =
+    view === 'results'
+      ? ('resultats' as const)
+      : view === 'detail'
+        ? ('detail' as const)
+        : view === 'contribute'
+          ? ('contribuer' as const)
+          : ('recherche' as const);
   const [recents, setRecents] = useState<SavedTrip[]>(() =>
     typeof window === 'undefined' ? [] : loadRecents(window.localStorage),
   );
@@ -463,32 +487,57 @@ export default function DemoPage() {
   const fromCommune = resolvePoint(fromId);
   const toCommune = resolvePoint(toId);
 
-  /** Reflète le trajet dans l'URL (lien partageable / rechargeable). */
-  function syncUrl(from: string, to: string, crit: DemoCriterion, svc: ServiceType = service) {
-    setParams(
-      { de: from, a: to, tri: crit, ...(svc === 'LIVRAISON' ? { quoi: 'livraison' } : {}) },
-      { replace: true },
-    );
+  /**
+   * L'URL est la source de vérité des écrans internes. Sans `replace`,
+   * chaque changement d'écran crée une entrée d'historique — le retour
+   * arrière du navigateur redevient un geste fiable.
+   */
+  function allerA(
+    vue: 'recherche' | 'resultats' | 'detail' | 'contribuer',
+    opts: {
+      from?: string;
+      to?: string;
+      crit?: DemoCriterion;
+      svc?: ServiceType;
+      option?: string;
+      replace?: boolean;
+    } = {},
+  ) {
+    const p: Record<string, string> = {
+      de: opts.from ?? fromId,
+      a: opts.to ?? toId,
+      tri: opts.crit ?? criterion,
+      vue,
+    };
+    if ((opts.svc ?? service) === 'LIVRAISON') p.quoi = 'livraison';
+    if (opts.option) p.option = opts.option;
+    setParams(p, { replace: opts.replace ?? false });
+  }
+
+  /** Retour aux résultats : le même geste que le bouton arrière du téléphone. */
+  function retourResultats() {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else allerA('resultats', { replace: true });
   }
 
   function pickService(svc: ServiceType) {
     setService(svc);
-    if (view === 'results' || view === 'detail') syncUrl(fromId, toId, criterion, svc);
+    if (view !== 'search') allerA(vueParam, { svc, option: optionId ?? undefined, replace: true });
   }
 
   function showResults(from: string, to: string, crit: DemoCriterion) {
     setFromId(from);
     setToId(to);
     setCriterion(crit);
-    setView('results');
-    syncUrl(from, to, crit);
+    allerA('resultats', { from, to, crit });
     if (KNOWN.has(from) && KNOWN.has(to))
       setRecents(pushRecent(window.localStorage, { fromId: from, toId: to }));
   }
 
   function pickCriterion(crit: DemoCriterion) {
     setCriterion(crit);
-    if (view === 'results' || view === 'detail') syncUrl(fromId, toId, crit);
+    if (view !== 'search') allerA(vueParam, { crit, option: optionId ?? undefined, replace: true });
   }
 
   async function share() {
@@ -576,8 +625,7 @@ export default function DemoPage() {
   }, [cmp]);
 
   function openDetail(id: string) {
-    setOptionId(id);
-    setView('detail');
+    allerA('detail', { option: id });
   }
 
   return (
@@ -736,7 +784,7 @@ export default function DemoPage() {
               <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
                 <button
                   type="button"
-                  onClick={() => setView('search')}
+                  onClick={() => allerA('recherche')}
                   aria-label="Modifier le trajet"
                   title="Modifier le trajet"
                   className="inline-flex items-center gap-2 rounded-lg text-left underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -1150,7 +1198,7 @@ export default function DemoPage() {
                 <p className="mt-0.5 text-note text-muted-foreground">
                   Aidez à rendre les prix plus fiables — anonyme, modéré avant publication.
                 </p>
-                <Button className="mt-3 w-full" onClick={() => setView('contribute')}>
+                <Button className="mt-3 w-full" onClick={() => allerA('contribuer')}>
                   + Ajouter le prix que j’ai payé
                 </Button>
               </div>
@@ -1225,19 +1273,14 @@ export default function DemoPage() {
             {/* L'installation tout en bas : d'abord prouver l'utilité, ensuite s'inviter. */}
             <InstallPrompt />
 
-            <Button variant="ghost" size="sm" className="mt-1" onClick={() => setView('search')}>
+            <Button variant="ghost" size="sm" className="mt-1" onClick={() => allerA('recherche')}>
               ← Changer de trajet
             </Button>
           </section>
         )}
 
         {view === 'contribute' && cmp && (
-          <ContributeView
-            comparison={cmp}
-            fromId={fromId}
-            toId={toId}
-            onBack={() => setView('results')}
-          />
+          <ContributeView comparison={cmp} fromId={fromId} toId={toId} onBack={retourResultats} />
         )}
 
         {view === 'detail' && cmp && optionId && (
@@ -1248,7 +1291,7 @@ export default function DemoPage() {
             criterion={criterion}
             observed={observed}
             operators={operators}
-            onBack={() => setView('results')}
+            onBack={retourResultats}
           />
         )}
 
@@ -1261,7 +1304,7 @@ export default function DemoPage() {
               Vérifiez le départ et l’arrivée — il faut deux lieux différents, dans la zone
               d’Abidjan.
             </p>
-            <Button className="mt-5" onClick={() => setView('search')}>
+            <Button className="mt-5" onClick={() => allerA('recherche')}>
               ← Modifier le trajet
             </Button>
           </section>
