@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { cleanLineName, dedupeLines, fmtWalk } from '@/features/transit/lignes';
+import {
+  cleanLineName,
+  dedupeCorrespondances,
+  dedupeLines,
+  fmtWalk,
+} from '@/features/transit/lignes';
 
 /**
  * Lignes cartographiées : le nom s'affiche sans son préfixe de mode (la
@@ -17,6 +22,44 @@ describe('cleanLineName', () => {
 
   it('laisse intact un nom sans préfixe', () => {
     expect(cleanLineName('Ligne Express Bingerville')).toBe('Ligne Express Bingerville');
+  });
+
+  it('gère la variante « woro woro banalisé : … »', () => {
+    expect(cleanLineName('woro woro banalisé : Carrefour Angré → Bacongo')).toBe(
+      'Carrefour Angré → Bacongo',
+    );
+  });
+});
+
+describe('dedupeCorrespondances', () => {
+  const base = {
+    mode1: 'WORO',
+    ref1: '',
+    montee_m: 343,
+    mode2: 'WORO',
+    ref2: '',
+    descente_m: 295,
+    correspondance_m: 7,
+  };
+
+  it('fusionne les variantes aller/retour de la seconde étape', () => {
+    const uniques = dedupeCorrespondances([
+      { ...base, ligne1: 'woro woro : Angré → Bacongo', ligne2: 'woro woro : Gare → Soweto' },
+      { ...base, ligne1: 'woro woro : Angré → Bacongo', ligne2: 'woro woro : Soweto → Gare' },
+    ]);
+    expect(uniques).toHaveLength(1);
+  });
+
+  it('garde deux correspondances réellement différentes', () => {
+    const uniques = dedupeCorrespondances([
+      { ...base, ligne1: 'woro woro : Angré → Bacongo', ligne2: 'woro woro : Gare → Soweto' },
+      {
+        ...base,
+        ligne1: 'bus 205 : Gare Sud → Angré Djibi',
+        ligne2: 'bus 33 : Gare Sud → Koumassi',
+      },
+    ]);
+    expect(uniques).toHaveLength(2);
   });
 });
 

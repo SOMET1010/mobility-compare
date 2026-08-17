@@ -67,5 +67,25 @@ Deno.serve(async (req) => {
     (l): l is { nom: string; mode: string; ref: string; montee_m: number; descente_m: number } =>
       typeof l?.nom === 'string' && typeof l?.mode === 'string',
   );
-  return json({ disponible: true, lignes });
+
+  // Peu ou pas de lignes directes → chercher les trajets à UNE
+  // correspondance (croisement géographique des tracés).
+  let correspondances: unknown[] = [];
+  if (lignes.length < 3) {
+    const { data: corr } = await admin.rpc('lignes_correspondance', {
+      p_lat1: depart.lat,
+      p_lng1: depart.lng,
+      p_lat2: arrivee.lat,
+      p_lng2: arrivee.lng,
+      p_rayon: 800,
+      p_transfert: 400,
+    });
+    if (Array.isArray(corr)) {
+      correspondances = corr.filter(
+        (c) => typeof c?.ligne1 === 'string' && typeof c?.ligne2 === 'string',
+      );
+    }
+  }
+
+  return json({ disponible: true, lignes, correspondances });
 });

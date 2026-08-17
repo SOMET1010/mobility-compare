@@ -17,7 +17,7 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
-import { cleanLineName, fetchLignes, fmtWalk, type LigneProche } from '@/features/transit/lignes';
+import { cleanLineName, fetchLignes, fmtWalk, type TransitInfo } from '@/features/transit/lignes';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
@@ -291,15 +291,15 @@ export default function DemoPage() {
   // Lignes cartographiées passant près du départ ET de l'arrivée (gbaka,
   // woro-woro, bus, bateau-bus) — la première brique de la décomposition
   // « de gare en gare ». Indisponible → la section n'apparaît pas.
-  const [lignesProches, setLignesProches] = useState<LigneProche[] | null>(null);
+  const [transit, setTransit] = useState<TransitInfo | null>(null);
   useEffect(() => {
     let cancelled = false;
-    setLignesProches(null);
+    setTransit(null);
     const a = resolvePoint(fromId);
     const b = resolvePoint(toId);
     if (!a || !b || fromId === toId) return;
     fetchLignes({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }).then((l) => {
-      if (!cancelled) setLignesProches(l);
+      if (!cancelled) setTransit(l);
     });
     return () => {
       cancelled = true;
@@ -799,14 +799,16 @@ export default function DemoPage() {
               })()}
             </div>
 
-            {/* Lignes cartographiées — première brique « de gare en gare » */}
-            {lignesProches && lignesProches.length > 0 && (
+            {/* Lignes cartographiées — la décomposition « de gare en gare » */}
+            {transit && (transit.lignes.length > 0 || transit.correspondances.length > 0) && (
               <div className="mt-4 rounded-2xl border bg-card p-4">
                 <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Lignes passant près de ce trajet
+                  {transit.lignes.length > 0
+                    ? 'Lignes passant près de ce trajet'
+                    : 'Pas de ligne directe — avec une correspondance'}
                 </p>
                 <ul className="mt-2 space-y-2">
-                  {lignesProches.slice(0, 6).map((l) => {
+                  {transit.lignes.slice(0, 6).map((l) => {
                     const montee = fmtWalk(l.montee_m);
                     const descente = fmtWalk(l.descente_m);
                     return (
@@ -830,6 +832,53 @@ export default function DemoPage() {
                     );
                   })}
                 </ul>
+
+                {transit.correspondances.length > 0 && (
+                  <>
+                    {transit.lignes.length > 0 && (
+                      <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Ou avec une correspondance
+                      </p>
+                    )}
+                    <ul className="mt-1.5 space-y-2.5">
+                      {transit.correspondances.slice(0, 3).map((c) => (
+                        <li key={`${c.ligne1}__${c.ligne2}`} className="text-[13px]">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                              {LIGNE_META[c.mode1]?.emoji ?? '🚏'}{' '}
+                              {LIGNE_META[c.mode1]?.label ?? c.mode1}
+                              {c.ref1 ? ` ${c.ref1}` : ''}
+                            </span>
+                            <span className="min-w-0 truncate font-medium">
+                              {cleanLineName(c.ligne1)}
+                            </span>
+                          </div>
+                          <div className="mt-0.5 flex items-baseline gap-1.5">
+                            <span aria-hidden="true" className="pl-2 text-muted-foreground">
+                              ↳
+                            </span>
+                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                              {LIGNE_META[c.mode2]?.emoji ?? '🚏'}{' '}
+                              {LIGNE_META[c.mode2]?.label ?? c.mode2}
+                              {c.ref2 ? ` ${c.ref2}` : ''}
+                            </span>
+                            <span className="min-w-0 truncate font-medium">
+                              {cleanLineName(c.ligne2)}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                            🚶 montée {fmtWalk(c.montee_m)} · changement{' '}
+                            {c.correspondance_m < 40
+                              ? 'au même endroit'
+                              : fmtWalk(c.correspondance_m)}{' '}
+                            · descente {fmtWalk(c.descente_m)}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
                 <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
                   Réseau cartographié (OpenStreetMap) — tracés réels, sans horaires ni tarifs.
                 </p>
