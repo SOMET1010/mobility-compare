@@ -66,6 +66,13 @@ const BADGE_LABEL: Record<BadgeCode, string> = {
 const minTotal = (o: { durationSeconds: number | null; waitSeconds: number | null }) =>
   Math.round(((o.durationSeconds ?? 0) + (o.waitSeconds ?? 0)) / 60);
 
+/** Libellés courts des onglets de tri (le long vit dans CRITERIA.label). */
+const CRIT_TAB: Record<DemoCriterion, string> = {
+  PRICE: '💰 Prix',
+  DURATION: '⚡ Rapide',
+  PRICE_TIME: '★ Compromis',
+};
+
 /** Pastilles des lignes cartographiées (modes au-delà du comparateur). */
 const LIGNE_META: Record<string, { label: string; emoji: string }> = {
   GBAKA: { label: 'Gbaka', emoji: '🚌' },
@@ -411,6 +418,37 @@ export default function DemoPage() {
     setToId(fromId);
   }
 
+  /**
+   * L'écart qui fait décider : le recommandé comparé au plus rapide (ce
+   * qu'on économise) ou au moins cher (ce qu'on gagne). Jamais inventé —
+   * calculé sur les options affichées, null si rien à dire.
+   */
+  const insight = useMemo(() => {
+    const ranked = cmp?.ranking.ranked.filter((r) => fareAmount(r.option) !== null);
+    if (!ranked || ranked.length < 2) return null;
+    const gagnant = ranked[0]!;
+    const prixGagnant = fareAmount(gagnant.option)!;
+    const rapide = ranked.reduce((a, b) => (minTotal(a.option) <= minTotal(b.option) ? a : b));
+    const econome = ranked.reduce((a, b) =>
+      fareAmount(a.option)! <= fareAmount(b.option)! ? a : b,
+    );
+    if (rapide.option.optionId !== gagnant.option.optionId) {
+      const economie = fareAmount(rapide.option)! - prixGagnant;
+      const surplus = minTotal(gagnant.option) - minTotal(rapide.option);
+      if (economie > 0 && surplus > 0) {
+        return `${fmt(economie)} FCFA de moins que le ${MODE_META[rapide.option.mode].label}, pour ${surplus} min de plus.`;
+      }
+    }
+    if (econome.option.optionId !== gagnant.option.optionId) {
+      const surcout = prixGagnant - fareAmount(econome.option)!;
+      const gain = minTotal(econome.option) - minTotal(gagnant.option);
+      if (surcout > 0 && gain > 0) {
+        return `${gain} min de gagnées pour ${fmt(surcout)} FCFA de plus que le ${MODE_META[econome.option.mode].label}.`;
+      }
+    }
+    return null;
+  }, [cmp]);
+
   const badgesByOption = useMemo(() => {
     const map = new Map<string, BadgeCode[]>();
     cmp?.ranking.badges.forEach((b) => {
@@ -631,9 +669,9 @@ export default function DemoPage() {
               </span>
             </div>
 
-            {/* Sélecteur de critère */}
+            {/* Sélecteur de critère — collant pendant le défilement */}
             <div
-              className="mb-3 flex gap-1 rounded-xl bg-muted p-1"
+              className="sticky top-0 z-30 mb-3 flex gap-1 rounded-xl bg-muted p-1 shadow-sm"
               role="group"
               aria-label="Trier par"
             >
@@ -650,62 +688,12 @@ export default function DemoPage() {
                       : 'text-muted-foreground hover:text-foreground')
                   }
                 >
-                  {cr.label}
+                  {CRIT_TAB[cr.code]}
                 </button>
               ))}
             </div>
-            {/* La réponse d'abord : le gagnant du critère, prix en gros, touchable */}
-            {cmp.ranking.ranked[0] &&
-              (() => {
-                const top = cmp.ranking.ranked[0];
-                const price = fareAmount(top.option);
-                const meta = MODE_META[top.option.mode];
-                return (
-                  <button
-                    type="button"
-                    onClick={() => openDetail(top.option.optionId)}
-                    className="mb-4 w-full rounded-2xl border p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    style={{
-                      borderColor: `color-mix(in oklab, ${AMBER} 45%, transparent)`,
-                      backgroundColor: `color-mix(in oklab, ${AMBER} 8%, transparent)`,
-                    }}
-                  >
-                    <span
-                      className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider"
-                      style={{ color: WARN }}
-                    >
-                      <span aria-hidden="true">★</span> Notre conseil ·{' '}
-                      {CRITERIA.find((c) => c.code === criterion)?.label}
-                    </span>
-                    <span className="mt-2.5 flex items-center gap-3">
-                      <ModeChip mode={top.option.mode} />
-                      <span className="min-w-0">
-                        <span className="block text-lg font-extrabold leading-tight">
-                          {meta.label}
-                        </span>
-                        <span className="text-[12px] text-muted-foreground">{meta.note}</span>
-                      </span>
-                      <span className="ml-auto shrink-0 text-right">
-                        <span className="block text-4xl font-extrabold tabular-nums leading-none">
-                          {price !== null ? fmt(price) : '—'}
-                        </span>
-                        <span className="text-[11px] font-semibold text-muted-foreground">
-                          FCFA · {minTotal(top.option)} min
-                          {top.option.waitSeconds
-                            ? ` dont ${Math.round(top.option.waitSeconds / 60)} d’attente`
-                            : ''}
-                        </span>
-                      </span>
-                      <Chevron />
-                    </span>
-                  </button>
-                );
-              })()}
-
             <div className="flex flex-col gap-2.5">
               {(() => {
-                const vtc = cmp.ranking.ranked.filter((r) => r.option.mode === 'VTC');
-                const others = cmp.ranking.ranked.filter((r) => r.option.mode !== 'VTC');
                 const renderCard = (r: (typeof cmp.ranking.ranked)[number]) => {
                   const price = fareAmount(r.option);
                   const codes = badgesByOption.get(r.option.optionId) ?? [];
@@ -724,6 +712,15 @@ export default function DemoPage() {
                         winner ? { borderColor: AMBER, boxShadow: `0 0 0 1px ${AMBER}` } : undefined
                       }
                     >
+                      {winner && (
+                        <span
+                          className="-mb-1 flex basis-full items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest"
+                          style={{ color: WARN }}
+                        >
+                          <span aria-hidden="true">★</span> Recommandé ·{' '}
+                          {CRITERIA.find((c) => c.code === criterion)?.label}
+                        </span>
+                      )}
                       <ModeChip mode={r.option.mode} />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2 text-[15px] font-bold">
@@ -762,6 +759,11 @@ export default function DemoPage() {
                         ) : null}
                       </span>
                       <Chevron />
+                      {winner && insight && (
+                        <span className="block basis-full border-t pt-2 text-[12px] font-medium leading-snug text-foreground/80">
+                          <b>Pourquoi ce choix ?</b> {insight}
+                        </span>
+                      )}
                       {(() => {
                         const ops = operators?.filter((op) => op.mode === r.option.mode) ?? [];
                         const agg = observed?.[r.option.mode];
@@ -798,39 +800,10 @@ export default function DemoPage() {
                     </button>
                   );
                 };
-                return (
-                  <>
-                    {vtc.length > 0 && (
-                      <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                        VTC
-                        {operators
-                          ?.filter((op) => op.mode === 'VTC')
-                          .map((op) => (
-                            <span
-                              key={op.id}
-                              className="inline-flex items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[10px] font-bold normal-case tracking-normal text-foreground"
-                            >
-                              <span
-                                aria-hidden="true"
-                                className="inline-block h-1.5 w-1.5 rounded-full"
-                                style={{
-                                  backgroundColor: op.brand_color ?? 'hsl(var(--muted-foreground))',
-                                }}
-                              />
-                              {op.label}
-                            </span>
-                          ))}
-                      </p>
-                    )}
-                    {vtc.map((r) => renderCard(r))}
-                    {others.length > 0 && (
-                      <p className="mt-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Aussi sur ce trajet
-                      </p>
-                    )}
-                    {others.map((r) => renderCard(r))}
-                  </>
-                );
+                // Une option = UNE carte, dans l'ordre du classement — les
+                // badges (💰 ⚡ ⭐) portent les distinctions, jamais des
+                // sections dupliquées.
+                return <>{cmp.ranking.ranked.map((r) => renderCard(r))}</>;
               })()}
             </div>
 
