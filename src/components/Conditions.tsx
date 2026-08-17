@@ -46,7 +46,7 @@ export function ConditionsBar({ pilote = false }: { pilote?: boolean }) {
         </span>
       )}
       {weather && (
-        <span className="inline-flex items-center gap-1.5">
+        <span className="apparait inline-flex items-center gap-1.5">
           <svg
             viewBox="0 0 24 24"
             className="h-3 w-3 text-brand-ochre"

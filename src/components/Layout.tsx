@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { ConditionsBar } from '@/components/Conditions';
+import { HorsLigneBanner } from '@/components/HorsLigne';
 
 /**
  * LE squelette du site — une seule route parent (audit UX C1 : chaque page
@@ -32,6 +33,7 @@ export function SiteLayout() {
           ) : undefined
         }
       />
+      <HorsLigneBanner />
       <div className="flex-1">
         <Outlet />
       </div>

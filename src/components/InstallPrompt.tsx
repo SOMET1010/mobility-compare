@@ -62,7 +62,7 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="mt-4 flex items-center gap-3 rounded-2xl border bg-card p-3.5">
+    <div className="mt-4 flex items-center gap-3 apparait rounded-2xl border bg-card p-3.5">
       <img src="/icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-xl" />
       <div className="min-w-0 flex-1">
         <div className="text-body font-semibold leading-tight">

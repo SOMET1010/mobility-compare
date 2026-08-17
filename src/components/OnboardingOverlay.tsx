@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { useDialogue } from '@/components/useDialogue';
 import { ModeGlyph } from '@/components/ModeGlyph';
 import { COULEURS } from '@/config/couleurs';
 
@@ -59,8 +61,11 @@ const ICONS: Record<(typeof POINTS)[number]['icon'], JSX.Element> = {
 };
 
 export function OnboardingOverlay({ onDone }: { onDone: () => void }) {
+  const panneau = useRef<HTMLDivElement>(null);
+  useDialogue(panneau, onDone);
   return (
     <div
+      ref={panneau}
       role="dialog"
       aria-modal="true"
       aria-label="Bienvenue sur MOBILIS"

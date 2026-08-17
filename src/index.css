@@ -92,5 +92,20 @@
     html {
       scroll-behavior: smooth;
     }
+    /* Apparition douce des contenus asynchrones (lignes, pastilles,
+       bandeaux…) — jamais de saut sec sous les yeux (audit UX A-1). */
+    .apparait {
+      animation: apparait 0.25s ease-out;
+    }
+  }
+  @keyframes apparait {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 }

@@ -112,6 +112,19 @@ export function StreetMap({
   }, [from.lat, from.lng, from.name, to.lat, to.lng, to.name, traces, changePoint]);
 
   return (
-    <div ref={ref} className="h-[240px] w-full" role="img" aria-label="Carte du trajet à Abidjan" />
+    <div
+      ref={ref}
+      className="h-[240px] w-full"
+      role="img"
+      aria-label={
+        `Carte du trajet ${from.name} vers ${to.name}` +
+        (traces && traces.length > 0
+          ? traces.length > 1
+            ? ', tracés des deux lignes affichés'
+            : ', tracé de la ligne affiché'
+          : '') +
+        (changePoint ? `, changement à ${changePoint.label}` : '')
+      }
+    />
   );
 }

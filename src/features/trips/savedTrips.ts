@@ -9,7 +9,16 @@
 export interface SavedTrip {
   readonly fromId: string;
   readonly toId: string;
+  /**
+   * Prestation du trajet : course (personnes) ou livraison (colis).
+   * Absent sur les entrées enregistrées avant l'arrivée des livraisons —
+   * lues comme des courses (migration silencieuse, audit externe F2).
+   */
+  readonly service?: 'COURSE' | 'LIVRAISON';
 }
+
+/** Service effectif d'une entrée, anciennes données comprises. */
+export const tripService = (t: SavedTrip): 'COURSE' | 'LIVRAISON' => t.service ?? 'COURSE';
 
 export const RECENTS_KEY = 'mobilis.recent-trips.v1';
 export const FAVORITES_KEY = 'mobilis.favorite-trips.v1';
@@ -18,7 +27,7 @@ export const FAVORITES_KEY = 'mobilis.favorite-trips.v1';
 export const MAX_RECENTS = 5;
 export const MAX_FAVORITES = 20;
 
-export const tripKey = (t: SavedTrip): string => `${t.fromId}→${t.toId}`;
+export const tripKey = (t: SavedTrip): string => `${t.fromId}→${t.toId}→${tripService(t)}`;
 
 function loadList(storage: Pick<Storage, 'getItem'>, key: string): SavedTrip[] {
   try {

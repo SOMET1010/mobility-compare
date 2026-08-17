@@ -10,6 +10,7 @@ import {
 } from '@/features/search/placeSearch';
 import { searchAddresses, type AddressHit } from '@/features/search/adresse';
 import { UseMyLocation } from '@/components/UseMyLocation';
+import { useDialogue } from '@/components/useDialogue';
 
 /**
  * Choix de lieu « à la Yango » : le champ n'est qu'un déclencheur —
@@ -79,7 +80,11 @@ export function PlaceSheet({
 }) {
   const [query, setQuery] = useState('');
   const [addresses, setAddresses] = useState<AddressHit[]>([]);
+  /** Option active au clavier (flèches) — -1 : aucune. */
+  const [actif, setActif] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogue(panelRef, onClose);
 
   // Clavier ouvert d'emblée, page arrière figée.
   useEffect(() => {
@@ -118,15 +123,33 @@ export function PlaceSheet({
     .filter((r) => r.point !== null)
     .slice(0, 6);
 
+  // Liste plate des résultats sélectionnables (lieux puis adresses) — la
+  // même que les flèches du clavier parcourent (combobox conforme).
+  const resultats =
+    lieux === null
+      ? []
+      : [
+          ...lieux.map((h) => ({ id: h.id, name: h.name, sub: h.commune })),
+          ...adressesTriees.map((a) => ({
+            id: makeAddressId(a.lat, a.lng, a.nom),
+            name: a.nom,
+            sub: a.detail || (nearestPlace(a.lat, a.lng)?.name ?? ''),
+          })),
+        ];
+
   function onKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Escape') onClose();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (resultats.length === 0) return;
+      e.preventDefault();
+      setActif((i) => {
+        const suivant = e.key === 'ArrowDown' ? i + 1 : i - 1;
+        return Math.max(0, Math.min(resultats.length - 1, suivant));
+      });
+      return;
+    }
     if (e.key === 'Enter') {
-      const premier =
-        lieux?.[0]?.id ??
-        (adressesTriees[0]
-          ? makeAddressId(adressesTriees[0].lat, adressesTriees[0].lng, adressesTriees[0].nom)
-          : null);
-      if (premier) onPick(premier);
+      const choisi = resultats[actif] ?? resultats[0];
+      if (choisi) onPick(choisi.id);
     }
   }
 
@@ -137,10 +160,12 @@ export function PlaceSheet({
     <div
       className="fixed inset-0 z-[1200] flex items-stretch justify-center bg-black/35 sm:items-start sm:py-12"
       role="dialog"
+      aria-modal="true"
       aria-label={`Choisir : ${label}`}
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         className="flex w-full flex-col overflow-hidden bg-background sm:max-h-[76vh] sm:w-[26rem] sm:rounded-2xl sm:border sm:shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -185,14 +210,19 @@ export function PlaceSheet({
               ref={inputRef}
               type="text"
               role="combobox"
-              aria-expanded="true"
+              aria-expanded={lieux !== null}
+              aria-controls="liste-lieux"
+              aria-activedescendant={actif >= 0 ? `lieu-option-${actif}` : undefined}
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="done"
               value={query}
               placeholder="Quartier, gare, adresse…"
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setActif(-1);
+              }}
               onKeyDown={onKeyDown}
               className="w-full bg-transparent text-emph font-semibold placeholder:font-medium placeholder:text-muted-foreground focus-visible:outline-none"
             />
@@ -243,30 +273,30 @@ export function PlaceSheet({
               ))}
             </>
           ) : (
-            <>
-              {lieux.map((h) => (
-                <SheetRow key={h.id} name={h.name} sub={h.commune} onPick={() => onPick(h.id)} />
+            <div role="listbox" id="liste-lieux" aria-label="Lieux et adresses trouvés">
+              {resultats.map((r, i) => (
+                <span key={r.id}>
+                  {i === lieux.length && (
+                    <p className="apparait border-t bg-muted/60 px-4 py-1.5 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
+                      Adresses
+                    </p>
+                  )}
+                  <SheetRow
+                    id={`lieu-option-${i}`}
+                    active={i === actif}
+                    name={r.name}
+                    sub={r.sub}
+                    onPick={() => onPick(r.id)}
+                  />
+                </span>
               ))}
-              {adressesTriees.length > 0 && (
-                <p className="border-t bg-muted/60 px-4 py-1.5 text-tiny font-bold uppercase tracking-wider text-muted-foreground">
-                  Adresses
-                </p>
-              )}
-              {adressesTriees.map((a) => (
-                <SheetRow
-                  key={`${a.lat},${a.lng}`}
-                  name={a.nom}
-                  sub={a.detail || (nearestPlace(a.lat, a.lng)?.name ?? '')}
-                  onPick={() => onPick(makeAddressId(a.lat, a.lng, a.nom))}
-                />
-              ))}
-              {lieux.length === 0 && adressesTriees.length === 0 && (
+              {resultats.length === 0 && (
                 <p className="px-4 py-6 text-center text-body text-muted-foreground">
                   Aucun lieu trouvé — essayez le nom de la commune
                   {query.trim().length < 3 ? ' (adresses dès 3 lettres)' : ''}.
                 </p>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -275,12 +305,32 @@ export function PlaceSheet({
   );
 }
 
-function SheetRow({ name, sub, onPick }: { name: string; sub?: string; onPick: () => void }) {
+function SheetRow({
+  name,
+  sub,
+  onPick,
+  id,
+  active = false,
+}: {
+  name: string;
+  sub?: string;
+  onPick: () => void;
+  /** Identifiant d'option (aria-activedescendant du champ). */
+  id?: string;
+  /** Option visée par les flèches du clavier. */
+  active?: boolean;
+}) {
   return (
     <button
       type="button"
+      id={id}
+      role={id ? 'option' : undefined}
+      aria-selected={id ? active : undefined}
       onClick={onPick}
-      className="flex w-full items-baseline justify-between gap-3 px-4 py-3.5 text-left transition hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      className={
+        'flex w-full items-baseline justify-between gap-3 px-4 py-3.5 text-left transition hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ' +
+        (active ? 'bg-muted' : '')
+      }
     >
       <span className="min-w-0 truncate text-emph font-semibold">{name}</span>
       {sub && sub !== name && (

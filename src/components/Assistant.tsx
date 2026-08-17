@@ -1,3 +1,4 @@
+import { useDialogue } from '@/components/useDialogue';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { answer, ASSISTANT_DISCLAIMER, type AssistantReply } from '@/demo/assistant';
@@ -34,6 +35,8 @@ const QUICK: string[] = [
 
 export function Assistant() {
   const [open, setOpen] = useState(false);
+  const panneauRef = useRef<HTMLDivElement>(null);
+  useDialogue(panneauRef, () => setOpen(false), open);
   const [msgs, setMsgs] = useState<Msg[]>([WELCOME]);
   const [input, setInput] = useState('');
   const [aiEnabled, setAiEnabled] = useState(() => isAiConfigured());
@@ -106,6 +109,7 @@ export function Assistant() {
 
       {open && (
         <div
+          ref={panneauRef}
           role="dialog"
           aria-label="Assistant MOBILIS"
           className="fixed bottom-[max(4.5rem,calc(3.5rem+env(safe-area-inset-bottom)))] right-4 z-[1100] flex max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl"

@@ -41,6 +41,7 @@ import {
   pushRecent,
   toggleFavorite,
   tripKey,
+  tripService,
   type SavedTrip,
 } from '@/features/trips/savedTrips';
 import { IS_BACKEND_CONFIGURED } from '@/config/env';
@@ -305,11 +306,11 @@ export default function DemoPage() {
   );
   useEffect(() => {
     if (deepLinked && KNOWN.has(urlFrom) && KNOWN.has(urlTo))
-      setRecents(pushRecent(window.localStorage, { fromId: urlFrom, toId: urlTo }));
+      setRecents(pushRecent(window.localStorage, { fromId: urlFrom, toId: urlTo, service }));
     // Dépendances vides à dessein : n'enregistrer que le trajet d'arrivée.
   }, []);
 
-  const currentTrip: SavedTrip = { fromId, toId };
+  const currentTrip: SavedTrip = { fromId, toId, service };
   const currentIsFavorite = favorites.some((t) => tripKey(t) === tripKey(currentTrip));
 
   function starCurrent() {
@@ -532,7 +533,7 @@ export default function DemoPage() {
     setCriterion(crit);
     allerA('resultats', { from, to, crit });
     if (KNOWN.has(from) && KNOWN.has(to))
-      setRecents(pushRecent(window.localStorage, { fromId: from, toId: to }));
+      setRecents(pushRecent(window.localStorage, { fromId: from, toId: to, service }));
   }
 
   function pickCriterion(crit: DemoCriterion) {
@@ -706,21 +707,23 @@ export default function DemoPage() {
                   ★ Vos favoris
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {favorites.map((t) => {
-                    const from = COMMUNES.find((c) => c.id === t.fromId);
-                    const to = COMMUNES.find((c) => c.id === t.toId);
-                    if (!from || !to) return null;
-                    return (
-                      <button
-                        key={tripKey(t)}
-                        type="button"
-                        onClick={() => showResults(t.fromId, t.toId, criterion)}
-                        className="rounded-full border border-brand-ochre/50 bg-brand-ochre/8 px-3 py-1.5 text-note font-medium transition hover:border-brand-ochre focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {from.name} → {to.name}
-                      </button>
-                    );
-                  })}
+                  {favorites
+                    .filter((t) => tripService(t) === service)
+                    .map((t) => {
+                      const from = COMMUNES.find((c) => c.id === t.fromId);
+                      const to = COMMUNES.find((c) => c.id === t.toId);
+                      if (!from || !to) return null;
+                      return (
+                        <button
+                          key={tripKey(t)}
+                          type="button"
+                          onClick={() => showResults(t.fromId, t.toId, criterion)}
+                          className="rounded-full border border-brand-ochre/50 bg-brand-ochre/8 px-3 py-1.5 text-note font-medium transition hover:border-brand-ochre focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {from.name} → {to.name}
+                        </button>
+                      );
+                    })}
                 </div>
               </>
             )}
@@ -731,21 +734,23 @@ export default function DemoPage() {
                   Récents
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {recents.map((t) => {
-                    const from = COMMUNES.find((c) => c.id === t.fromId);
-                    const to = COMMUNES.find((c) => c.id === t.toId);
-                    if (!from || !to) return null;
-                    return (
-                      <button
-                        key={tripKey(t)}
-                        type="button"
-                        onClick={() => showResults(t.fromId, t.toId, criterion)}
-                        className="rounded-full border bg-card px-3 py-1.5 text-note font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {from.name} → {to.name}
-                      </button>
-                    );
-                  })}
+                  {recents
+                    .filter((t) => tripService(t) === service)
+                    .map((t) => {
+                      const from = COMMUNES.find((c) => c.id === t.fromId);
+                      const to = COMMUNES.find((c) => c.id === t.toId);
+                      if (!from || !to) return null;
+                      return (
+                        <button
+                          key={tripKey(t)}
+                          type="button"
+                          onClick={() => showResults(t.fromId, t.toId, criterion)}
+                          className="rounded-full border bg-card px-3 py-1.5 text-note font-medium transition hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {from.name} → {to.name}
+                        </button>
+                      );
+                    })}
                 </div>
               </>
             )}
@@ -825,8 +830,15 @@ export default function DemoPage() {
                   </button>
                 )}
               </h1>
-              <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                ≈ {km1(cmp.corridor.km)} km
+              <span
+                className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground"
+                title={
+                  liveKm !== null
+                    ? 'Distance routière calculée par notre serveur'
+                    : 'Distance estimée — sera affinée par notre serveur'
+                }
+              >
+                ≈ {km1(cmp.corridor.km)} km{liveKm !== null ? ' ✓' : ''}
               </span>
             </div>
 
@@ -850,7 +862,10 @@ export default function DemoPage() {
             <p className="mb-2 text-label font-bold uppercase tracking-widest text-muted-foreground">
               Toutes les options{service === 'LIVRAISON' ? ' · envoi de colis' : ''}
             </p>
-            <div className="flex flex-col gap-2.5">
+            <div
+              key={liveKm === null ? 'estimee' : 'affinee'}
+              className="apparait flex flex-col gap-2.5"
+            >
               {(() => {
                 const renderCard = (r: (typeof cmp.ranking.ranked)[number]) => {
                   const price = fareAmount(r.option);
@@ -926,7 +941,7 @@ export default function DemoPage() {
                         const releves = agg && agg.count > 0 ? agg : null;
                         if (ops.length === 0 && !releves) return null;
                         return (
-                          <span className="-mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
+                          <span className="apparait -mt-1 flex basis-full flex-wrap items-center gap-1.5 border-t pt-1.5">
                             {ops.length > 0 && <OperatorChips ops={ops} />}
                             {releves && (
                               <span
@@ -956,7 +971,7 @@ export default function DemoPage() {
             {service === 'COURSE' &&
               transit &&
               (transit.lignes.length > 0 || transit.correspondances.length > 0) && (
-                <div className="mt-4 rounded-2xl border bg-card p-4">
+                <div className="apparait mt-4 rounded-2xl border bg-card p-4">
                   <p className="text-label font-bold uppercase tracking-widest text-muted-foreground">
                     {transit.lignes.length > 0
                       ? '🚌 Lignes utiles pour ce trajet'
