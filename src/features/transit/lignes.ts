@@ -27,6 +27,16 @@ export function fmtWalk(m: number | undefined): string | null {
   return `~${arrondi} m`;
 }
 
+/**
+ * Marche totale montée + descente (mètres) — null si l'une des deux
+ * manque : on ne proclame pas « meilleure ligne » sur une demi-mesure.
+ */
+export function totalWalkM(l: Pick<LigneProche, 'montee_m' | 'descente_m'>): number | null {
+  if (typeof l.montee_m !== 'number' || !Number.isFinite(l.montee_m)) return null;
+  if (typeof l.descente_m !== 'number' || !Number.isFinite(l.descente_m)) return null;
+  return l.montee_m + l.descente_m;
+}
+
 /** « gbaka : Adjamé → Lokoa » → « Adjamé → Lokoa » (le mode a sa pastille). */
 export function cleanLineName(nom: string): string {
   return nom

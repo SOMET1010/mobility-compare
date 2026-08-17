@@ -4,6 +4,7 @@ import {
   dedupeCorrespondances,
   dedupeLines,
   fmtWalk,
+  totalWalkM,
 } from '@/features/transit/lignes';
 
 /**
@@ -97,5 +98,17 @@ describe('fmtWalk — marche affichée sans fausse précision', () => {
   it('valeur absente ou invalide : null (rien d’affiché)', () => {
     expect(fmtWalk(undefined)).toBeNull();
     expect(fmtWalk(-5)).toBeNull();
+  });
+});
+
+describe('totalWalkM — « meilleure ligne » seulement sur mesure complète', () => {
+  it('additionne montée et descente', () => {
+    expect(totalWalkM({ montee_m: 48, descente_m: 203 })).toBe(251);
+  });
+
+  it('demi-mesure : null (pas de proclamation sur une donnée partielle)', () => {
+    expect(totalWalkM({ montee_m: 48 })).toBeNull();
+    expect(totalWalkM({ descente_m: 203 })).toBeNull();
+    expect(totalWalkM({})).toBeNull();
   });
 });

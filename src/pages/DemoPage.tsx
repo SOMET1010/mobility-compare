@@ -17,7 +17,13 @@ import {
   type DemoMode,
 } from '@/demo/scenario';
 import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
-import { cleanLineName, fetchLignes, fmtWalk, type TransitInfo } from '@/features/transit/lignes';
+import {
+  cleanLineName,
+  fetchLignes,
+  fmtWalk,
+  totalWalkM,
+  type TransitInfo,
+} from '@/features/transit/lignes';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
@@ -48,6 +54,8 @@ import type { BadgeCode, RankableOption } from '@/domain/ranking';
 
 const XOF = new Intl.NumberFormat('fr-FR');
 const fmt = (n: number) => XOF.format(n);
+/** Arrondi au pas de 50 F — un prix estimé s'affiche « ≈ », jamais au franc près. */
+const approx50 = (n: number) => Math.round(n / 50) * 50;
 const km1 = (n: number) => n.toFixed(1).replace('.', ',');
 const fmtCo2 = (g: number) =>
   g >= 1000 ? `${(g / 1000).toFixed(1).replace('.', ',')} kg` : `${g} g`;
@@ -292,9 +300,11 @@ export default function DemoPage() {
   // woro-woro, bus, bateau-bus) — la première brique de la décomposition
   // « de gare en gare ». Indisponible → la section n'apparaît pas.
   const [transit, setTransit] = useState<TransitInfo | null>(null);
+  const [showAllLines, setShowAllLines] = useState(false);
   useEffect(() => {
     let cancelled = false;
     setTransit(null);
+    setShowAllLines(false);
     const a = resolvePoint(fromId);
     const b = resolvePoint(toId);
     if (!a || !b || fromId === toId) return;
@@ -804,34 +814,72 @@ export default function DemoPage() {
               <div className="mt-4 rounded-2xl border bg-card p-4">
                 <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                   {transit.lignes.length > 0
-                    ? 'Lignes passant près de ce trajet'
+                    ? '🚌 Lignes utiles pour ce trajet'
                     : 'Pas de ligne directe — avec une correspondance'}
                 </p>
-                <ul className="mt-2 space-y-2">
-                  {transit.lignes.slice(0, 6).map((l) => {
-                    const montee = fmtWalk(l.montee_m);
-                    const descente = fmtWalk(l.descente_m);
-                    return (
-                      <li key={`${l.mode}-${l.nom}`} className="text-[13px]">
-                        <div className="flex items-baseline gap-2">
-                          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
-                            {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
-                            {LIGNE_META[l.mode]?.label ?? l.mode}
-                            {l.ref ? ` ${l.ref}` : ''}
-                          </span>
-                          <span className="min-w-0 truncate font-medium">
-                            {cleanLineName(l.nom)}
-                          </span>
-                        </div>
-                        {montee && descente && (
-                          <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                            🚶 montée {montee} du départ · descente {descente} de l’arrivée
-                          </p>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
+                {(() => {
+                  // Le serveur trie déjà par marche totale : la première ligne
+                  // EST la meilleure — on le dit, au lieu de laisser analyser.
+                  const meilleure = transit.lignes[0];
+                  const marche = meilleure ? totalWalkM(meilleure) : null;
+                  const visibles = showAllLines ? transit.lignes : transit.lignes.slice(0, 3);
+                  return (
+                    <>
+                      {meilleure && marche !== null && transit.lignes.length > 1 && (
+                        <p className="mt-2 text-[12.5px] font-bold leading-snug text-[#5C6B2E]">
+                          ★ Meilleure ligne : {LIGNE_META[meilleure.mode]?.label ?? meilleure.mode}
+                          {meilleure.ref ? ` ${meilleure.ref}` : ''} — seulement {fmtWalk(marche)}{' '}
+                          de marche au total.
+                        </p>
+                      )}
+                      <ul className="mt-2 space-y-2.5">
+                        {visibles.map((l, i) => {
+                          const montee = fmtWalk(l.montee_m);
+                          const descente = fmtWalk(l.descente_m);
+                          const best = i === 0 && marche !== null && transit.lignes.length > 1;
+                          return (
+                            <li
+                              key={`${l.mode}-${l.nom}`}
+                              className={
+                                'text-[13px]' +
+                                (best
+                                  ? ' -mx-2 rounded-xl bg-[#5C6B2E]/8 px-2 py-1.5 ring-1 ring-[#5C6B2E]/25'
+                                  : '')
+                              }
+                            >
+                              <div className="flex items-baseline gap-2">
+                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-bold">
+                                  {LIGNE_META[l.mode]?.emoji ?? '🚏'}{' '}
+                                  {LIGNE_META[l.mode]?.label ?? l.mode}
+                                  {l.ref ? ` ${l.ref}` : ''}
+                                </span>
+                                <span className="min-w-0 truncate font-medium">
+                                  {cleanLineName(l.nom)}
+                                </span>
+                              </div>
+                              {montee && descente && (
+                                <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                  🚶 {montee} au départ · {descente} à l’arrivée
+                                </p>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      {transit.lignes.length > 3 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllLines((v) => !v)}
+                          className="mt-2 text-[12px] font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {showAllLines
+                            ? 'Réduire ↑'
+                            : `Voir les ${transit.lignes.length} lignes ↓`}
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {transit.correspondances.length > 0 && (
                   <>
@@ -888,8 +936,9 @@ export default function DemoPage() {
                   </>
                 )}
 
-                <p className="mt-2 text-[10.5px] leading-snug text-muted-foreground">
-                  Réseau cartographié (OpenStreetMap) — tracés réels, sans horaires ni tarifs.
+                <p className="mt-2.5 text-[10.5px] leading-snug text-muted-foreground">
+                  D’après le réseau cartographié <b>OpenStreetMap</b> — lignes et tracés réels ·
+                  horaires et tarifs non disponibles.
                 </p>
               </div>
             )}
@@ -903,65 +952,7 @@ export default function DemoPage() {
               </div>
             ))}
 
-            <div className="mt-5 grid grid-cols-3 gap-2">
-              <Button
-                variant="outline"
-                onClick={shareWhatsApp}
-                className="border-[#25D366]/40 px-2 text-[#128C4A] hover:bg-[#25D366]/10 hover:text-[#128C4A]"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="mr-1.5 h-4 w-4"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2a10 10 0 0 0-8.63 15.03L2 22l5.13-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.04.8.81-2.97-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.13c-.25-.13-1.46-.72-1.68-.8-.23-.08-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.53.06-.25-.13-1.04-.39-1.99-1.23-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.1-.5.12-.12.25-.3.37-.44.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.44.06-.67.31-.22.25-.87.85-.87 2.07 0 1.22.9 2.4 1.02 2.57.13.16 1.76 2.68 4.25 3.76.6.26 1.06.41 1.42.53.6.19 1.14.16 1.57.1.48-.07 1.46-.6 1.67-1.18.2-.57.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28z" />
-                </svg>
-                WhatsApp
-              </Button>
-              <Button
-                variant="outline"
-                onClick={shareFacebook}
-                className="border-[#1877F2]/40 px-2 text-[#1877F2] hover:bg-[#1877F2]/10 hover:text-[#1877F2]"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="mr-1.5 h-4 w-4"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.62.77-1.62 1.56V12h2.76l-.44 2.89h-2.32v6.99A10 10 0 0 0 22 12z" />
-                </svg>
-                Facebook
-              </Button>
-              <Button variant="outline" onClick={share} className="px-2">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="mr-1.5 h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="9" y="9" width="11" height="11" rx="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                Lien
-              </Button>
-            </div>
-            {bothLieux && (
-              <Button
-                variant="outline"
-                className="mt-2 w-full"
-                onClick={() => setView('contribute')}
-              >
-                + Partager un prix payé
-              </Button>
-            )}
-            <InstallPrompt />
-
+            {/* La carte JUSTE sous les lignes : c'est elle qui les explique. */}
             {fromCommune && toCommune && (
               <>
                 <figure className="mt-4 overflow-hidden rounded-2xl border">
@@ -993,6 +984,45 @@ export default function DemoPage() {
                 </div>
               </>
             )}
+
+            {/* La donnée terrain vaut plus qu'un partage : elle a SON bloc. */}
+            {bothLieux && (
+              <div className="mt-4 rounded-2xl border bg-card p-4">
+                <p className="text-[15px] font-extrabold">Vous avez fait ce trajet ?</p>
+                <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+                  Aidez à rendre les prix plus fiables — anonyme, modéré avant publication.
+                </p>
+                <Button className="mt-3 w-full" onClick={() => setView('contribute')}>
+                  + Ajouter le prix que j’ai payé
+                </Button>
+              </div>
+            )}
+
+            {/* Partage social : utile, mais secondaire — une ligne discrète. */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
+              <span className="font-semibold">Partager ce trajet :</span>
+              <button
+                type="button"
+                onClick={shareWhatsApp}
+                className="font-semibold text-[#128C4A] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                WhatsApp
+              </button>
+              <button
+                type="button"
+                onClick={shareFacebook}
+                className="font-semibold text-[#1877F2] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Facebook
+              </button>
+              <button
+                type="button"
+                onClick={share}
+                className="font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                🔗 Copier le lien
+              </button>
+            </div>
 
             <div className="mt-3">
               <AdSlot slotId="resultats" />
@@ -1033,6 +1063,9 @@ export default function DemoPage() {
                 </Link>
               </div>
             </details>
+
+            {/* L'installation tout en bas : d'abord prouver l'utilité, ensuite s'inviter. */}
+            <InstallPrompt />
 
             <Button variant="ghost" size="sm" className="mt-1" onClick={() => setView('search')}>
               ← Changer de trajet
@@ -1117,9 +1150,46 @@ function DetailView({
   const m = MODE_META[o.mode];
   const price = fareAmount(o);
   const codes = badgesByOption.get(o.optionId) ?? [];
-  const justifications = cmp.ranking.badges.filter((b) => b.optionId === o.optionId);
   const trace = o.fare.available ? o.fare.trace : null;
   const critLabel = CRITERIA.find((c) => c.code === criterion)?.label ?? '';
+
+  // Le coût d'opportunité : ce mode comparé à la référence — le recommandé
+  // du critère courant, ou le 2ᵉ si ce mode EST le recommandé. Jamais
+  // inventé : calculé sur les options affichées, absent si prix manquant.
+  const autres = cmp.ranking.ranked.filter(
+    (r) => r.option.optionId !== o.optionId && fareAmount(r.option) !== null,
+  );
+  const refOpt = price !== null ? (autres[0] ?? null) : null;
+  const refLabel = refOpt ? MODE_META[refOpt.option.mode].label : '';
+  const dPrix = refOpt ? price! - fareAmount(refOpt.option)! : null;
+  const dMin = refOpt ? minTotal(o) - minTotal(refOpt.option) : null;
+
+  // Le bénéfice avant l'algorithme : ce que ce choix apporte, en une phrase.
+  const CRIT_BADGE: Record<DemoCriterion, BadgeCode> = {
+    PRICE: 'CHEAPEST',
+    DURATION: 'FASTEST',
+    PRICE_TIME: 'BEST_VALUE',
+  };
+  const HEADLINE: Record<BadgeCode, string> = {
+    CHEAPEST: '💰 Le trajet le moins cher.',
+    FASTEST: '⚡ Le trajet le plus rapide.',
+    BEST_VALUE: '⭐ Le meilleur équilibre prix-durée.',
+  };
+  const primaryBadge = codes.includes(CRIT_BADGE[criterion])
+    ? CRIT_BADGE[criterion]
+    : (codes[0] ?? null);
+  const waitMin = o.waitSeconds ? Math.round(o.waitSeconds / 60) : 0;
+
+  let arbitrage: string | null = null;
+  if (dPrix !== null && dMin !== null && refOpt) {
+    if (dPrix > 0 && dMin < 0)
+      arbitrage = `Vous payez ${fmt(dPrix)} F de plus pour gagner ~${-dMin} min.`;
+    else if (dPrix < 0 && dMin > 0)
+      arbitrage = `Vous économisez ${fmt(-dPrix)} F en acceptant ~${dMin} min de plus.`;
+    else if (dPrix <= 0 && dMin <= 0)
+      arbitrage = `Moins cher et au moins aussi rapide que ${refLabel} sur ce trajet.`;
+    else arbitrage = `${refLabel} fait au moins aussi bien sur les deux critères pour ce trajet.`;
+  }
 
   return (
     <section aria-label="Détail">
@@ -1128,7 +1198,7 @@ function DetailView({
         onClick={onBack}
         className="mb-4 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        ← Retour à la comparaison
+        ← Retour aux résultats
       </button>
 
       <div className="my-3 flex items-center gap-3.5">
@@ -1142,108 +1212,163 @@ function DetailView({
         </div>
         <div className="ml-auto text-right">
           <div className="text-2xl font-extrabold tabular-nums leading-none">
-            {price !== null ? fmt(price) : '—'}
+            {price !== null ? `≈ ${fmt(approx50(price))}` : '—'}
           </div>
-          <div className="mt-1 text-[10px] font-semibold text-muted-foreground">FCFA · exemple</div>
+          <div className="mt-1 text-[10px] font-semibold text-muted-foreground">
+            FCFA · prix indicatif
+          </div>
         </div>
       </div>
-
-      <ConfidenceNote />
 
       <div className="my-3 rounded-xl border bg-card p-4">
         <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          Pourquoi ce classement ?
+          Pourquoi choisir {m.label} ?
         </div>
-        <p className="mt-1.5 text-sm">
-          Classé{' '}
-          <b>
-            {ranked.position}
-            <sup>{ranked.position === 1 ? 'er' : 'e'}</sup>
-          </b>{' '}
-          sur « {critLabel} » : <span className="tabular-nums">{ranked.sortExplanation}</span>.
+        <p className="mt-1.5 text-sm font-bold">
+          {primaryBadge
+            ? HEADLINE[primaryBadge]
+            : `${m.note.charAt(0).toUpperCase()}${m.note.slice(1)}.`}
         </p>
-        {justifications.length > 0 && (
-          <ul className="mt-2 space-y-1">
-            {justifications.map((b) => (
-              <li key={b.code} className="text-[12.5px]">
-                <b>{BADGE_LABEL[b.code]}</b> — {b.justification}
-              </li>
-            ))}
-          </ul>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
+          Environ {minTotal(o)} min porte-à-porte
+          {waitMin ? `, dont ${waitMin} min d’attente` : ''}.
+        </p>
+        {refOpt && dPrix !== null && dMin !== null && (dPrix !== 0 || dMin !== 0) && (
+          <div className="mt-3 border-t pt-2.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Par rapport au {refLabel}
+            </p>
+            <div className="mt-1.5 flex gap-2">
+              {dPrix !== 0 && (
+                <span
+                  className={
+                    'rounded-lg px-2.5 py-1 text-[13px] font-extrabold tabular-nums ' +
+                    (dPrix < 0 ? 'bg-[#5C6B2E]/10 text-[#5C6B2E]' : 'bg-muted text-foreground/80')
+                  }
+                >
+                  {dPrix > 0 ? '+' : '−'} {fmt(Math.abs(dPrix))} F
+                </span>
+              )}
+              {dMin !== 0 && (
+                <span
+                  className={
+                    'rounded-lg px-2.5 py-1 text-[13px] font-extrabold tabular-nums ' +
+                    (dMin < 0 ? 'bg-[#5C6B2E]/10 text-[#5C6B2E]' : 'bg-muted text-foreground/80')
+                  }
+                >
+                  {dMin > 0 ? '+' : '−'} {Math.abs(dMin)} min
+                </span>
+              )}
+            </div>
+            {arbitrage && <p className="mt-1.5 text-[12.5px] leading-snug">{arbitrage}</p>}
+          </div>
         )}
-        {codes.length === 0 && (
-          <p className="mt-1 text-[12.5px] text-muted-foreground">
-            Aucun badge : ce mode n’est premier sur aucun critère.
-          </p>
-        )}
+        <p className="mt-2.5 text-[10.5px] text-muted-foreground">
+          {ranked.position}
+          <sup>{ranked.position === 1 ? 'er' : 'e'}</sup> sur {cmp.ranking.ranked.length} pour «{' '}
+          {critLabel} ».
+        </p>
       </div>
 
-      <dl className="my-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 rounded-xl bg-muted/50 p-4 text-sm">
-        <dt className="text-muted-foreground">Trajet</dt>
-        <dd className="text-right font-semibold">
-          {cmp.corridor.from} → {cmp.corridor.to}
-        </dd>
-        <dt className="text-muted-foreground">Distance</dt>
-        <dd className="text-right font-semibold tabular-nums">{km1(cmp.corridor.km)} km</dd>
-        <dt className="text-muted-foreground">Durée porte-à-porte</dt>
-        <dd className="text-right font-semibold tabular-nums">{minTotal(o)} min</dd>
-        {o.waitSeconds ? (
-          <>
-            <dt className="pl-3 text-muted-foreground">dont attente</dt>
-            <dd className="text-right font-semibold tabular-nums">
-              {Math.round(o.waitSeconds / 60)} min
-            </dd>
-          </>
-        ) : null}
-        <dt className="text-muted-foreground">Empreinte carbone</dt>
-        <dd className="text-right font-semibold tabular-nums">
-          ≈ {fmtCo2(estimateCo2Grams(o.mode, cmp.corridor.km))} CO₂
-        </dd>
-        {agg && agg.count > 0 && (
-          <>
-            <dt className="text-muted-foreground">Prix observé (réel)</dt>
-            <dd className="text-right font-semibold tabular-nums text-[#5C6B2E]">
-              {agg.medianXof !== null
-                ? `~${fmt(agg.medianXof)} FCFA · ${agg.count} relevés`
-                : `${agg.count} relevé${agg.count > 1 ? 's' : ''} (médiane dès 5)`}
-            </dd>
-          </>
-        )}
-      </dl>
+      {/* Les trois chiffres qui comptent — scannables d'un pouce. */}
+      <div className="my-3 grid grid-cols-3 gap-2">
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <div className="text-lg font-extrabold tabular-nums leading-tight">{minTotal(o)} min</div>
+          <div className="mt-0.5 text-[10px] font-semibold text-muted-foreground">
+            porte-à-porte{waitMin ? ` · dont ${waitMin} d’attente` : ''}
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <div className="text-lg font-extrabold tabular-nums leading-tight">
+            {km1(cmp.corridor.km)} km
+          </div>
+          <div className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">
+            {cmp.corridor.from} → {cmp.corridor.to}
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <div className="text-lg font-extrabold tabular-nums leading-tight">
+            ≈ {fmtCo2(estimateCo2Grams(o.mode, cmp.corridor.km))}
+          </div>
+          <div className="mt-0.5 text-[10px] font-semibold text-muted-foreground">CO₂ estimé</div>
+        </div>
+      </div>
+      {agg && agg.count > 0 && (
+        <p className="my-2 text-[12px] font-bold tabular-nums text-[#5C6B2E]">
+          ✓ Prix réellement observé :{' '}
+          {agg.medianXof !== null
+            ? `~${fmt(agg.medianXof)} FCFA (${agg.count} relevés terrain)`
+            : `${agg.count} relevé${agg.count > 1 ? 's' : ''} terrain (médiane dès 5)`}
+        </p>
+      )}
+
       {modeOperators.length > 0 && (
         <div className="my-3 rounded-xl border bg-card p-4">
           <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Opérateurs — statut d’agrément vérifié
+            Disponible via
           </div>
-          <ul className="mt-2 space-y-1.5">
-            {modeOperators.map((op) => (
-              <li key={op.id} className="flex items-center justify-between gap-2 text-sm">
-                <span className="font-semibold">{op.label}</span>
-                <span
-                  className={
-                    'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ' +
-                    (op.agrement_status === 'AGREE'
-                      ? 'bg-[#5C6B2E]/12 text-[#5C6B2E]'
-                      : 'bg-muted text-muted-foreground')
-                  }
-                >
-                  {AGREMENT_LABEL[op.agrement_status]}
-                </span>
-              </li>
-            ))}
+          <ul className="mt-1 divide-y">
+            {modeOperators.map((op) => {
+              const contenu = (
+                <>
+                  <span className="flex items-center gap-2 font-semibold">
+                    <span
+                      aria-hidden="true"
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{ backgroundColor: op.brand_color ?? 'hsl(var(--muted-foreground))' }}
+                    />
+                    {op.label}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {op.agrement_status !== 'AGREE' && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                        {AGREMENT_LABEL[op.agrement_status]}
+                      </span>
+                    )}
+                    {op.site_url && <Chevron />}
+                  </span>
+                </>
+              );
+              return (
+                <li key={op.id}>
+                  {op.site_url ? (
+                    <a
+                      href={op.site_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-2 py-2.5 text-sm transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {contenu}
+                    </a>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2 py-2.5 text-sm">
+                      {contenu}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
-          <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
-            Vérifié le{' '}
+          <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
+            {modeOperators.every((op) => op.agrement_status === 'AGREE') && (
+              <span className="font-bold text-[#5C6B2E]">✓ Plateformes agréées · </span>
+            )}
+            statut vérifié le{' '}
             {modeOperators[0]?.status_verified_at
               ? new Date(modeOperators[0].status_verified_at).toLocaleDateString('fr-FR')
               : '—'}{' '}
             ({modeOperators[0]?.status_source ?? 'source à renseigner'}) · aucune affiliation.
+            L’agrément atteste le droit d’exercer — le prix affiché ne provient pas de ces
+            plateformes.
           </p>
         </div>
       )}
 
-      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-        Empreinte carbone : <b>estimation indicative</b>, non mesurée à Abidjan.
+      <p className="mt-3 text-[11px] leading-snug" style={{ color: WARN }}>
+        ⚠︎ Estimation pilote · prix non confirmé par relevé terrain.{' '}
+        <Link to="/methode" className="font-semibold underline underline-offset-2">
+          Comment sont calculées les estimations ?
+        </Link>
       </p>
 
       {trace && (
@@ -1333,7 +1458,7 @@ function ContributeView({
         onClick={onBack}
         className="mb-4 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        ← Retour à la comparaison
+        ← Retour aux résultats
       </button>
       <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
         Partager un prix payé · {IS_BACKEND_CONFIGURED ? 'relevé réel' : 'simulation'}

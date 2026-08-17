@@ -17,6 +17,8 @@ export interface Operator {
   readonly status_verified_at: string | null;
   readonly status_source: string | null;
   readonly brand_color: string | null;
+  /** Site officiel de l'opérateur — sert le « Ouvrir … » de la fiche détail. */
+  readonly site_url: string | null;
 }
 
 export const AGREMENT_LABEL: Record<Operator['agrement_status'], string> = {
@@ -32,7 +34,9 @@ export async function fetchPublishedOperators(): Promise<Operator[] | null> {
   try {
     const { data, error } = await supabase
       .from('operators')
-      .select('id, label, mode, agrement_status, status_verified_at, status_source, brand_color')
+      .select(
+        'id, label, mode, agrement_status, status_verified_at, status_source, brand_color, site_url',
+      )
       .order('label');
     if (error || !data) return null;
     return data as Operator[];

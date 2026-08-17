@@ -99,9 +99,9 @@ export function Assistant() {
         aria-expanded={open}
         aria-label={open ? 'Fermer l’assistant' : 'Ouvrir l’assistant'}
         title="Assistant"
-        className="fixed bottom-4 right-4 z-[1100] grid h-12 w-12 place-items-center rounded-full bg-[#26301C] text-white shadow-xl transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="fixed bottom-4 right-4 z-[1100] grid h-11 w-11 place-items-center rounded-full bg-[#26301C]/90 text-white shadow-lg backdrop-blur transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26301C] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <BrandMark className="h-6 w-6 text-[#F3EEDF]" />
+        <BrandMark className="h-5 w-5 text-[#F3EEDF]" />
       </button>
 
       {open && (
