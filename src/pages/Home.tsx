@@ -7,8 +7,8 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { AdSlot } from '@/components/AdSlot';
-import { PlaceField } from '@/components/PlaceField';
-import { UseMyLocation } from '@/components/UseMyLocation';
+import { PlaceSheet, PlaceTrigger } from '@/components/PlaceField';
+import { loadRecents } from '@/features/trips/savedTrips';
 
 /**
  * Vitrine produit — MOBILIS.
@@ -342,25 +342,50 @@ function TripWidget() {
   const navigate = useNavigate();
   const [from, setFrom] = useState('cocody');
   const [to, setTo] = useState('plateau');
+  const [sheet, setSheet] = useState<null | 'from' | 'to'>(null);
+  const recents = typeof window === 'undefined' ? [] : loadRecents(window.localStorage);
+
+  function comparer(depart: string, arrivee: string) {
+    navigate(
+      `/comparer?de=${encodeURIComponent(depart)}&a=${encodeURIComponent(arrivee)}&tri=PRICE_TIME`,
+    );
+  }
 
   return (
     <div className="max-w-md rounded-2xl border bg-card/95 p-3.5 shadow-xl backdrop-blur">
+      {sheet && (
+        <PlaceSheet
+          label={sheet === 'from' ? 'Départ' : 'Arrivée'}
+          withGeolocation={sheet === 'from'}
+          recentIds={recents.flatMap((t) => [t.fromId, t.toId])}
+          onClose={() => setSheet(null)}
+          onPick={(id) => {
+            if (sheet === 'from') {
+              setFrom(id);
+              // Enchaînement à la Yango : départ choisi → on demande l'arrivée.
+              setSheet('to');
+            } else {
+              setTo(id);
+              setSheet(null);
+              if (id !== from) comparer(from, id);
+            }
+          }}
+        />
+      )}
       <div className="relative flex flex-col gap-1.5">
-        <PlaceField
+        <PlaceTrigger
           label="Départ"
           dotClass="bg-[#5C6B2E]"
           value={from}
-          onChange={setFrom}
+          onPress={() => setSheet('from')}
           wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
-          allowAddresses
         />
-        <PlaceField
+        <PlaceTrigger
           label="Arrivée"
           dotClass="bg-[#B9722A]"
           value={to}
-          onChange={setTo}
+          onPress={() => setSheet('to')}
           wrapperClass="rounded-xl bg-muted/50 px-2 py-1"
-          allowAddresses
         />
         <button
           type="button"
@@ -386,23 +411,16 @@ function TripWidget() {
         </button>
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-3 px-1">
-        <UseMyLocation onFound={setFrom} />
-        {from === to && (
-          <span className="text-[12px] font-medium text-[#9A3412]">
-            Choisissez une autre destination.
-          </span>
-        )}
-      </div>
+      {from === to && (
+        <p className="mt-2 px-1 text-[12px] font-medium text-[#9A3412]">
+          Choisissez une autre destination.
+        </p>
+      )}
 
       <button
         type="button"
         disabled={from === to}
-        onClick={() =>
-          navigate(
-            `/comparer?de=${encodeURIComponent(from)}&a=${encodeURIComponent(to)}&tri=PRICE_TIME`,
-          )
-        }
+        onClick={() => comparer(from, to)}
         className="mt-2.5 w-full rounded-xl bg-[#B9722A] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-[#B9722A]/20 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B9722A] focus-visible:ring-offset-2 focus-visible:ring-offset-card active:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Comparer les 4 modes →

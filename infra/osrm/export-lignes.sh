@@ -16,15 +16,20 @@ PBF="/root/donnees/lignes-transport.osm.pbf"
 [ -f "$PBF" ] || { echo "Introuvable : $PBF (lancer d'abord l'extraction osmium)"; exit 1; }
 
 echo "→ Lecture des relations, arrêts et tracés…"
-osmium cat "$PBF" -f osm | python3 - "$FONCTION" "$JETON_ROUTAGE" <<'PY'
+# Fichier intermédiaire obligatoire : le script python est lui-même fourni
+# par l'entrée standard (heredoc), elle ne peut pas servir deux fois.
+XML=/tmp/lignes-transport.osm
+osmium cat "$PBF" -f osm -o "$XML" --overwrite
+
+python3 - "$FONCTION" "$JETON_ROUTAGE" "$XML" <<'PY'
 import json, sys, urllib.request
 import xml.etree.ElementTree as ET
 
-fonction, jeton = sys.argv[1], sys.argv[2]
+fonction, jeton, fichier = sys.argv[1], sys.argv[2], sys.argv[3]
 MODES = {'minibus': 'GBAKA', 'share_taxi': 'WORO', 'bus': 'BUS', 'ferry': 'BATEAU'}
 
 noeuds, chemins, lignes = {}, {}, []
-for _, el in ET.iterparse(sys.stdin, events=('end',)):
+for _, el in ET.iterparse(fichier, events=('end',)):
     if el.tag == 'node':
         noeuds[el.get('id')] = (float(el.get('lat')), float(el.get('lon')))
     elif el.tag == 'way':

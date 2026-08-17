@@ -20,8 +20,7 @@ import { resolvePoint, roadEstimateKm } from '@/features/search/placeSearch';
 import { SiteHeader } from '@/components/SiteHeader';
 import { ConditionsBar } from '@/components/Conditions';
 import { InstallPrompt } from '@/components/InstallPrompt';
-import { PlaceField } from '@/components/PlaceField';
-import { UseMyLocation } from '@/components/UseMyLocation';
+import { PlaceSheet, PlaceTrigger } from '@/components/PlaceField';
 import { AdSlot } from '@/components/AdSlot';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '@/features/account/simAccount';
@@ -227,6 +226,8 @@ export default function DemoPage() {
   const [showOnboarding, setShowOnboarding] = useState(
     () => typeof window !== 'undefined' && !hasSeenOnboarding(window.localStorage),
   );
+  /** Écran de choix de lieu ouvert (à la Yango : plein écran, enchaîné). */
+  const [sheet, setSheet] = useState<null | 'from' | 'to'>(null);
   const [fromId, setFromId] = useState<string>(deepLinked ? urlFrom : 'cocody');
   const [toId, setToId] = useState<string>(deepLinked ? urlTo : 'plateau');
   const [criterion, setCriterion] = useState<DemoCriterion>(asCrit(params.get('tri')));
@@ -423,20 +424,20 @@ export default function DemoPage() {
               Choisissez le départ et l’arrivée — on compare les prix pour vous.
             </p>
 
-            {/* Sélecteurs origine → destination */}
+            {/* Sélecteurs origine → destination — le choix se fait plein écran */}
             <div className="relative flex flex-col gap-2 rounded-2xl border bg-card p-3">
-              <CommuneSelect
+              <PlaceTrigger
                 label="Départ"
                 dotClass="bg-[#5C6B2E]"
                 value={fromId}
-                onChange={setFromId}
+                onPress={() => setSheet('from')}
               />
               <div className="ml-1 h-3 border-l border-dashed" />
-              <CommuneSelect
+              <PlaceTrigger
                 label="Arrivée"
                 dotClass="bg-[#B9722A]"
                 value={toId}
-                onChange={setToId}
+                onPress={() => setSheet('to')}
               />
               <button
                 type="button"
@@ -459,14 +460,11 @@ export default function DemoPage() {
               </button>
             </div>
 
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <UseMyLocation onFound={setFromId} />
-              {fromId === toId && (
-                <p className="text-[12px] font-medium" style={{ color: WARN }}>
-                  Choisissez une autre destination.
-                </p>
-              )}
-            </div>
+            {fromId === toId && (
+              <p className="mt-2 text-[12px] font-medium" style={{ color: WARN }}>
+                Choisissez une autre destination.
+              </p>
+            )}
 
             <Button
               className="mt-4 h-12 w-full text-base"
@@ -976,6 +974,25 @@ export default function DemoPage() {
           />
         )}
       </main>
+      {sheet && (
+        <PlaceSheet
+          label={sheet === 'from' ? 'Départ' : 'Arrivée'}
+          withGeolocation={sheet === 'from'}
+          recentIds={recents.flatMap((t) => [t.fromId, t.toId])}
+          onClose={() => setSheet(null)}
+          onPick={(id) => {
+            if (sheet === 'from') {
+              setFromId(id);
+              // Enchaînement à la Yango : départ choisi → on demande l'arrivée.
+              setSheet('to');
+            } else {
+              setToId(id);
+              setSheet(null);
+              if (id !== fromId) showResults(fromId, id, criterion);
+            }
+          }}
+        />
+      )}
       {showOnboarding && (
         <OnboardingOverlay
           onDone={() => {
@@ -985,29 +1002,6 @@ export default function DemoPage() {
         />
       )}
     </div>
-  );
-}
-
-/** Sélecteur de commune (natif, stylé) avec pastille de repère. */
-function CommuneSelect({
-  label,
-  dotClass,
-  value,
-  onChange,
-}: {
-  label: string;
-  dotClass: string;
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <PlaceField
-      label={label}
-      dotClass={dotClass}
-      value={value}
-      onChange={onChange}
-      allowAddresses
-    />
   );
 }
 
